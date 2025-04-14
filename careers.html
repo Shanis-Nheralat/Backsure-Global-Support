@@ -4,45 +4,77 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Careers | BSG Support</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+  <!-- Header -->
   <header>
-    <div class="container">
-      <h1 class="logo">BSG Support</h1>
+    <div class="container nav-flex">
+      <img src="Logo.png" alt="BSG Support Logo" class="logo-img" />
       <nav>
-        <ul>
+        <ul class="navbar">
           <li><a href="index.html">Home</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="services.html">Services</a></li>
-          <li><a href="solutions.html">Solutions</a></li>
-          <li><a href="team.html">Team</a></li>
-          <li><a href="careers.html" class="active">Careers</a></li>
+          <li class="dropdown">
+            <a href="services.html">Services</a>
+            <ul class="dropdown-menu">
+              <li><a href="service-model-a.html">Dedicated Teams</a></li>
+              <li><a href="service-model-b.html">On-Demand Support</a></li>
+              <li><a href="service-model-c.html">Business Care Plans</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="solutions.html">Solutions</a>
+            <ul class="dropdown-menu">
+              <li><a href="solution-a.html">Insurance</a></li>
+              <li><a href="solution-b.html">Finance & Accounting</a></li>
+              <li><a href="solution-c.html">HR Management</a></li>
+              <li><a href="solution-d.html">Compliance & Admin</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="about.html">About Us</a>
+            <ul class="dropdown-menu">
+              <li><a href="about.html">Our Story</a></li>
+              <li><a href="team.html">Team</a></li>
+              <li><a href="careers.html" class="active">Careers</a></li>
+              <li><a href="testimonials.html">Testimonials</a></li>
+            </ul>
+          </li>
+          <li><a href="contact.html">Contact</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <section class="careers-section">
-    <div class="container">
-      <h2>Join Our Team</h2>
-      <p>At BSG Support, we're building something exciting — and we're looking for passionate, skilled professionals to be part of our journey.</p>
+  <!-- Careers Section -->
+  <section class="container" style="padding: 60px 0;">
+    <h2 style="text-align:center; color:#062767;">Join Our Team</h2>
+    <p style="text-align:center; max-width:800px; margin:20px auto 40px auto; font-size:18px;">
+      At BSG Support, we're building something exciting — and we're looking for passionate, skilled professionals to be part of our journey.
+    </p>
 
-      <h3>Open Roles</h3>
-      <ul>
+    <div style="max-width:800px; margin: 0 auto;">
+      <h3 style="color:#062767;">Open Roles</h3>
+      <ul style="line-height:1.8; padding-left: 20px;">
         <li>✅ Customer Support Associate – Remote, Full-time</li>
         <li>✅ Data Entry Specialist – Remote, Part-time</li>
         <li>✅ Compliance Assistant – Remote, Full-time</li>
       </ul>
 
-      <p>Don't see a role that fits? Email your resume to <a href="mailto:shanisnheralat@gmail.com">shanisnheralat@gmail.com</a> — we’re always on the lookout for great talent.</p>
+      <p style="margin-top:30px;">Don't see a role that fits? Email your resume to  
+        <a href="mailto:shanisnheralat@gmail.com">shanisnheralat@gmail.com</a> — we’re always on the lookout for great talent.
+      </p>
     </div>
   </section>
 
+  <!-- Footer -->
   <footer>
     <div class="container">
-      <p>© 2025 BSG Support. All rights reserved.</p>
+      <p>© 2025 Backsure Global Support. All rights reserved.</p>
     </div>
   </footer>
+
 </body>
 </html>
