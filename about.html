@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>About Us | BSG Support</title>
+  <title>Contact Us | BSG Support</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
@@ -34,7 +34,7 @@
             </ul>
           </li>
           <li class="dropdown">
-            <a href="about.html" class="active">About Us</a>
+            <a href="about.html">About Us</a>
             <ul class="dropdown-menu">
               <li><a href="about.html">Our Story</a></li>
               <li><a href="team.html">Team</a></li>
@@ -42,27 +42,34 @@
               <li><a href="testimonials.html">Testimonials</a></li>
             </ul>
           </li>
-          <li><a href="contact.html">Contact</a></li>
+          <li><a href="contact.html" class="active">Contact</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <!-- About Section -->
+  <!-- Contact Section -->
   <section class="container" style="padding: 60px 0;">
-    <h2 style="text-align:center; color:#062767;">About BSG Support</h2>
+    <h2 style="text-align:center; color:#062767;">Get in Touch</h2>
     <p style="text-align:center; max-width:800px; margin:20px auto 40px auto; font-size:18px;">
-      Backsure Global Support (BSG Support) is built to empower businesses through smart, reliable, and scalable outsourcing solutions. As a growing startup, our mission is to make backend support simple, efficient, and results-driven whether you operate in insurance, finance, compliance, healthcare, e-commerce, or professional services.
+      If you're looking for a long-term, committed outsourcing partner who understands your business, let’s build it together.
     </p>
 
-    <div style="max-width:800px; margin: 0 auto;">
-      <p>Our founders have worked closely with startups and fast-scaling companies in the UAE, gaining first-hand experience of the challenges businesses face in managing day-to-day operations. From data overload to team inefficiencies and rising overhead costs, we've seen it all. BSG Support is our answer — a focused and flexible support partner that helps you scale smarter.</p>
+    <form class="contact-form" action="#" method="POST" style="max-width: 600px; margin: 0 auto;">
+      <label for="name">Your Name *</label>
+      <input type="text" id="name" name="name" required />
 
-      <h3 style="color:#062767; margin-top:30px;">Our Mission</h3>
-      <p>To become a trusted partner for companies across sectors by delivering efficient, secure, and cost-effective backend support that enables growth, agility, and operational excellence.</p>
+      <label for="email">Your Email *</label>
+      <input type="email" id="email" name="email" required />
 
-      <h3 style="color:#062767; margin-top:30px;">Our Vision</h3>
-      <p>To redefine outsourcing for modern businesses by offering people-powered, tech-enabled support solutions that evolve with our clients’ needs.</p>
+      <label for="message">Your Message *</label>
+      <textarea id="message" name="message" rows="6" required></textarea>
+
+      <button type="submit" class="btn-primary">Send Message</button>
+    </form>
+
+    <div style="text-align:center; margin-top: 30px;">
+      <p><strong>Email:</strong> <a href="mailto:shanisnheralat@gmail.com">shanisnheralat@gmail.com</a></p>
     </div>
   </section>
 
