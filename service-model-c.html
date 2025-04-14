@@ -5,48 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Business Care Plans | BSG Support</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+  <!-- Header -->
   <header>
-    <div class="container">
-      <h1 class="logo">BSG Support</h1>
+    <div class="container nav-flex">
+      <img src="Logo.png" alt="BSG Support Logo" class="logo-img" />
       <nav>
-        <ul>
+        <ul class="navbar">
           <li><a href="index.html">Home</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="services.html" class="active">Services</a></li>
-          <li><a href="solutions.html">Solutions</a></li>
-          <li><a href="team.html">Team</a></li>
+          <li class="dropdown">
+            <a href="services.html" class="active">Services</a>
+            <ul class="dropdown-menu">
+              <li><a href="service-model-a.html">Dedicated Teams</a></li>
+              <li><a href="service-model-b.html">On-Demand Support</a></li>
+              <li><a href="service-model-c.html">Business Care Plans</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="solutions.html">Solutions</a>
+            <ul class="dropdown-menu">
+              <li><a href="solution-a.html">Insurance</a></li>
+              <li><a href="solution-b.html">Finance & Accounting</a></li>
+              <li><a href="solution-c.html">HR Management</a></li>
+              <li><a href="solution-d.html">Compliance & Admin</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="about.html">About Us</a>
+            <ul class="dropdown-menu">
+              <li><a href="about.html">Our Story</a></li>
+              <li><a href="team.html">Team</a></li>
+              <li><a href="careers.html">Careers</a></li>
+              <li><a href="testimonials.html">Testimonials</a></li>
+            </ul>
+          </li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <section class="service-detail">
-    <div class="container">
-      <h2>Business Care Plans</h2>
-      <p>Streamline your administrative functions with our all-in-one Business Care Plans. From payroll to compliance, we handle the back-office work so you can focus on scaling.</p>
-      
-      <h3>What’s Included</h3>
-      <ul>
-        <li>📌 Monthly payroll processing</li>
-        <li>📌 Bookkeeping and financial reports</li>
-        <li>📌 HR records management</li>
-        <li>📌 Compliance and PRO services</li>
+  <!-- Content Section -->
+  <section class="container" style="padding: 60px 0;">
+    <h2 style="text-align:center; color:#062767;">Business Care Plans</h2>
+    <p style="text-align:center; max-width:800px; margin:20px auto 40px auto; font-size:18px;">
+      Streamline your administrative functions with our all-in-one Business Care Plans. From payroll to compliance, we handle the back-office work so you can focus on scaling.
+    </p>
+
+    <div style="max-width:800px; margin: 0 auto;">
+      <h3 style="color:#062767;">What’s Included</h3>
+      <ul style="line-height:1.8; padding-left: 20px;">
+        <li>✅ Monthly payroll processing</li>
+        <li>✅ Bookkeeping and financial reports</li>
+        <li>✅ HR records management</li>
+        <li>✅ Compliance and PRO services</li>
       </ul>
 
-      <h3>Who It's For</h3>
-      <p>Great for small to mid-sized businesses looking for hassle-free, ongoing back-office support and compliance peace of mind.</p>
+      <h3 style="margin-top:30px; color:#062767;">Who It's For</h3>
+      <p style="font-size:16px; margin-bottom:30px;">
+        Great for small to mid-sized businesses looking for hassle-free, ongoing back-office support and compliance peace of mind.
+      </p>
 
-      <a href="contact.html" class="btn">Talk to Us</a>
+      <a href="contact.html" class="btn-primary">Talk to Us</a>
     </div>
   </section>
 
+  <!-- Footer -->
   <footer>
     <div class="container">
-      <p>© 2025 BSG Support. All rights reserved.</p>
+      <p>© 2025 Backsure Global Support. All rights reserved.</p>
     </div>
   </footer>
+
 </body>
 </html>
