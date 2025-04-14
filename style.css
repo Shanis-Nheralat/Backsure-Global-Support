@@ -1,193 +1,47 @@
-/* Reset & Base Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Open Sans', sans-serif;
-  line-height: 1.6;
-  background-color: #ffffff;
-  color: #333333;
-}
-
-a {
-  text-decoration: none;
-  color: inherit;
-}
-
-.container {
-  width: 90%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 0;
-}
-
-/* Navigation */
-header {
-  background-color: #062767;
-  padding: 20px 0;
-}
-
-.nav-flex {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo-img {
-  height: 50px;
-  padding: 5px 0;
-}
-
-nav ul {
+/* Dropdown Navigation */
+.navbar {
   list-style: none;
   display: flex;
   gap: 20px;
+  position: relative;
 }
 
-nav a {
+.navbar > li {
+  position: relative;
+}
+
+.navbar a {
   color: #ffffff;
-  font-weight: 600;
-  font-size: 16px;
-  transition: 0.3s;
-}
-
-nav a.active,
-nav a:hover {
-  color: #b19763;
-  border-bottom: 2px solid #b19763;
-}
-
-/* Hero Section */
-.hero {
-  background-color: #062767;
-  text-align: center;
-  padding: 100px 20px;
-  color: white;
-}
-
-.hero h1 {
-  font-size: 48px;
-  margin-bottom: 20px;
-}
-
-.hero p {
-  font-size: 20px;
-  margin-bottom: 30px;
-  color: #f5f5f5;
-}
-
-/* Buttons */
-.btn-primary,
-.btn-secondary {
+  padding: 10px 14px;
   display: inline-block;
-  padding: 12px 30px;
-  font-size: 16px;
-  border-radius: 4px;
-  font-weight: 600;
-  transition: all 0.3s ease;
 }
 
-.btn-primary {
-  background-color: #b19763;
-  color: #ffffff;
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  min-width: 180px;
 }
 
-.btn-primary:hover {
-  background-color: #a2864f;
+.dropdown-menu li {
+  border-bottom: 1px solid #eee;
 }
 
-.btn-secondary {
-  background-color: #062767;
-  color: #ffffff;
-}
-
-.btn-secondary:hover {
-  background-color: #0a3a90;
-}
-
-/* Sections */
-section h2 {
-  font-size: 32px;
+.dropdown-menu li a {
   color: #062767;
-  margin-bottom: 20px;
-  text-align: center;
+  padding: 10px 15px;
+  display: block;
 }
 
-section p {
-  text-align: center;
-  max-width: 800px;
-  margin: 0 auto 40px auto;
-  font-size: 18px;
+.dropdown:hover .dropdown-menu {
+  display: block;
 }
 
-/* Solution Cards */
-.solution-cards {
-  display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-}
-
-.card {
-  border: 1px solid #dddddd;
-  padding: 20px;
-  border-radius: 6px;
-  background: #ffffff;
-  text-align: left;
-}
-
-.card h3 {
-  color: #062767;
-  font-size: 20px;
-  margin-bottom: 10px;
-}
-
-.card p {
-  font-size: 16px;
-  margin-bottom: 20px;
-}
-
-/* CTA Banner */
-.cta-banner {
-  background-color: #062767;
-  text-align: center;
-  color: white;
-  padding: 60px 20px;
-}
-
-.cta-banner h2 {
-  font-size: 32px;
-  margin-bottom: 20px;
-}
-
-/* Footer */
-footer {
-  background-color: #f4f4f4;
-  text-align: center;
-  padding: 20px 0;
-  font-size: 14px;
-  color: #555555;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .hero h1 {
-    font-size: 32px;
-  }
-
-  .hero p {
-    font-size: 16px;
-  }
-
-  nav ul {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .btn-primary, .btn-secondary {
-    width: 100%;
-    padding: 14px;
-  }
+.dropdown-menu li a:hover {
+  background-color: #f7f7f7;
+  color: #b19763;
 }
