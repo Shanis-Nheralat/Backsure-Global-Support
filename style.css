@@ -1,3 +1,48 @@
+/* Clean Dropdown Navigation */
+.navbar {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.navbar > li {
+  position: relative;
+}
+
+.navbar a {
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 10px 14px;
+  display: block;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 200px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.dropdown-menu li a {
+  padding: 10px 15px;
+  color: #062767;
+  font-weight: 500;
+}
+
+.dropdown-menu li a:hover {
+  background-color: #f4f4f4;
+  color: #b19763;
+}
+
+.dropdown:hover .dropdown-menu {
+  display: block;
+}
 /* Expanded Hero Section */
 .hero-expanded {
   background-color: #062767;
