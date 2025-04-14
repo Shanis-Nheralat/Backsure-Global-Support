@@ -1,95 +1,191 @@
-/* Global Styles */
-body {
-  font-family: Arial, sans-serif;
+/* Reset & Base Styles */
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
   line-height: 1.6;
-  background-color: #f4f4f4;
-  color: #333;
+  background-color: #ffffff;
+  color: #333333;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
 }
 
 .container {
   width: 90%;
-  max-width: 1100px;
-  margin: auto;
-  overflow: hidden;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 0;
 }
 
+/* Navigation */
 header {
-  background: #003366;
-  color: #fff;
-  padding: 1rem 0;
+  background-color: #ffffff;
+  padding: 20px 0;
+  border-bottom: 2px solid #eeeeee;
 }
 
-.logo {
-  float: left;
-  font-size: 24px;
-  margin-left: 10px;
+.nav-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-img {
+  height: 60px;
 }
 
 nav ul {
-  float: right;
   list-style: none;
-  margin: 0;
-  padding: 0;
+  display: flex;
+  gap: 20px;
 }
 
-nav ul li {
-  display: inline-block;
-  margin: 0 10px;
+nav a {
+  color: #062767;
+  font-weight: 600;
+  font-size: 16px;
 }
 
-nav ul li a {
-  color: #fff;
-  text-decoration: none;
-  font-weight: bold;
+nav a.active,
+nav a:hover {
+  border-bottom: 2px solid #b19763;
 }
 
+/* Hero Section */
 .hero {
-  background: #006699;
-  color: #fff;
-  padding: 3rem 0;
+  background-color: #f4f7fa;
   text-align: center;
+  padding: 100px 20px;
 }
 
-.hero h2 {
-  font-size: 36px;
+.hero h1 {
+  font-size: 48px;
+  color: #062767;
+  margin-bottom: 20px;
 }
 
-.hero .btn {
-  background: #fff;
-  color: #006699;
-  padding: 0.7rem 1.2rem;
-  text-decoration: none;
+.hero p {
+  font-size: 20px;
+  margin-bottom: 30px;
+  color: #333333;
+}
+
+/* Buttons */
+.btn-primary,
+.btn-secondary {
   display: inline-block;
-  margin-top: 1rem;
-  font-weight: bold;
+  padding: 12px 30px;
+  font-size: 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
-.why-us {
-  background: #fff;
-  padding: 2rem 0;
+.btn-primary {
+  background-color: #062767;
+  color: #ffffff;
 }
 
-.why-us h3 {
+.btn-primary:hover {
+  background-color: #0a3a90;
+}
+
+.btn-secondary {
+  background-color: #b19763;
+  color: #ffffff;
+}
+
+.btn-secondary:hover {
+  background-color: #a28554;
+}
+
+/* Sections */
+section h2 {
+  font-size: 32px;
+  color: #062767;
+  margin-bottom: 20px;
   text-align: center;
-  margin-bottom: 1rem;
 }
 
-.features {
-  list-style: none;
-  padding-left: 0;
+section p {
   text-align: center;
+  max-width: 800px;
+  margin: 0 auto 40px auto;
+  font-size: 18px;
 }
 
-.features li {
-  padding: 0.5rem 0;
+/* Solution Cards */
+.solution-cards {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
 }
 
+.card {
+  border: 1px solid #dddddd;
+  padding: 20px;
+  border-radius: 6px;
+  background: #ffffff;
+  text-align: left;
+}
+
+.card h3 {
+  color: #062767;
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.card p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+/* CTA Banner */
+.cta-banner {
+  background-color: #062767;
+  text-align: center;
+  color: white;
+  padding: 60px 20px;
+}
+
+.cta-banner h2 {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+/* Footer */
 footer {
-  background: #003366;
-  color: #fff;
+  background-color: #f4f4f4;
   text-align: center;
-  padding: 1rem 0;
-  margin-top: 2rem;
+  padding: 20px 0;
+  font-size: 14px;
+  color: #555555;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero h1 {
+    font-size: 32px;
+  }
+
+  .hero p {
+    font-size: 16px;
+  }
+
+  nav ul {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-primary, .btn-secondary {
+    width: 100%;
+    padding: 14px;
+  }
 }
