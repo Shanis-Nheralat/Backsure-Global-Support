@@ -5,52 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Client Testimonials | BSG Support</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+  <!-- Header -->
   <header>
-    <div class="container">
-      <h1 class="logo">BSG Support</h1>
+    <div class="container nav-flex">
+      <img src="Logo.png" alt="BSG Support Logo" class="logo-img" />
       <nav>
-        <ul>
+        <ul class="navbar">
           <li><a href="index.html">Home</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="services.html">Services</a></li>
-          <li><a href="solutions.html">Solutions</a></li>
-          <li><a href="team.html">Team</a></li>
-          <li><a href="testimonials.html" class="active">Testimonials</a></li>
+          <li class="dropdown">
+            <a href="services.html">Services</a>
+            <ul class="dropdown-menu">
+              <li><a href="service-model-a.html">Dedicated Teams</a></li>
+              <li><a href="service-model-b.html">On-Demand Support</a></li>
+              <li><a href="service-model-c.html">Business Care Plans</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="solutions.html">Solutions</a>
+            <ul class="dropdown-menu">
+              <li><a href="solution-a.html">Insurance</a></li>
+              <li><a href="solution-b.html">Finance & Accounting</a></li>
+              <li><a href="solution-c.html">HR Management</a></li>
+              <li><a href="solution-d.html">Compliance & Admin</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="about.html">About Us</a>
+            <ul class="dropdown-menu">
+              <li><a href="about.html">Our Story</a></li>
+              <li><a href="team.html">Team</a></li>
+              <li><a href="careers.html">Careers</a></li>
+              <li><a href="testimonials.html" class="active">Testimonials</a></li>
+            </ul>
+          </li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <section class="testimonials-section">
-    <div class="container">
-      <h2>What Our Clients Say</h2>
-      <p>We take pride in being a growth partner to every client we work with. Here's what some of them have to say:</p>
+  <!-- Testimonials Section -->
+  <section class="container" style="padding: 60px 0;">
+    <h2 style="text-align:center; color:#062767;">What Our Clients Say</h2>
+    <p style="text-align:center; max-width:800px; margin:20px auto 40px auto; font-size:18px;">
+      We take pride in being a growth partner to every client we work with. Here's what some of them have to say:
+    </p>
 
-      <div class="testimonial">
-        <blockquote>
+    <div style="max-width:800px; margin: 0 auto;">
+      <div class="testimonial" style="margin-bottom: 40px;">
+        <blockquote style="font-style: italic; color:#333; border-left: 4px solid #b19763; padding-left: 15px;">
           “BSG Support helped us streamline our insurance operations. Their dedicated support model made it feel like they were part of our in-house team.”
         </blockquote>
-        <p class="client">— Operations Lead, UAE-Based Insurance Aggregator</p>
+        <p class="client" style="font-weight: 600; color: #062767;">— Operations Lead, UAE-Based Insurance Aggregator</p>
       </div>
 
-      <div class="testimonial">
-        <blockquote>
+      <div class="testimonial" style="margin-bottom: 40px;">
+        <blockquote style="font-style: italic; color:#333; border-left: 4px solid #b19763; padding-left: 15px;">
           “From payroll to compliance support, their team has been a reliable extension of our business. Transparent, efficient, and truly scalable.”
         </blockquote>
-        <p class="client">— CFO, Regional Financial Services Firm</p>
+        <p class="client" style="font-weight: 600; color: #062767;">— CFO, Regional Financial Services Firm</p>
       </div>
 
-      <!-- Add more testimonials as needed -->
+      <!-- More testimonials can be added similarly -->
     </div>
   </section>
 
+  <!-- Footer -->
   <footer>
     <div class="container">
-      <p>© 2025 BSG Support. All rights reserved.</p>
+      <p>© 2025 Backsure Global Support. All rights reserved.</p>
     </div>
   </footer>
+
 </body>
 </html>
