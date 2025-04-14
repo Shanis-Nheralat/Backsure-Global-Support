@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BSG Support | Smart Outsourcing</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <header>
@@ -12,36 +13,75 @@
       <h1 class="logo">BSG Support</h1>
       <nav>
         <ul>
-          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html" class="active">Home</a></li>
           <li><a href="about.html">About</a></li>
           <li><a href="services.html">Services</a></li>
           <li><a href="solutions.html">Solutions</a></li>
-          <li><a href="team.html">Team</a></li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <section class="hero">
+  <!-- HERO SECTION -->
+  <section class="hero" data-aos="fade-up">
     <div class="container">
-      <h2>Smart Outsourcing for Ambitious Businesses</h2>
-      <p>Partner with us to cut costs, save time, and elevate productivity. We’re more than a service provider—we’re your strategic growth partner.</p>
-      <a href="services.html" class="btn">View Services</a>
+      <h2>Smarter Outsourcing Starts Here</h2>
+      <p>Powering operations across insurance, finance, HR, and compliance — with scalable, tech-enabled teams.</p>
+      <a href="services.html" class="btn">Explore Our Services</a>
     </div>
   </section>
 
-  <section class="why-us">
+  <!-- TRUSTED BY / INDUSTRIES -->
+  <section class="trusted" data-aos="fade-up">
     <div class="container">
-      <h3>Why Choose BSG Support?</h3>
-      <ul class="features">
-        <li>✔️ Cost Efficiency — up to 70% savings</li>
-        <li>✔️ Industry Expertise in Insurance, Finance, HR</li>
-        <li>✔️ Dedicated, Scalable Teams</li>
-        <li>✔️ Tech-Integrated Workflows (Zoho, ERP)</li>
-        <li>✔️ GDPR, AML, and Compliance-Ready</li>
-        <li>✔️ Transparent and Trackable Operations</li>
-      </ul>
+      <h3>Trusted by fast-scaling startups across the UAE</h3>
+      <p>We support businesses in insurance, finance, healthcare, e-commerce, and professional services.</p>
+    </div>
+  </section>
+
+  <!-- SOLUTIONS GRID -->
+  <section class="solutions-preview" data-aos="fade-up">
+    <div class="container">
+      <h2>Our Solutions</h2>
+      <div class="solution-cards">
+        <div class="card">
+          <h3>Insurance Support</h3>
+          <p>From sales to claims coordination for brokers and aggregators.</p>
+          <a href="solution-a.html" class="btn">Learn More</a>
+        </div>
+        <div class="card">
+          <h3>Finance & Accounting</h3>
+          <p>Bookkeeping, invoicing, reporting — all under control.</p>
+          <a href="solution-b.html" class="btn">Learn More</a>
+        </div>
+        <div class="card">
+          <h3>HR Management</h3>
+          <p>Payroll, onboarding, compliance tracking made seamless.</p>
+          <a href="solution-c.html" class="btn">Learn More</a>
+        </div>
+        <div class="card">
+          <h3>Compliance & Admin</h3>
+          <p>Trade license renewals, PRO services, and more.</p>
+          <a href="solution-d.html" class="btn">Learn More</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROBLEM / SOLUTION SECTION -->
+  <section class="value-prop" data-aos="fade-up">
+    <div class="container">
+      <h2>Outsourcing That Feels In-House</h2>
+      <p>BSG Support builds dedicated operational teams that plug into your business like an extension of your in-house workforce — saving time, cost, and effort at scale.</p>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section class="cta-banner" data-aos="zoom-in">
+    <div class="container">
+      <h2>Let’s Build Smarter Together</h2>
+      <a href="contact.html" class="btn">Get in Touch</a>
     </div>
   </section>
 
@@ -50,5 +90,9 @@
       <p>© 2025 BSG Support. All rights reserved.</p>
     </div>
   </footer>
+
+  <!-- AOS Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script>AOS.init();</script>
 </body>
 </html>
