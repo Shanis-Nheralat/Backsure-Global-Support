@@ -5,53 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Contact Us | BSG Support</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
+  <!-- Header -->
   <header>
-    <div class="container">
-      <h1 class="logo">BSG Support</h1>
+    <div class="container nav-flex">
+      <img src="Logo.png" alt="BSG Support Logo" class="logo-img" />
       <nav>
-        <ul>
+        <ul class="navbar">
           <li><a href="index.html">Home</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="services.html">Services</a></li>
-          <li><a href="solutions.html">Solutions</a></li>
-          <li><a href="team.html">Team</a></li>
-          <li><a href="testimonials.html">Testimonials</a></li>
+          <li class="dropdown">
+            <a href="services.html">Services</a>
+            <ul class="dropdown-menu">
+              <li><a href="service-model-a.html">Dedicated Teams</a></li>
+              <li><a href="service-model-b.html">On-Demand Support</a></li>
+              <li><a href="service-model-c.html">Business Care Plans</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="solutions.html">Solutions</a>
+            <ul class="dropdown-menu">
+              <li><a href="solution-a.html">Insurance</a></li>
+              <li><a href="solution-b.html">Finance & Accounting</a></li>
+              <li><a href="solution-c.html">HR Management</a></li>
+              <li><a href="solution-d.html">Compliance & Admin</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="about.html">About Us</a>
+            <ul class="dropdown-menu">
+              <li><a href="about.html">Our Story</a></li>
+              <li><a href="team.html">Team</a></li>
+              <li><a href="careers.html">Careers</a></li>
+              <li><a href="testimonials.html">Testimonials</a></li>
+            </ul>
+          </li>
           <li><a href="contact.html" class="active">Contact</a></li>
         </ul>
       </nav>
     </div>
   </header>
 
-  <section class="contact-section">
-    <div class="container">
-      <h2>Get in Touch</h2>
-      <p>If you're looking for a long-term, committed outsourcing partner who understands your business, let’s build it together.</p>
+  <!-- Contact Section -->
+  <section class="container" style="padding: 60px 0;">
+    <h2 style="text-align:center; color:#062767;">Get in Touch</h2>
+    <p style="text-align:center; max-width:800px; margin:20px auto 40px auto; font-size:18px;">
+      If you're looking for a long-term, committed outsourcing partner who understands your business, let’s build it together.
+    </p>
 
-      <form class="contact-form" action="#" method="POST">
-        <label for="name">Your Name *</label>
-        <input type="text" id="name" name="name" required />
+    <form class="contact-form" action="#" method="POST" style="max-width: 600px; margin: 0 auto;">
+      <label for="name">Your Name *</label>
+      <input type="text" id="name" name="name" required />
 
-        <label for="email">Your Email *</label>
-        <input type="email" id="email" name="email" required />
+      <label for="email">Your Email *</label>
+      <input type="email" id="email" name="email" required />
 
-        <label for="message">Your Message *</label>
-        <textarea id="message" name="message" rows="6" required></textarea>
+      <label for="message">Your Message *</label>
+      <textarea id="message" name="message" rows="6" required></textarea>
 
-        <button type="submit">Send Message</button>
-      </form>
+      <button type="submit" class="btn-primary">Send Message</button>
+    </form>
 
-      <div class="contact-info">
-        <p><strong>Email:</strong> <a href="mailto:shanisnheralat@gmail.com">shanisnheralat@gmail.com</a></p>
-      </div>
+    <div style="text-align:center; margin-top: 30px;">
+      <p><strong>Email:</strong> <a href="mailto:shanisnheralat@gmail.com">shanisnheralat@gmail.com</a></p>
     </div>
   </section>
 
+  <!-- Footer -->
   <footer>
     <div class="container">
-      <p>© 2025 BSG Support. All rights reserved.</p>
+      <p>© 2025 Backsure Global Support. All rights reserved.</p>
     </div>
   </footer>
+
 </body>
 </html>
