@@ -26,9 +26,8 @@ a {
 
 /* Navigation */
 header {
-  background-color: #ffffff;
+  background-color: #062767;
   padding: 20px 0;
-  border-bottom: 2px solid #eeeeee;
 }
 
 .nav-flex {
@@ -49,33 +48,35 @@ nav ul {
 }
 
 nav a {
-  color: #062767;
+  color: #ffffff;
   font-weight: 600;
   font-size: 16px;
+  transition: 0.3s;
 }
 
 nav a.active,
 nav a:hover {
+  color: #b19763;
   border-bottom: 2px solid #b19763;
 }
 
 /* Hero Section */
 .hero {
-  background-color: #f4f7fa;
+  background-color: #062767;
   text-align: center;
   padding: 100px 20px;
+  color: white;
 }
 
 .hero h1 {
   font-size: 48px;
-  color: #062767;
   margin-bottom: 20px;
 }
 
 .hero p {
   font-size: 20px;
   margin-bottom: 30px;
-  color: #333333;
+  color: #f5f5f5;
 }
 
 /* Buttons */
@@ -90,21 +91,21 @@ nav a:hover {
 }
 
 .btn-primary {
-  background-color: #062767;
-  color: #ffffff;
-}
-
-.btn-primary:hover {
-  background-color: #0a3a90;
-}
-
-.btn-secondary {
   background-color: #b19763;
   color: #ffffff;
 }
 
+.btn-primary:hover {
+  background-color: #a2864f;
+}
+
+.btn-secondary {
+  background-color: #062767;
+  color: #ffffff;
+}
+
 .btn-secondary:hover {
-  background-color: #a28554;
+  background-color: #0a3a90;
 }
 
 /* Sections */
