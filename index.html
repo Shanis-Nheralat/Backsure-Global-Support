@@ -1,42 +1,93 @@
-<header>
-  <div class="container nav-flex">
-    <img src="Logo.png" alt="BSG Support Logo" class="logo-img" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Backsure Global Support</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+</head>
+<body>
 
-    <nav>
-      <ul class="navbar">
-        <li><a href="index.html">Home</a></li>
+  <!-- HEADER WITH DROPDOWN -->
+  <header>
+    <div class="container nav-flex">
+      <img src="Logo.png" alt="BSG Support Logo" class="logo-img" />
+      <nav>
+        <ul class="navbar">
+          <li><a href="index.html">Home</a></li>
+          <li class="dropdown">
+            <a href="services.html">Services</a>
+            <ul class="dropdown-menu">
+              <li><a href="service-model-a.html">Dedicated Teams</a></li>
+              <li><a href="service-model-b.html">On-Demand Support</a></li>
+              <li><a href="service-model-c.html">Business Care Plans</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="solutions.html">Solutions</a>
+            <ul class="dropdown-menu">
+              <li><a href="solution-a.html">Insurance</a></li>
+              <li><a href="solution-b.html">Finance & Accounting</a></li>
+              <li><a href="solution-c.html">HR Management</a></li>
+              <li><a href="solution-d.html">Compliance & Admin</a></li>
+            </ul>
+          </li>
+          <li class="dropdown">
+            <a href="about.html">About Us</a>
+            <ul class="dropdown-menu">
+              <li><a href="about.html">Our Story</a></li>
+              <li><a href="team.html">Team</a></li>
+              <li><a href="careers.html">Careers</a></li>
+              <li><a href="testimonials.html">Testimonials</a></li>
+            </ul>
+          </li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
 
-        <li class="dropdown">
-          <a href="services.html">Services ▾</a>
-          <ul class="dropdown-menu">
-            <li><a href="service-model-a.html">Dedicated Teams</a></li>
-            <li><a href="service-model-b.html">On-Demand Support</a></li>
-            <li><a href="service-model-c.html">Business Care Plans</a></li>
-          </ul>
-        </li>
+  <!-- HERO SECTION WITH IMAGE -->
+  <section class="hero-expanded">
+    <div class="container hero-grid">
+      <div class="hero-text">
+        <h1>Smarter Outsourcing Starts Here</h1>
+        <p>Powering operations across insurance, finance, HR, and compliance — with scalable, tech-enabled teams.</p>
+        <a href="services.html" class="btn-primary">Explore Our Services</a>
+      </div>
+      <div class="hero-image">
+        <img src="hero-image.jpg" alt="BSG Support Visual" />
+      </div>
+    </div>
+  </section>
 
-        <li class="dropdown">
-          <a href="solutions.html">Solutions ▾</a>
-          <ul class="dropdown-menu">
-            <li><a href="solution-a.html">Insurance</a></li>
-            <li><a href="solution-b.html">Finance & Accounting</a></li>
-            <li><a href="solution-c.html">HR Management</a></li>
-            <li><a href="solution-d.html">Compliance & Admin</a></li>
-          </ul>
-        </li>
+  <!-- VALUE PROP -->
+  <section class="value-prop" data-aos="fade-up">
+    <div class="container">
+      <h2>Outsourcing That Feels In-House</h2>
+      <p>We build tailored offshore teams that integrate with your systems, workflows, and KPIs. It’s your operations — just optimized.</p>
+    </div>
+  </section>
 
-        <li class="dropdown">
-          <a href="about.html">About Us ▾</a>
-          <ul class="dropdown-menu">
-            <li><a href="about.html">Our Story</a></li>
-            <li><a href="team.html">Team</a></li>
-            <li><a href="careers.html">Careers</a></li>
-            <li><a href="testimonials.html">Testimonials</a></li>
-          </ul>
-        </li>
+  <!-- CTA BANNER -->
+  <section class="cta-banner" data-aos="zoom-in">
+    <div class="container">
+      <h2>Let’s Build Smarter Together</h2>
+      <a href="contact.html" class="btn-primary">Get in Touch</a>
+    </div>
+  </section>
 
-        <li><a href="contact.html">Contact</a></li>
-      </ul>
-    </nav>
-  </div>
-</header>
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <p>© 2025 Backsure Global Support. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- AOS Script -->
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script>AOS.init();</script>
+</body>
+</html>
