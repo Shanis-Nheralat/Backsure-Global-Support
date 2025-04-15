@@ -1,28 +1,27 @@
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const toggle = document.getElementById("nav-toggle");
-    const menu = document.querySelector(".navbar");
+document.addEventListener("DOMContentLoaded", function () {
+  const toggle = document.getElementById("nav-toggle");
+  const menu = document.querySelector(".navbar");
 
-    // Toggle menu on click
-    if (toggle && menu) {
-      toggle.addEventListener("click", function (e) {
-        e.stopPropagation(); // Prevent click from bubbling up
-        menu.classList.toggle("active");
-      });
+  // Toggle menu on mobile when hamburger icon is clicked
+  if (toggle && menu) {
+    toggle.addEventListener("click", function (e) {
+      e.stopPropagation(); // Prevent bubbling
+      menu.classList.toggle("active");
+    });
+  }
+
+  // Close the menu when clicking outside of the header
+  document.addEventListener("click", function (e) {
+    const isClickInsideHeader = e.target.closest("header");
+    if (!isClickInsideHeader && menu.classList.contains("active")) {
+      menu.classList.remove("active");
     }
-
-    // Close menu when clicking outside of header/nav
-    document.addEventListener("click", function (e) {
-      if (!e.target.closest("header")) {
-        menu.classList.remove("active");
-      }
-    });
-
-    // Optional: Close menu on escape key
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") {
-        menu.classList.remove("active");
-      }
-    });
   });
-</script>
+
+  // Optional: Close on ESC key press
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && menu.classList.contains("active")) {
+      menu.classList.remove("active");
+    }
+  });
+});
