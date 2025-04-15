@@ -53,6 +53,7 @@ header {
   list-style: none;
   display: flex;
   gap: 20px;
+  transition: all 0.3s ease;
 }
 
 .navbar li {
@@ -82,6 +83,7 @@ header {
   list-style: none;
   padding: 10px;
   z-index: 1000;
+  min-width: 200px;
 }
 
 .dropdown:hover .dropdown-menu {
@@ -196,9 +198,9 @@ footer {
   }
 
   .navbar {
+    display: none;
     flex-direction: column;
     width: 100%;
-    display: none;
     background-color: #062767;
   }
 
