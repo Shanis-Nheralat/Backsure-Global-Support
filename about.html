@@ -3,38 +3,200 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>About Us | BSG Support</title>
+  <meta name="description" content="Learn about Backsure Global Support - your trusted partner for scalable outsourcing solutions in Dubai, UAE.">
+  <title>About Us | Backsure Global Support</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
-
   <!-- Load Header -->
   <div id="header-placeholder"></div>
-
-  <!-- About Section -->
-  <section class="container" style="padding: 60px 0;">
-    <h2 style="text-align:center; color:#062767;">About BSG Support</h2>
-    <p style="text-align:center; max-width:800px; margin:20px auto 40px auto; font-size:18px;">
-      Backsure Global Support (BSG Support) is built to empower businesses through smart, reliable, and scalable outsourcing solutions. As a growing startup, our mission is to make backend support simple, efficient, and results-driven — whether you operate in insurance, finance, compliance, healthcare, e-commerce, or professional services.
-    </p>
-
-    <div style="max-width:800px; margin: 0 auto;">
-      <p>Our founders have worked closely with startups and fast-scaling companies in the UAE, gaining first-hand experience of the challenges businesses face in managing day-to-day operations. From data overload to team inefficiencies and rising overhead costs, we've seen it all. BSG Support is our answer — a focused and flexible support partner that helps you scale smarter.</p>
-
-      <h3 style="color:#062767; margin-top:30px;">Our Mission</h3>
-      <p>To become a trusted partner for companies across sectors by delivering efficient, secure, and cost-effective backend support that enables growth, agility, and operational excellence.</p>
-
-      <h3 style="color:#062767; margin-top:30px;">Our Vision</h3>
-      <p>To redefine outsourcing for modern businesses by offering people-powered, tech-enabled support solutions that evolve with our clients’ needs.</p>
+  
+  <!-- Page Header Banner -->
+  <section class="page-header">
+    <div class="container">
+      <h1>About Us</h1>
+      <p>Smart solutions for modern businesses</p>
     </div>
   </section>
-
+  
+  <!-- About Section -->
+  <section class="container section-padding">
+    <div class="about-content">
+      <h2 class="section-title">About Backsure Global Support</h2>
+      <p class="section-intro">
+        Backsure Global Support (BSG Support) is built to empower businesses through smart, reliable, and scalable outsourcing solutions. As a growing startup, our mission is to make backend support simple, efficient, and results-driven — whether you operate in insurance, finance, compliance, healthcare, e-commerce, or professional services.
+      </p>
+      
+      <div class="about-text">
+        <p>Our founders have worked closely with startups and fast-scaling companies in the UAE, gaining first-hand experience of the challenges businesses face in managing day-to-day operations. From data overload to team inefficiencies and rising overhead costs, we've seen it all. BSG Support is our answer — a focused and flexible support partner that helps you scale smarter.</p>
+        
+        <div class="mission-vision">
+          <div class="mission-box">
+            <h3><i class="fas fa-bullseye"></i> Our Mission</h3>
+            <p>To become a trusted partner for companies across sectors by delivering efficient, secure, and cost-effective backend support that enables growth, agility, and operational excellence.</p>
+          </div>
+          
+          <div class="vision-box">
+            <h3><i class="fas fa-binoculars"></i> Our Vision</h3>
+            <p>To redefine outsourcing for modern businesses by offering people-powered, tech-enabled support solutions that evolve with our clients' needs.</p>
+          </div>
+        </div>
+        
+        <h3 class="values-title">Our Core Values</h3>
+        <div class="values-grid">
+          <div class="value-item">
+            <i class="fas fa-handshake"></i>
+            <h4>Trust</h4>
+            <p>Building lasting relationships through transparency and integrity</p>
+          </div>
+          <div class="value-item">
+            <i class="fas fa-chart-line"></i>
+            <h4>Excellence</h4>
+            <p>Delivering high-quality results that exceed expectations</p>
+          </div>
+          <div class="value-item">
+            <i class="fas fa-lightbulb"></i>
+            <h4>Innovation</h4>
+            <p>Continuously improving our processes and solutions</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to transform your backend operations?</h2>
+      <p>Get in touch to discuss how we can support your business growth.</p>
+      <a href="contact.html" class="btn-primary">Contact Us Today</a>
+    </div>
+  </section>
+  
   <!-- Load Footer -->
   <div id="footer-placeholder"></div>
-
+  
   <!-- Include JS to load header and footer -->
   <script src="include.js"></script>
-
+  
+  <style>
+    /* Additional styling for About page */
+    .about-content {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .section-title {
+      text-align: center;
+      color: var(--primary-color);
+      margin-bottom: 25px;
+      font-size: 2.2rem;
+    }
+    
+    .section-intro {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto 40px;
+      font-size: 1.15rem;
+      line-height: 1.7;
+      color: #555;
+    }
+    
+    .about-text {
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+    
+    .about-text p {
+      margin-bottom: 25px;
+    }
+    
+    .mission-vision {
+      display: flex;
+      gap: 30px;
+      margin: 40px 0;
+      flex-wrap: wrap;
+    }
+    
+    .mission-box, .vision-box {
+      flex: 1;
+      min-width: 280px;
+      background-color: #f8f9fa;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .mission-box h3, .vision-box h3 {
+      color: var(--primary-color);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .mission-box i, .vision-box i {
+      color: var(--accent-color);
+    }
+    
+    .values-title {
+      text-align: center;
+      color: var(--primary-color);
+      margin: 50px 0 30px;
+    }
+    
+    .values-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      margin-bottom: 30px;
+    }
+    
+    .value-item {
+      text-align: center;
+      padding: 25px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease;
+    }
+    
+    .value-item:hover {
+      transform: translateY(-5px);
+    }
+    
+    .value-item i {
+      font-size: 2rem;
+      color: var(--accent-color);
+      margin-bottom: 15px;
+    }
+    
+    .value-item h4 {
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+    
+    .section-padding {
+      padding: 60px 0;
+    }
+    
+    @media (max-width: 768px) {
+      .mission-vision {
+        flex-direction: column;
+      }
+      
+      .section-title {
+        font-size: 1.8rem;
+      }
+      
+      .section-intro {
+        font-size: 1rem;
+      }
+    }
+  </style>
 </body>
 </html>
