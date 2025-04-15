@@ -1,19 +1,81 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // ===== MOBILE NAVIGATION MENU =====
-  const toggle = document.getElementById("nav-toggle");
-  const menu = document.querySelector(".navbar");
+  // Load header and footer components
+  loadComponent("header-placeholder", "header.html", function() {
+    // Set active menu item after header loads
+    setActiveMenuItem();
+  });
+  loadComponent("footer-placeholder", "footer.html");
 
-  // Toggle menu on mobile when hamburger icon is clicked
-  if (toggle && menu) {
-    toggle.addEventListener("click", function (e) {
-      e.stopPropagation(); // Prevent bubbling
-      menu.classList.toggle("active");
-    });
+  // Function to load HTML components
+  function loadComponent(elementId, url, callback) {
+    const element = document.getElementById(elementId);
+    if (element) {
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Failed to load ${url}: ${response.status} ${response.statusText}`);
+          }
+          return response.text();
+        })
+        .then(data => {
+          element.innerHTML = data;
+          if (typeof callback === 'function') {
+            callback();
+          }
+        })
+        .catch(error => {
+          console.error("Error loading component:", error);
+          element.innerHTML = `<p>Error loading component. Please refresh the page.</p>`;
+        });
+    }
   }
 
-  // Close the menu when clicking outside of the header
-  document.addEventListener("click", function (e) {
+  // Set active menu item based on current page
+  function setActiveMenuItem() {
+    const currentPath = window.location.pathname;
+    const filename = currentPath.substring(currentPath.lastIndexOf('/') + 1);
+    
+    // Remove any existing active classes
+    const navLinks = document.querySelectorAll('.navbar a');
+    navLinks.forEach(link => link.classList.remove('active'));
+    
+    // Set active class based on current page
+    if (filename === '' || filename === 'index.html') {
+      document.getElementById('nav-home')?.classList.add('active');
+    } else if (filename.includes('service-model') || filename === 'services.html') {
+      document.getElementById('nav-services')?.classList.add('active');
+    } else if (filename.includes('solution') || filename === 'solutions.html') {
+      document.getElementById('nav-solutions')?.classList.add('active');
+    } else if (filename.includes('about') || filename.includes('team') || 
+              filename.includes('careers') || filename.includes('testimonials')) {
+      document.getElementById('nav-about')?.classList.add('active');
+    } else if (filename.includes('contact')) {
+      document.getElementById('nav-contact')?.classList.add('active');
+    }
+    
+    // Set active class for dropdown menu items if needed
+    if (filename.includes('-')) {
+      const specificLinks = document.querySelectorAll(`.navbar a[href="${filename}"]`);
+      specificLinks.forEach(link => link.classList.add('active'));
+    }
+  }
+
+  // ===== MOBILE NAVIGATION MENU =====
+  // This will be called after the header is loaded
+  document.addEventListener('click', function (e) {
+    // Toggle menu on mobile when hamburger icon is clicked
+    if (e.target.matches('#nav-toggle') || e.target.closest('#nav-toggle')) {
+      e.preventDefault();
+      e.stopPropagation();
+      const menu = document.querySelector(".navbar");
+      if (menu) {
+        menu.classList.toggle("active");
+      }
+    }
+    
+    // Close the menu when clicking outside of the header
     const isClickInsideHeader = e.target.closest("header");
+    const menu = document.querySelector(".navbar");
     if (!isClickInsideHeader && menu && menu.classList.contains("active")) {
       menu.classList.remove("active");
     }
@@ -21,8 +83,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Optional: Close on ESC key press
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && menu && menu.classList.contains("active")) {
-      menu.classList.remove("active");
+    if (e.key === "Escape") {
+      const menu = document.querySelector(".navbar");
+      if (menu && menu.classList.contains("active")) {
+        menu.classList.remove("active");
+      }
     }
   });
 
@@ -49,6 +114,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     
     // ----- CALENDAR FUNCTIONALITY -----
+    initializeCalendar();
+    
+    // ----- FORM VALIDATION -----
+    initializeFormValidation();
+  }
+  
+  function initializeCalendar() {
     // Current date tracking
     let currentDate = new Date();
     let currentMonth = currentDate.getMonth();
@@ -207,7 +279,9 @@ document.addEventListener("DOMContentLoaded", function () {
         dateDisplayElement.textContent = readableDate;
       }
     }
-    
+  }
+  
+  function initializeFormValidation() {
     // ----- TIME SLOT SELECTION -----
     const timeSlots = document.querySelectorAll('.time-slot input');
     
