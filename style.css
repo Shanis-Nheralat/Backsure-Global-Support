@@ -27,7 +27,17 @@ a {
 /* Navigation */
 header {
   background-color: #062767;
-  padding: 20px 0;
+  color: white;
+  padding: 10px 0;
+}
+
+header a {
+  color: white;
+  text-decoration: none;
+}
+
+header a:hover {
+  text-decoration: underline;
 }
 
 .nav-flex {
