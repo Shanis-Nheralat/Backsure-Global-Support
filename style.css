@@ -210,13 +210,33 @@ footer {
 
   .navbar li {
     width: 100%;
-    padding: 10px 0;
+    padding: 0;
+  }
+
+  .navbar li a {
+    color: white;
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .navbar li a:hover {
+    background-color: #0b3a84;
+    color: #b19763;
   }
 
   .dropdown-menu {
     position: static;
     padding-left: 20px;
     background-color: #0b3a84;
+  }
+
+  .dropdown-menu li a {
+    color: white;
+    padding: 10px 15px;
+  }
+
+  .dropdown-menu li a:hover {
+    color: #b19763;
   }
 
   .hero-grid {
