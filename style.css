@@ -1364,4 +1364,8 @@ footer {
   .testimonial-card {
     padding: 25px;
   }
+}.footer-logo {
+  max-width: 160px;
+  height: auto;
+  filter: brightness(0) invert(1); /* This makes any logo white */
 }
