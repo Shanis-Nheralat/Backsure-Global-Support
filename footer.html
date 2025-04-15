@@ -1,15 +1,11 @@
 <footer>
   <div class="container">
     <div class="footer-content">
-      <div class="footer-column">
-        <h4>About Backsure</h4>
-        <p>Backsure Global Support provides comprehensive outsourcing solutions to businesses worldwide, ensuring reliable and efficient operations.</p>
-        <div class="social-icons">
-          <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-          <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-          <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-        </div>
+      <div class="footer-column logo-column">
+        <a href="index.html" class="footer-logo-link">
+          <img src="Logo.png" alt="Backsure Global Support" class="footer-logo">
+        </a>
+        <p class="tagline">Bridging Borders</p>
       </div>
       
       <div class="footer-column">
@@ -19,7 +15,16 @@
           <li><a href="service-model-b.html">On-Demand Support</a></li>
           <li><a href="service-model-c.html">Business Care Plans</a></li>
           <li><a href="solutions.html">Industry Solutions</a></li>
+        </ul>
+      </div>
+      
+      <div class="footer-column">
+        <h4>Resources</h4>
+        <ul>
           <li><a href="case-studies.html">Case Studies</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="careers.html">Careers</a></li>
         </ul>
       </div>
       
@@ -63,6 +68,230 @@
     </div>
   </div>
 </footer>
+
+<style>
+/* Enhanced Footer Styling for better proportions */
+footer {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 40px 0 20px;
+  margin-top: 40px;
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.footer-column {
+  flex: 1;
+  min-width: 180px;
+  max-width: 260px;
+}
+
+.logo-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.footer-logo-link {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.footer-logo {
+  max-width: 160px;
+  height: auto;
+}
+
+.tagline {
+  font-size: 1.1rem;
+  color: var(--accent-color);
+  font-weight: 600;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  letter-spacing: 0.5px;
+}
+
+.footer-column h4 {
+  color: var(--accent-color);
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.footer-column h4:after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 40px;
+  height: 2px;
+  background-color: var(--accent-color);
+}
+
+.footer-column p {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-column ul li {
+  margin-bottom: 10px;
+}
+
+.footer-column ul li a {
+  color: var(--text-gray);
+  text-decoration: none;
+  transition: color 0.3s;
+  font-size: 0.95rem;
+  position: relative;
+  padding-left: 0;
+  transition: padding-left 0.2s ease;
+}
+
+.footer-column ul li a:hover {
+  color: white;
+  padding-left: 5px;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+.contact-info {
+  list-style: none;
+  padding: 0;
+}
+
+.contact-info li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.contact-info li i {
+  color: var(--accent-color);
+  width: 20px;
+  margin-right: 10px;
+  margin-top: 4px;
+}
+
+.contact-info li span {
+  flex: 1;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.contact-info a {
+  color: var(--text-gray);
+  transition: color 0.3s;
+}
+
+.contact-info a:hover {
+  color: white;
+}
+
+.newsletter-form {
+  display: flex;
+  margin-top: 15px;
+}
+
+.newsletter-form input[type="email"] {
+  flex: 1;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.95rem;
+}
+
+.newsletter-form button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.newsletter-form button:hover {
+  background-color: var(--accent-color-dark);
+}
+
+.contact-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.3s ease;
+}
+
+.contact-link:hover {
+  color: white;
+}
+
+.contact-link i {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.contact-link:hover i {
+  transform: translateX(3px);
+}
+
+/* Ensure better mobile display */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .footer-column {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .logo-column {
+    align-items: center;
+  }
+  
+  .footer-column h4:after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .contact-info li {
+    justify-content: center;
+  }
+  
+  .contact-info li i {
+    margin-top: 4px;
+  }
+  
+  .newsletter-form {
+    max-width: 300px;
+    margin: 15px auto;
+  }
+}
+</style>
 
 <style>
 /* Enhanced Footer Styling for better proportions */
