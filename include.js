@@ -1,10 +1,52 @@
+/**
+ * BSG Support - Global Include Script
+ * This script loads common header and footer components across all pages
+ * and handles additional site functionality.
+ */
+
 document.addEventListener("DOMContentLoaded", function () {
 
   // ====== Dynamic Loading of Header and Footer ======
   // Include the repository name in path for GitHub Pages
   const repoPath = '/Backsure-Global-Support';
-  loadComponent("header-placeholder", `${repoPath}/header.html`, setActiveMenuItem);
-  loadComponent("footer-placeholder", `${repoPath}/footer.html`);
+  
+  // Determine if we're on GitHub Pages or a different hosting environment
+  const isGitHubPages = window.location.hostname.includes('github.io') || 
+                        window.location.hostname === 'shanis-nheralat.github.io';
+                        
+  // Determine the base path to handle different directory levels
+  const currentPath = window.location.pathname;
+  const pathSegments = currentPath.split('/').filter(Boolean);
+  
+  // Calculate path to root based on environment
+  let basePath = '';
+  
+  if (isGitHubPages) {
+    // For GitHub Pages, use the repo path directly
+    basePath = repoPath + '/';
+  } else {
+    // For other hosting, calculate relative path
+    if (pathSegments.length > 0) {
+      // Check if the last segment is an HTML file (like about.html)
+      const hasHTMLFile = pathSegments[pathSegments.length - 1].includes('.html');
+      const depth = hasHTMLFile ? pathSegments.length - 1 : pathSegments.length;
+      
+      if (depth > 0) {
+          basePath = Array(depth).fill('..').join('/') + '/';
+      }
+    }
+  }
+
+  // Load components with environment-aware paths
+  if (document.getElementById('header-placeholder')) {
+    const headerPath = isGitHubPages ? `${repoPath}/header.html` : 'header.html';
+    loadComponent("header-placeholder", headerPath, setActiveMenuItem);
+  }
+  
+  if (document.getElementById('footer-placeholder')) {
+    const footerPath = isGitHubPages ? `${repoPath}/footer.html` : 'footer.html';
+    loadComponent("footer-placeholder", footerPath);
+  }
 
   function loadComponent(elementId, url, callback) {
     const element = document.getElementById(elementId);
@@ -19,27 +61,42 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(data => {
           element.innerHTML = data;
+          
+          // Execute any scripts in the loaded content
+          const scripts = element.getElementsByTagName('script');
+          for (let i = 0; i < scripts.length; i++) {
+            eval(scripts[i].innerText);
+          }
+          
+          // Run callback if provided (e.g., for active menu item)
           if (callback) callback();
+          
+          // Dispatch event to signal component is loaded
+          document.dispatchEvent(new CustomEvent(`${elementId}-loaded`));
         })
         .catch(error => {
           console.error("Error loading component:", error);
           // Try fallback with direct GitHub raw content if initial fetch fails
-          const rawUrl = `https://raw.githubusercontent.com/shanis-nheralat/Backsure-Global-Support/main/${url.replace(repoPath + '/', '')}`;
-          console.log("Trying fallback URL:", rawUrl);
-          
-          fetch(rawUrl)
-            .then(response => {
-              if (!response.ok) throw new Error(`Fallback also failed: ${response.status}`);
-              return response.text();
-            })
-            .then(data => {
-              element.innerHTML = data;
-              if (callback) callback();
-            })
-            .catch(fallbackError => {
-              console.error("Fallback also failed:", fallbackError);
-              element.innerHTML = `<p>Error loading component. Please refresh the page.</p>`;
-            });
+          if (isGitHubPages) {
+            const rawUrl = `https://raw.githubusercontent.com/shanis-nheralat/Backsure-Global-Support/main/${url.replace(repoPath + '/', '')}`;
+            console.log("Trying fallback URL:", rawUrl);
+            
+            fetch(rawUrl)
+              .then(response => {
+                if (!response.ok) throw new Error(`Fallback also failed: ${response.status}`);
+                return response.text();
+              })
+              .then(data => {
+                element.innerHTML = data;
+                if (callback) callback();
+              })
+              .catch(fallbackError => {
+                console.error("Fallback also failed:", fallbackError);
+                element.innerHTML = `<p>Error loading component. Please refresh the page.</p>`;
+              });
+          } else {
+            element.innerHTML = `<div class="component-error">Error loading ${url.split('/').pop()}. Please check your connection.</div>`;
+          }
         });
     }
   }
