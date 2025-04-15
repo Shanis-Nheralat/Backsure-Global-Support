@@ -3,283 +3,1306 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="Backsure Global Support provides smart outsourcing solutions for ambitious businesses, helping you cut costs, save time, and elevate productivity.">
-  <title>Backsure Global Support | Smart Outsourcing Solutions</title>
+  <meta name="description" content="Backsure Global Support helps businesses build smarter, scale faster, and stay ahead with dedicated teams and tailored outsourcing solutions.">
+  <title>Backsure Global Support | Bridging Borders. Empowering Growth.</title>
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <!-- AOS Animation Library -->
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 </head>
 <body>
   <!-- Skip to content link for accessibility -->
   <a href="#main-content" class="visually-hidden">Skip to main content</a>
 
-  <!-- HEADER -->
-  <header>
-    <div class="container nav-flex">
-      <a href="index.html" aria-label="Backsure Global Support Home">
-        <img src="Logo.png" alt="BSG Support Logo" class="logo-img" />
-      </a>
-      
-      <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
-        <i class="fas fa-bars"></i>
-      </button>
-      
-      <nav>
-        <ul class="navbar" id="main-nav">
-          <li><a href="index.html" class="active">Home</a></li>
-
-          <li class="dropdown">
-            <a href="services.html">Services <i class="fas fa-chevron-down"></i></a>
-            <ul class="dropdown-menu">
-              <li><a href="service-model-a.html">Dedicated Teams</a></li>
-              <li><a href="service-model-b.html">On-Demand Support</a></li>
-              <li><a href="service-model-c.html">Business Care Plans</a></li>
-            </ul>
-          </li>
-
-          <li class="dropdown">
-            <a href="solutions.html">Solutions <i class="fas fa-chevron-down"></i></a>
-            <ul class="dropdown-menu">
-              <li><a href="solution-a.html">Insurance</a></li>
-              <li><a href="solution-b.html">Finance & Accounting</a></li>
-              <li><a href="solution-c.html">HR Management</a></li>
-              <li><a href="solution-d.html">Compliance & Admin</a></li>
-            </ul>
-          </li>
-
-          <li class="dropdown">
-            <a href="about.html">About Us <i class="fas fa-chevron-down"></i></a>
-            <ul class="dropdown-menu">
-              <li><a href="about.html">Our Story</a></li>
-              <li><a href="team.html">Team</a></li>
-              <li><a href="careers.html">Careers</a></li>
-              <li><a href="testimonials.html">Testimonials</a></li>
-            </ul>
-          </li>
-
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+  <!-- Load Header -->
+  <div id="header-placeholder"></div>
 
   <main id="main-content" class="page-content">
-    <!-- HERO SECTION -->
-    <section class="hero-expanded">
-      <div class="container hero-grid">
-        <div class="hero-text">
-          <h1>Smart Outsourcing for Ambitious Businesses</h1>
-          <p>Partner with us to cut costs, save time, expand your capacity, and elevate your team's productivity. We're more than a service provider—we're your strategic growth partner.</p>
-          <div class="hero-cta">
-            <a href="services.html" class="btn-primary">Explore Our Services</a>
-            <a href="contact.html" class="btn-secondary">Schedule a Consultation</a>
+    <!-- HERO SECTION (Full-width bridge image with overlay text) -->
+    <section class="hero-fullwidth">
+      <div class="hero-overlay"></div>
+      <div class="hero-content" data-aos="fade-up" data-aos-duration="1000">
+        <div class="container">
+          <h1>
+            <span class="hero-tagline">Bridging Borders. Empowering Growth.</span>
+            <span class="company-name">Backsure Global Support</span>
+          </h1>
+          <p class="hero-description">helps you build smarter, scale faster, and stay ahead.</p>
+          <a href="contact.html" class="btn-cta">Connect With Us <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+    </section>
+
+    <!-- APPROACH SECTION -->
+    <section class="approach-section">
+      <div class="container">
+        <div class="approach-content" data-aos="fade-up">
+          <p class="lead-text">In today's competitive landscape, success requires a new approach. At <strong>BSG Support</strong>, we don't follow the usual path—we redefine it.</p>
+          
+          <p>We challenge business-as-usual through insight, innovation, and real, measurable outcomes. Our tailored support solutions are designed to reduce risk, control costs, and drive growth—especially in the dynamic world of (re)insurance and financial services.</p>
+          
+          <p class="highlighted-text">Let's build a better way forward, together.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICES SECTION (With circular images and descriptions) -->
+    <section class="services-section">
+      <div class="services-background">
+        <div class="container">
+          <h2 class="section-title" data-aos="fade-up">Our Services</h2>
+          
+          <div class="services-grid">
+            <div class="service-card" data-aos="fade-up" data-aos-delay="100">
+              <div class="service-image">
+                <img src="service-dedicated.jpg" alt="Dedicated Employee Support">
+              </div>
+              <h3><i class="fas fa-users"></i> Dedicated Employee Support</h3>
+              <p>Boost your business performance with our skilled, full-time teams. Sales, underwriting, customer support, and more—on our payroll, dedicated to you.</p>
+              <a href="service-model-a.html" class="btn-readmore">READ MORE</a>
+            </div>
+            
+            <div class="service-card" data-aos="fade-up" data-aos-delay="200">
+              <div class="service-image">
+                <img src="service-ondemand.jpg" alt="On-Demand Service Support">
+              </div>
+              <h3><i class="fas fa-tasks"></i> On-Demand Service Support</h3>
+              <p>Need tasks done fast? Get expert help when you need it—without the overhead.</p>
+              <a href="service-model-b.html" class="btn-readmore">READ MORE</a>
+            </div>
+            
+            <div class="service-card" data-aos="fade-up" data-aos-delay="300">
+              <div class="service-image">
+                <img src="service-business.jpg" alt="Business Care Plans">
+              </div>
+              <h3><i class="fas fa-briefcase"></i> Business Care Plans</h3>
+              <p>Leave the back office to us. From payroll and bookkeeping to compliance—we manage it all, so you can focus on growth.</p>
+              <a href="service-model-c.html" class="btn-readmore">READ MORE</a>
+            </div>
           </div>
         </div>
-        <div class="hero-image">
-          <img src="hero-image.jpg" alt="Team of professionals working together" />
-        </div>
       </div>
     </section>
 
-    <!-- TRUSTED BY SECTION -->
-    <section class="trusted-by">
+    <!-- BENEFITS SECTION -->
+    <section class="benefits-section">
       <div class="container">
-        <h2 class="text-center">Trusted By Industry Leaders</h2>
-        <div class="client-logos">
-          <img src="client1.png" alt="Client Logo 1">
-          <img src="client2.png" alt="Client Logo 2">
-          <img src="client3.png" alt="Client Logo 3">
-          <img src="client4.png" alt="Client Logo 4">
-          <img src="client5.png" alt="Client Logo 5">
-        </div>
-      </div>
-    </section>
-
-    <!-- VALUE PROP -->
-    <section class="value-prop">
-      <div class="container">
-        <h2>Outsourcing That Feels In-House</h2>
-        <p>We build tailored offshore teams that integrate with your systems, workflows, and KPIs. It's your operations — just optimized.</p>
+        <h2 class="section-title dark-title" data-aos="fade-up">Why Choose Us</h2>
         
-        <div class="services-grid mt-4">
-          <div class="card">
-            <div class="card-body">
-              <i class="fas fa-users fa-2x mb-2" style="color: var(--accent-color);"></i>
-              <h3 class="card-title">Dedicated Teams</h3>
-              <p class="card-text">Fully customized teams that work exclusively for your business, becoming an extension of your company.</p>
-              <a href="service-model-a.html" class="btn-secondary">Learn More</a>
+        <div class="benefits-grid">
+          <div class="benefit-item" data-aos="fade-up" data-aos-delay="100">
+            <div class="benefit-icon">
+              <i class="fas fa-globe"></i>
             </div>
+            <h3>Global Expertise</h3>
+            <p>Access to talented professionals from around the world, bringing diverse perspectives to your business.</p>
           </div>
           
-          <div class="card">
-            <div class="card-body">
-              <i class="fas fa-headset fa-2x mb-2" style="color: var(--accent-color);"></i>
-              <h3 class="card-title">On-Demand Support</h3>
-              <p class="card-text">Flexible resources available whenever you need them, for projects or peak periods.</p>
-              <a href="service-model-b.html" class="btn-secondary">Learn More</a>
+          <div class="benefit-item" data-aos="fade-up" data-aos-delay="200">
+            <div class="benefit-icon">
+              <i class="fas fa-chart-line"></i>
             </div>
+            <h3>Scalable Solutions</h3>
+            <p>Flexible support that grows with your business needs, from startup phase through expansion.</p>
           </div>
           
-          <div class="card">
-            <div class="card-body">
-              <i class="fas fa-shield-alt fa-2x mb-2" style="color: var(--accent-color);"></i>
-              <h3 class="card-title">Business Care Plans</h3>
-              <p class="card-text">Comprehensive support packages tailored to your business needs and budget.</p>
-              <a href="service-model-c.html" class="btn-secondary">Learn More</a>
+          <div class="benefit-item" data-aos="fade-up" data-aos-delay="300">
+            <div class="benefit-icon">
+              <i class="fas fa-dollar-sign"></i>
             </div>
+            <h3>Cost Efficiency</h3>
+            <p>Reduce overhead and operational costs while maintaining high-quality service and support.</p>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- STATS SECTION -->
-    <section class="stats-section">
-      <div class="container">
-        <div class="stats-grid">
-          <div class="stat-item">
-            <span class="stat-number">85%</span>
-            <p>Cost Reduction</p>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">24/7</span>
-            <p>Support Availability</p>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">350+</span>
-            <p>Satisfied Clients</p>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">12+</span>
-            <p>Years of Experience</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TESTIMONIAL SECTION -->
-    <section class="testimonial-section">
-      <div class="container">
-        <h2 class="text-center">What Our Clients Say</h2>
-        <div class="testimonial-card">
-          <div class="testimonial-quote">
-            <i class="fas fa-quote-left"></i>
-            <p>Backsure Global has transformed our operations. Their team seamlessly integrated with ours, providing exceptional support while cutting our costs by 40%. I can't imagine running our business without them now.</p>
-          </div>
-          <div class="testimonial-author">
-            <img src="testimonial-avatar.jpg" alt="Client Avatar" class="testimonial-avatar">
-            <div>
-              <h4>Sarah Johnson</h4>
-              <p>COO, Financial Services Inc.</p>
+          
+          <div class="benefit-item" data-aos="fade-up" data-aos-delay="400">
+            <div class="benefit-icon">
+              <i class="fas fa-shield-alt"></i>
             </div>
+            <h3>Reliability & Security</h3>
+            <p>Secure processes and dependable teams you can count on for consistent performance.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CTA BANNER -->
-    <section class="cta-banner">
+    <!-- VISION SECTION -->
+    <section class="vision-section">
+      <div class="vision-overlay"></div>
       <div class="container">
-        <h2>Let's Build Smarter Together</h2>
-        <p class="mb-3">Schedule a free consultation to discover how we can transform your business operations.</p>
-        <a href="contact.html" class="btn-primary">Get in Touch</a>
+        <div class="vision-content" data-aos="fade-up">
+          <h2>Our Vision</h2>
+          <p>To become the preferred global support partner for startups and enterprises across industries.</p>
+          
+          <div class="vision-divider"></div>
+          
+          <h2>Our Mission</h2>
+          <p>To give businesses the freedom to grow by delivering dependable backend support with a human-first approach.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA SECTION -->
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-content" data-aos="fade-up">
+          <h2>There's always a better way</h2>
+          <p>Let's find it together and transform your business operations.</p>
+          <a href="contact.html" class="btn-primary">Contact Us Today</a>
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- FOOTER -->
-  <footer>
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-column">
-          <h4>About Backsure</h4>
-          <p>Backsure Global Support provides comprehensive outsourcing solutions to businesses worldwide, ensuring reliable and efficient operations.</p>
-          <div class="social-icons">
-            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-            <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-          </div>
-        </div>
-        
-        <div class="footer-column">
-          <h4>Our Services</h4>
-          <ul>
-            <li><a href="service-model-a.html">Dedicated Teams</a></li>
-            <li><a href="service-model-b.html">On-Demand Support</a></li>
-            <li><a href="service-model-c.html">Business Care Plans</a></li>
-            <li><a href="solutions.html">Industry Solutions</a></li>
-            <li><a href="case-studies.html">Case Studies</a></li>
-          </ul>
-        </div>
-        
-        <div class="footer-column">
-          <h4>Contact Us</h4>
-          <ul class="contact-info">
-            <li>
-              <i class="fas fa-map-marker-alt"></i>
-              <span>123 Business Avenue<br>Suite 500<br>New York, NY 10001</span>
-            </li>
-            <li>
-              <i class="fas fa-phone-alt"></i>
-              <span><a href="tel:+18005551234">+1 (800) 555-1234</a></span>
-            </li>
-            <li>
-              <i class="fas fa-envelope"></i>
-              <span><a href="mailto:info@backsure.com">info@backsure.com</a></span>
-            </li>
-            <li>
-              <i class="fas fa-clock"></i>
-              <span>24/7 Support Available</span>
-            </li>
-          </ul>
-        </div>
-        
-        <div class="footer-column">
-          <h4>Newsletter</h4>
-          <p>Subscribe to our newsletter for the latest updates and insights.</p>
-          <form class="newsletter-form">
-            <input type="email" placeholder="Your email address" required>
-            <button type="submit" aria-label="Subscribe"><i class="fas fa-paper-plane"></i></button>
-          </form>
-        </div>
-      </div>
-      
-      <div class="footer-bottom">
-        <p>&copy; 2025 Backsure Global Support. All Rights Reserved.</p>
-        <p class="mt-1">
-          <a href="privacy.html">Privacy Policy</a> | 
-          <a href="terms.html">Terms of Service</a> | 
-          <a href="sitemap.html">Sitemap</a>
-        </p>
-      </div>
-    </div>
-  </footer>
+  <!-- Load Footer -->
+  <div id="footer-placeholder"></div>
 
+  <!-- Include JS to load header and footer -->
+  <script src="include.js"></script>
+  
+  <!-- AOS Animation Library -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  
   <!-- JavaScript for interactive elements -->
   <script>
-    // Mobile navigation toggle
     document.addEventListener('DOMContentLoaded', function() {
-      const navToggle = document.getElementById('nav-toggle');
-      const mainNav = document.getElementById('main-nav');
-      
-      if (navToggle && mainNav) {
-        navToggle.addEventListener('click', function() {
-          mainNav.classList.toggle('active');
-        });
-      }
-      
-      // Sticky header
-      const header = document.querySelector('header');
-      window.addEventListener('scroll', function() {
-        if (window.scrollY > 100) {
-          header.classList.add('sticky');
-        } else {
-          header.classList.remove('sticky');
-        }
+      // Initialize AOS animations
+      AOS.init({
+        once: true, // Animation only happens once
+        offset: 100 // Offset (in px) from the original trigger point
       });
     });
   </script>
+
+  <style>
+    /* Home Page Specific Styles */
+    
+    /* Hero Section */
+    .hero-fullwidth {
+      position: relative;
+      height: 85vh;
+      min-height: 600px;
+      background-image: url('hero-bridge.jpg');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .hero-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(6, 39, 103, 0.85) 0%, rgba(6, 39, 103, 0.6) 100%);
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      padding: 0 20px;
+    }
+    
+    .hero-tagline {
+      display: block;
+      font-size: 1.8rem;
+      font-weight: 400;
+      margin-bottom: 10px;
+      color: var(--accent-color);
+    }
+    
+    .company-name {
+      display: block;
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    
+    .hero-description {
+      font-size: 1.8rem;
+      max-width: 600px;
+      margin-bottom: 40px;
+    }
+    
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      background-color: var(--accent-color);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 15px 30px;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-cta i {
+      margin-left: 10px;
+      transition: transform 0.3s ease;
+    }
+    
+    .btn-cta:hover {
+      background-color: #c7a76e;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-cta:hover i {
+      transform: translateX(5px);
+    }
+    
+    /* Approach Section */
+    .approach-section {
+      padding: 80px 0;
+      background-color: white;
+    }
+    
+    .approach-content {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .lead-text {
+      font-size: 1.5rem;
+      line-height: 1.5;
+      color: var(--primary-color);
+      margin-bottom: 25px;
+    }
+    
+    .approach-content p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      color: #444;
+    }
+    
+    .highlighted-text {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      margin-top: 30px;
+    }
+    
+    /* Services Section */
+    .services-section {
+      padding: 0;
+    }
+    
+    .services-background {
+      background-color: var(--primary-color);
+      background-image: url('city-skyline.jpg');
+      background-size: cover;
+      background-position: center;
+      background-blend-mode: multiply;
+      color: white;
+      padding: 80px 0;
+    }
+    
+    .section-title {
+      text-align: center;
+      margin-bottom: 50px;
+      font-size: 2.5rem;
+      color: white;
+      position: relative;
+    }
+    
+    .dark-title {
+      color: var(--primary-color);
+    }
+    
+    .section-title:after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background-color: var(--accent-color);
+    }
+    
+    .services-grid {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .service-card {
+      flex: 1;
+      min-width: 280px;
+      max-width: 350px;
+      background-color: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .service-card:hover {
+      transform: translateY(-10px);
+      background-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .service-image {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid var(--accent-color);
+    }
+    
+    .service-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .service-card h3 {
+      margin-bottom: 15px;
+      font-size: 1.4rem;
+      color: white;
+    }
+    
+    .service-card h3 i {
+      color: var(--accent-color);
+      margin-right: 8px;
+    }
+    
+    .service-card p {
+      margin-bottom: 25px;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .btn-readmore {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: transparent;
+      color: var(--accent-color);
+      border: 1px solid var(--accent-color);
+      text-decoration: none;
+      font-weight: 600;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-readmore:hover {
+      background-color: var(--accent-color);
+      color: white;
+    }
+    
+    /* Benefits Section */
+    .benefits-section {
+      padding: 80px 0;
+      background-color: #f8f9fa;
+    }
+    
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+    }
+    
+    .benefit-item {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s ease;
+    }
+    
+    .benefit-item:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    .benefit-icon {
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 20px;
+      background-color: rgba(6, 39, 103, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .benefit-icon i {
+      font-size: 1.8rem;
+      color: var(--primary-color);
+    }
+    
+    .benefit-item h3 {
+      margin-bottom: 15px;
+      color: var(--primary-color);
+      font-size: 1.3rem;
+    }
+    
+    .benefit-item p {
+      color: #666;
+      line-height: 1.6;
+    }
+    
+    /* Vision Section */
+    .vision-section {
+      position: relative;
+      padding: 100px 0;
+      background-image: url('vision-bg.jpg');
+      background-size: cover;
+      background-position: center;
+      color: white;
+    }
+    
+    .vision-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(6, 39, 103, 0.8);
+    }
+    
+    .vision-content {
+      position: relative;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .vision-content h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: var(--accent-color);
+    }
+    
+    .vision-content p {
+      font-size: 1.3rem;
+      line-height: 1.6;
+      margin-bottom: 0;
+    }
+    
+    .vision-divider {
+      width: 100px;
+      height: 3px;
+      background-color: var(--accent-color);
+      margin: 50px auto;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+      background-color: var(--accent-color);
+      color: white;
+      padding: 80px 0;
+      text-align: center;
+    }
+    
+    .cta-content h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    
+    .cta-content p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+    
+    .btn-primary {
+      display: inline-block;
+      background-color: white;
+      color: var(--accent-color);
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-color);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      .hero-fullwidth {
+        height: 70vh;
+      }
+      
+      .company-name {
+        font-size: 2.8rem;
+      }
+      
+      .hero-tagline {
+        font-size: 1.5rem;
+      }
+      
+      .hero-description {
+        font-size: 1.5rem;
+      }
+      
+      .service-card {
+        min-width: 250px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .hero-fullwidth {
+        height: auto;
+        padding: 120px 0;
+      }
+      
+      .company-name {
+        font-size: 2.2rem;
+      }
+      
+      .hero-tagline {
+        font-size: 1.3rem;
+      }
+      
+      .hero-description {
+        font-size: 1.3rem;
+      }
+      
+      .btn-cta {
+        padding: 12px 25px;
+      }
+      
+      .approach-content p {
+        font-size: 1rem;
+      }
+      
+      .lead-text {
+        font-size: 1.3rem;
+      }
+      
+      .highlighted-text {
+        font-size: 1.1rem;
+      }
+      
+      .vision-content h2 {
+        font-size: 2rem;
+      }
+      
+      .vision-content p {
+        font-size: 1.1rem;
+      }
+      
+      .cta-content h2 {
+        font-size: 2rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .company-name {
+        font-size: 1.8rem;
+      }
+      
+      .hero-tagline {
+        font-size: 1.1rem;
+      }
+      
+      .hero-description {
+        font-size: 1.1rem;
+      }
+      
+      .lead-text {
+        font-size: 1.1rem;
+      }
+      
+      .service-image {
+        width: 150px;
+        height: 150px;
+      }
+      
+      .service-card h3 {
+        font-size: 1.2rem;
+      }
+      
+      .vision-content h2 {
+        font-size: 1.8rem;
+      }
+      
+      .cta-content h2 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</body>
+</html>="brand-logo"><img src="client2.png" alt="Client Logo"></div>
+            <div class="brand-logo"><img src="client3.png" alt="Client Logo"></div>
+            <div class="brand-logo"><img src="client4.png" alt="Client Logo"></div>
+            <div class="brand-logo"><img src="client5.png" alt="Client Logo"></div>
+            <!-- Duplicated for infinite scroll effect -->
+            <div class="brand-logo"><img src="client1.png" alt="Client Logo"></div>
+            <div class="brand-logo"><img src="client2.png" alt="Client Logo"></div>
+            <div class="brand-logo"><img src="client3.png" alt="Client Logo"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA SECTION -->
+    <section class="cta-section">
+      <div class="container">
+        <div class="cta-content" data-aos="fade-up">
+          <h2>There's always a better way</h2>
+          <p>Let's find it together and transform your business operations.</p>
+          <a href="contact.html" class="btn-primary">Contact Us Today</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Load Footer -->
+  <div id="footer-placeholder"></div>
+
+  <!-- Include JS to load header and footer -->
+  <script src="include.js"></script>
+  
+  <!-- AOS Animation Library -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  
+  <!-- JavaScript for interactive elements -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize AOS animations
+      AOS.init({
+        once: true, // Animation only happens once
+        offset: 100 // Offset (in px) from the original trigger point
+      });
+      
+      // Testimonial slider functionality
+      const testimonialCards = document.querySelectorAll('.testimonial-card');
+      const dots = document.querySelectorAll('.dot');
+      const prevBtn = document.querySelector('.prev-btn');
+      const nextBtn = document.querySelector('.next-btn');
+      let currentIndex = 0;
+      
+      function showTestimonial(index) {
+        // Hide all testimonials
+        testimonialCards.forEach(card => card.classList.remove('active'));
+        dots.forEach(dot => dot.classList.remove('active'));
+        
+        // Show the selected testimonial
+        testimonialCards[index].classList.add('active');
+        dots[index].classList.add('active');
+        currentIndex = index;
+      }
+      
+      // Event listeners for navigation
+      if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+          let newIndex = currentIndex - 1;
+          if (newIndex < 0) newIndex = testimonialCards.length - 1;
+          showTestimonial(newIndex);
+        });
+      }
+      
+      if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+          let newIndex = currentIndex + 1;
+          if (newIndex >= testimonialCards.length) newIndex = 0;
+          showTestimonial(newIndex);
+        });
+      }
+      
+      // Dot navigation
+      dots.forEach((dot, index) => {
+        dot.addEventListener('click', function() {
+          showTestimonial(index);
+        });
+      });
+      
+      // Auto-rotate testimonials
+      setInterval(() => {
+        let newIndex = currentIndex + 1;
+        if (newIndex >= testimonialCards.length) newIndex = 0;
+        showTestimonial(newIndex);
+      }, 8000);
+    });
+  </script>
+
+  <style>
+    /* Home Page Specific Styles */
+    
+    /* Hero Section */
+    .hero-fullwidth {
+      position: relative;
+      height: 85vh;
+      min-height: 600px;
+      background-image: url('hero-bridge.jpg');
+      background-size: cover;
+      background-position: center;
+      color: white;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+    }
+    
+    .hero-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to right, rgba(6, 39, 103, 0.85) 0%, rgba(6, 39, 103, 0.6) 100%);
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      padding: 0 20px;
+    }
+    
+    .hero-tagline {
+      display: block;
+      font-size: 1.8rem;
+      font-weight: 400;
+      margin-bottom: 10px;
+      color: var(--accent-color);
+    }
+    
+    .company-name {
+      display: block;
+      font-size: 3.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 20px;
+    }
+    
+    .hero-description {
+      font-size: 1.8rem;
+      max-width: 600px;
+      margin-bottom: 40px;
+    }
+    
+    .btn-cta {
+      display: inline-flex;
+      align-items: center;
+      background-color: var(--accent-color);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 600;
+      padding: 15px 30px;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-cta i {
+      margin-left: 10px;
+      transition: transform 0.3s ease;
+    }
+    
+    .btn-cta:hover {
+      background-color: #c7a76e;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-cta:hover i {
+      transform: translateX(5px);
+    }
+    
+    /* Approach Section */
+    .approach-section {
+      padding: 80px 0;
+      background-color: white;
+    }
+    
+    .approach-content {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .lead-text {
+      font-size: 1.5rem;
+      line-height: 1.5;
+      color: var(--primary-color);
+      margin-bottom: 25px;
+    }
+    
+    .approach-content p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      color: #444;
+    }
+    
+    .highlighted-text {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      margin-top: 30px;
+    }
+    
+    /* Services Section */
+    .services-section {
+      padding: 0;
+    }
+    
+    .services-background {
+      background-color: var(--primary-color);
+      background-image: url('city-skyline.jpg');
+      background-size: cover;
+      background-position: center;
+      background-blend-mode: multiply;
+      color: white;
+      padding: 80px 0;
+    }
+    
+    .section-title {
+      text-align: center;
+      margin-bottom: 50px;
+      font-size: 2.5rem;
+      color: white;
+      position: relative;
+    }
+    
+    .section-title:after {
+      content: '';
+      position: absolute;
+      bottom: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background-color: var(--accent-color);
+    }
+    
+    .services-grid {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    
+    .service-card {
+      flex: 1;
+      min-width: 280px;
+      max-width: 350px;
+      background-color: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .service-card:hover {
+      transform: translateY(-10px);
+      background-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    }
+    
+    .service-image {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 3px solid var(--accent-color);
+    }
+    
+    .service-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .service-card h3 {
+      margin-bottom: 15px;
+      font-size: 1.4rem;
+      color: white;
+    }
+    
+    .service-card h3 i {
+      color: var(--accent-color);
+      margin-right: 8px;
+    }
+    
+    .service-card p {
+      margin-bottom: 25px;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .btn-readmore {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: transparent;
+      color: var(--accent-color);
+      border: 1px solid var(--accent-color);
+      text-decoration: none;
+      font-weight: 600;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-readmore:hover {
+      background-color: var(--accent-color);
+      color: white;
+    }
+    
+    /* Stats Section */
+    .stats-section {
+      background-color: var(--primary-color);
+      padding: 60px 0;
+      color: white;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 30px;
+      text-align: center;
+    }
+    
+    .stat-item {
+      padding: 20px;
+    }
+    
+    .stat-number {
+      display: block;
+      font-size: 3.5rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: var(--accent-color);
+    }
+    
+    .stat-item p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+    }
+    
+    /* Testimonial Section */
+    .testimonial-section {
+      background-color: #f8f9fa;
+      padding: 80px 0;
+    }
+    
+    .testimonial-section .section-title {
+      color: var(--primary-color);
+    }
+    
+    .testimonial-slider {
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .testimonial-card {
+      background-color: white;
+      border-radius: 10px;
+      padding: 40px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    
+    .testimonial-card.active {
+      display: block;
+      opacity: 1;
+    }
+    
+    .testimonial-quote {
+      position: relative;
+      padding-left: 30px;
+      margin-bottom: 30px;
+    }
+    
+    .testimonial-quote i {
+      position: absolute;
+      top: 0;
+      left: 0;
+      color: var(--accent-color);
+      font-size: 1.5rem;
+    }
+    
+    .testimonial-quote p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      font-style: italic;
+    }
+    
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+    }
+    
+    .testimonial-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 15px;
+    }
+    
+    .testimonial-author h4 {
+      margin: 0;
+      color: var(--primary-color);
+      font-size: 1.1rem;
+    }
+    
+    .testimonial-author p {
+      margin: 5px 0 0;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .testimonial-nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 30px;
+    }
+    
+    .prev-btn, .next-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: var(--primary-color);
+      cursor: pointer;
+      padding: 5px;
+      transition: color 0.3s;
+    }
+    
+    .prev-btn:hover, .next-btn:hover {
+      color: var(--accent-color);
+    }
+    
+    .testimonial-dots {
+      display: flex;
+      gap: 8px;
+      margin: 0 15px;
+    }
+    
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background-color: #ddd;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .dot.active {
+      background-color: var(--accent-color);
+      transform: scale(1.2);
+    }
+    
+    /* Brands Section */
+    .brands-section {
+      padding: 60px 0;
+      background-color: white;
+    }
+    
+    .brands-section .section-title {
+      color: var(--primary-color);
+      margin-bottom: 40px;
+    }
+    
+    .brands-slider {
+      overflow: hidden;
+      padding: 20px 0;
+    }
+    
+    .brands-track {
+      display: flex;
+      animation: scrollBrands 20s linear infinite;
+    }
+    
+    .brand-logo {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 100px;
+      margin: 0 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .brand-logo img {
+      max-width: 100%;
+      max-height: 80px;
+      filter: grayscale(100%);
+      opacity: 0.7;
+      transition: all 0.3s;
+    }
+    
+    .brand-logo:hover img {
+      filter: grayscale(0);
+      opacity: 1;
+    }
+    
+    @keyframes scrollBrands {
+      0% {
+        transform: translateX(0);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+    
+    /* CTA Section */
+    .cta-section {
+      background-color: var(--accent-color);
+      color: white;
+      padding: 80px 0;
+      text-align: center;
+    }
+    
+    .cta-content h2 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    
+    .cta-content p {
+      font-size: 1.2rem;
+      max-width: 600px;
+      margin: 0 auto 30px;
+    }
+    
+    .btn-primary {
+      display: inline-block;
+      background-color: white;
+      color: var(--accent-color);
+      padding: 15px 30px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 5px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-color);
+      color: white;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 992px) {
+      .hero-fullwidth {
+        height: 70vh;
+      }
+      
+      .company-name {
+        font-size: 2.8rem;
+      }
+      
+      .hero-tagline {
+        font-size: 1.5rem;
+      }
+      
+      .hero-description {
+        font-size: 1.5rem;
+      }
+      
+      .service-card {
+        min-width: 250px;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .hero-fullwidth {
+        height: auto;
+        padding: 120px 0;
+      }
+      
+      .company-name {
+        font-size: 2.2rem;
+      }
+      
+      .hero-tagline {
+        font-size: 1.3rem;
+      }
+      
+      .hero-description {
+        font-size: 1.3rem;
+      }
+      
+      .btn-cta {
+        padding: 12px 25px;
+      }
+      
+      .approach-content p {
+        font-size: 1rem;
+      }
+      
+      .lead-text {
+        font-size: 1.3rem;
+      }
+      
+      .highlighted-text {
+        font-size: 1.1rem;
+      }
+      
+      .testimonial-card {
+        padding: 30px 20px;
+      }
+      
+      .cta-content h2 {
+        font-size: 2rem;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      .company-name {
+        font-size: 1.8rem;
+      }
+      
+      .hero-tagline {
+        font-size: 1.1rem;
+      }
+      
+      .hero-description {
+        font-size: 1.1rem;
+      }
+      
+      .lead-text {
+        font-size: 1.1rem;
+      }
+      
+      .service-image {
+        width: 150px;
+        height: 150px;
+      }
+      
+      .service-card h3 {
+        font-size: 1.2rem;
+      }
+      
+      .stat-number {
+        font-size: 2.5rem;
+      }
+      
+      .cta-content h2 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
 </body>
 </html>
