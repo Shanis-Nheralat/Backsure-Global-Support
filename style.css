@@ -1680,3 +1680,14 @@ footer {
   .stats-cards {
     grid-template-columns: 1fr;
   }
+ .admin-link {
+  color: #ccc;
+  font-size: 0.8rem;
+  text-decoration: none;
+  margin-top: 20px;
+  display: inline-block;
+}
+
+.admin-link:hover {
+  color: #999;
+}
