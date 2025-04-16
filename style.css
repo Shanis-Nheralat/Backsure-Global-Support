@@ -1759,4 +1759,173 @@ footer {
   .contact-icon {
     font-size: 2rem;
   }
+  /* Solution Page Specific Styles */
+.solution-detail {
+  padding: 60px 0;
+}
+
+.solution-intro {
+  max-width: 900px;
+  margin: 0 auto 40px;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  text-align: center;
+}
+
+.solution-detail h2 {
+  color: var(--primary-color);
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 1.8rem;
+}
+
+/* Key Services Cards */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-bottom: 60px;
+}
+
+.service-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 30px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.service-icon {
+  font-size: 2.5rem;
+  color: var(--accent-color);
+  margin-bottom: 20px;
+  height: 60px;
+  width: 60px;
+  background-color: rgba(177, 151, 99, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.service-card h3 {
+  margin-bottom: 15px;
+  color: var(--primary-color);
+  font-size: 1.3rem;
+}
+
+.service-card p {
+  color: #555;
+  line-height: 1.6;
+}
+
+/* Benefits Section */
+.benefits-section {
+  background-color: #f9f9f9;
+  padding: 50px;
+  border-radius: 10px;
+  margin-bottom: 60px;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.benefit-icon {
+  color: var(--accent-color);
+  font-size: 1.8rem;
+  background-color: rgba(177, 151, 99, 0.1);
+  padding: 15px;
+  border-radius: 50%;
+  min-width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.benefit-content h3 {
+  color: var(--primary-color);
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.benefit-content p {
+  color: #555;
+  line-height: 1.6;
+}
+
+/* CTA Box */
+.cta-box {
+  background-color: var(--primary-color);
+  padding: 50px;
+  border-radius: 10px;
+  text-align: center;
+  color: white;
+}
+
+.cta-box h2 {
+  color: white;
+  margin-bottom: 20px;
+}
+
+.cta-box p {
+  margin-bottom: 30px;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 1.1rem;
+}
+
+.cta-box .btn-primary {
+  background-color: var(--accent-color);
+  padding: 12px 28px;
+  font-size: 1.1rem;
+}
+
+.cta-box .btn-primary:hover {
+  background-color: var(--accent-color-dark);
+  transform: translateY(-3px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .solution-detail {
+    padding: 40px 0;
+  }
+  
+  .solution-intro {
+    font-size: 1rem;
+    text-align: left;
+  }
+  
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .benefits-section {
+    padding: 30px;
+  }
+  
+  .benefits-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .cta-box {
+    padding: 30px;
+  }
+}
 }
