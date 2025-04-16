@@ -6,7 +6,9 @@
     </a>
 
     <!-- Hamburger Toggle for Mobile -->
-    <span id="nav-toggle" class="nav-toggle"><i class="fas fa-bars"></i></span>
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation menu">
+      <i class="fas fa-bars"></i>
+    </button>
 
     <!-- Navigation -->
     <nav class="main-nav">
@@ -14,7 +16,7 @@
         <li><a href="index.html">Home</a></li>
 
         <li class="dropdown">
-          <a href="#">Services <i class="fas fa-chevron-down"></i></a>
+          <a href="javascript:void(0)" class="dropdown-toggle">Services <i class="fas fa-chevron-down"></i></a>
           <ul class="dropdown-menu">
             <li><a href="service-model-a.html">Dedicated Teams</a></li>
             <li><a href="service-model-b.html">On-Demand Support</a></li>
@@ -23,7 +25,7 @@
         </li>
 
         <li class="dropdown">
-          <a href="#">Solutions <i class="fas fa-chevron-down"></i></a>
+          <a href="javascript:void(0)" class="dropdown-toggle">Solutions <i class="fas fa-chevron-down"></i></a>
           <ul class="dropdown-menu">
             <li><a href="solution-a.html">Insurance</a></li>
             <li><a href="solution-b.html">Finance & Accounting</a></li>
@@ -33,7 +35,7 @@
         </li>
 
         <li class="dropdown">
-          <a href="#">About Us <i class="fas fa-chevron-down"></i></a>
+          <a href="javascript:void(0)" class="dropdown-toggle">About Us <i class="fas fa-chevron-down"></i></a>
           <ul class="dropdown-menu">
             <li><a href="about.html">About Us</a></li>
             <li><a href="team.html">Team</a></li>
@@ -44,6 +46,7 @@
         </li>
 
         <li><a href="contact.html" class="contact-btn">Contact Us</a></li>
+        <li><a href="login.html" class="login-btn">Login</a></li>
       </ul>
     </nav>
   </div>
@@ -65,6 +68,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative;
   }
 
   .logo-container {
@@ -170,12 +174,32 @@
     transform: translateY(-2px);
   }
 
+  /* Login Button */
+  .login-btn {
+    background-color: transparent;
+    color: white;
+    border: 1px solid var(--accent-color);
+    border-radius: 4px;
+    padding: 8px 15px;
+    margin-left: 10px;
+    transition: all 0.3s ease;
+  }
+
+  .login-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--accent-color);
+    transform: translateY(-2px);
+  }
+
   /* Mobile Navigation */
   .nav-toggle {
     display: none;
     font-size: 24px;
     cursor: pointer;
     color: white;
+    background: none;
+    border: none;
+    padding: 5px 10px;
   }
 
   /* Responsive */
@@ -192,8 +216,13 @@
       background-color: var(--primary-color);
       padding: 0;
       box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
-      clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
-      transition: clip-path 0.4s ease-in-out;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease-in-out;
+    }
+
+    .main-nav.active {
+      max-height: 1000px; /* Large enough to fit all menu items */
     }
 
     .navbar {
@@ -220,6 +249,14 @@
       display: none;
       width: 100%;
       border-radius: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in-out;
+    }
+
+    .dropdown.active .dropdown-menu {
+      display: block;
+      max-height: 500px; /* Large enough to accommodate all submenu items */
     }
 
     .dropdown-menu a {
@@ -228,18 +265,14 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .dropdown.active .dropdown-menu {
+    .contact-btn, .login-btn {
+      margin: 10px 20px;
+      text-align: center;
       display: block;
     }
 
-    .contact-btn {
-      margin: 10px 20px;
-      text-align: center;
-    }
-
-    /* Show nav when active */
-    .main-nav.active {
-      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    .login-btn {
+      margin-top: 5px;
     }
   }
 </style>
@@ -250,22 +283,58 @@
     const navToggle = document.getElementById('nav-toggle');
     const mainNav = document.querySelector('.main-nav');
     
-    navToggle.addEventListener('click', function() {
-      mainNav.classList.toggle('active');
-    });
-    
-    // Handle dropdowns on mobile
-    if (window.innerWidth <= 992) {
-      const dropdowns = document.querySelectorAll('.dropdown');
-      
-      dropdowns.forEach(dropdown => {
-        const link = dropdown.querySelector('a');
-        
-        link.addEventListener('click', function(e) {
-          e.preventDefault();
-          dropdown.classList.toggle('active');
-        });
+    if (navToggle) {
+      navToggle.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        mainNav.classList.toggle('active');
       });
     }
+    
+    // Handle dropdowns 
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    
+    dropdownToggles.forEach(toggle => {
+      toggle.addEventListener('click', function(e) {
+        if (window.innerWidth <= 992) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const parent = this.parentElement;
+          
+          // Close other open dropdowns
+          document.querySelectorAll('.dropdown.active').forEach(dropdown => {
+            if (dropdown !== parent) {
+              dropdown.classList.remove('active');
+            }
+          });
+          
+          // Toggle current dropdown
+          parent.classList.toggle('active');
+        }
+      });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.main-nav') && !e.target.closest('#nav-toggle')) {
+        mainNav.classList.remove('active');
+        
+        document.querySelectorAll('.dropdown.active').forEach(dropdown => {
+          dropdown.classList.remove('active');
+        });
+      }
+    });
+    
+    // Close menu on window resize (if switching from mobile to desktop)
+    window.addEventListener('resize', function() {
+      if (window.innerWidth > 992) {
+        mainNav.classList.remove('active');
+        
+        document.querySelectorAll('.dropdown.active').forEach(dropdown => {
+          dropdown.classList.remove('active');
+        });
+      }
+    });
   });
 </script>
