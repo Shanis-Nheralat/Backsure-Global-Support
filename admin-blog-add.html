@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow">
+  <title>Add New Blog Post | Backsure Global Support</title>
+  <link rel="stylesheet" href="admin/css/admin-style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <!-- Quill editor CSS -->
+  <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+  <!-- Datepicker CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body class="admin-body">
+  <div class="admin-container">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <!-- Sidebar content will be loaded via JavaScript -->
+    </aside>
+    
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      <!-- Top Navigation Bar -->
+      <header class="admin-header">
+        <div class="header-left">
+          <button id="sidebar-toggle" class="sidebar-toggle">
+            <i class="fas fa-bars"></i>
+          </button>
+          <div class="breadcrumbs">
+            <a href="admin-dashboard.html">Dashboard</a> &gt;
+            <a href="admin-blog.html">Blog Management</a> &gt;
+            <span>Add New Post</span>
+          </div>
+        </div>
+        
+        <div class="header-right">
+          <div class="admin-search">
+            <input type="text" placeholder="Search...">
+            <button type="submit">
+              <i class="fas fa-search"></i>
+            </button>
+          </div>
+          
+          <div class="header-actions">
+            <button class="action-btn notification-btn">
+              <i class="fas fa-bell"></i>
+              <span class="badge">5</span>
+            </button>
+            
+            <button class="action-btn task-btn">
+              <i class="fas fa-check-circle"></i>
+              <span class="badge">2</span>
+            </button>
+            
+            <button class="action-btn help-btn">
+              <i class="fas fa-question-circle"></i>
+            </button>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Blog Post Editor Content -->
+      <div class="admin-content">
+        <div class="page-header">
+          <h1>Add New Blog Post</h1>
+          <div class="header-actions">
+            <button id="save-draft" class="btn-secondary">
+              <i class="fas fa-save"></i> Save Draft
+            </button>
+            <button id="preview-post" class="btn-secondary">
+              <i class="fas fa-eye"></i> Preview
+            </button>
+            <button id="publish-post" class="btn-primary">
+              <i class="fas fa-paper-plane"></i> Publish
+            </button>
+          </div>
+        </div>
+        
+        <div class="blog-editor-container">
+          <!-- Main Editor Area -->
+          <div class="editor-main">
+            <!-- Post Title Input -->
+            <div class="post-title-input">
+              <input type="text" id="post-title" placeholder="Enter post title...">
+            </div>
+            
+            <!-- Post URL Preview -->
+            <div class="post-url-preview">
+              <span class="url-label">Permalink:</span>
+              <span class="base-url">https://backsureglobalsupport.com/blog/</span>
+              <span class="editable-slug" id="post-slug" contenteditable="true">post-title</span>
+              <button class="edit-btn" title="Edit URL">
+                <i class="fas fa-pencil-alt"></i>
+              </button>
+            </div>
+            
+            <!-- Rich Text Editor -->
+            <div class="editor-container">
+              <div id="editor-toolbar">
+                <select class="ql-header">
+                  <option value="">Normal</option>
+                  <option value="2">Heading 2</option>
+                  <option value="3">Heading 3</option>
+                  <option value="4">Heading 4</option>
+                </select>
+                <button class="ql-bold"></button>
+                <button class="ql-italic"></button>
+                <button class="ql-underline"></button>
+                <button class="ql-strike"></button>
+                <button class="ql-link"></button>
+                <button class="ql-image"></button>
+                <button class="ql-blockquote"></button>
+                <button class="ql-code-block"></button>
+                <button class="ql-list" value="ordered"></button>
+                <button class="ql-list" value="bullet"></button>
+                <button class="ql-indent" value="-1"></button>
+                <button class="ql-indent" value="+1"></button>
+                <select class="ql-align">
+                  <option selected></option>
+                  <option value="center"></option>
+                  <option value="right"></option>
+                  <option value="justify"></option>
+                </select>
+                <select class="ql-color">
+                  <option value="black" selected></option>
+                  <option value="#062767"></option>
+                  <option value="#b19763"></option>
+                  <option value="#1cc88a"></option>
+                  <option value="#e74c3c"></option>
+                </select>
+                <button class="ql-clean"></button>
+              </div>
+              <div id="editor-content"></div>
+            </div>
+            
+            <!-- Excerpt Editor -->
+            <div class="excerpt-container">
+              <h3>Excerpt</h3>
+              <p class="field-description">Write a brief summary of the post. This will be displayed in blog listings and search results.</p>
+              <textarea id="post-excerpt" rows="3" placeholder="Enter post excerpt..."></textarea>
+              <div class="character-count">
+                <span id="excerpt-characters">0</span>/160 characters
+              </div>
+            </div>
+          </div>
+          
+          <!-- Sidebar Options -->
+          <div class="editor-sidebar">
+            <!-- Publish Options -->
+            <div class="sidebar-widget">
+              <div class="widget-header">
+                <h3>Publish</h3>
+              </div>
+              <div class="widget-content">
+                <div class="form-group">
+                  <label>Status:</label>
+                  <select id="post-status">
+                    <option value="draft">Draft</option>
+                    <option value="published">Published</option>
+                    <option value="scheduled">Scheduled</option>
+                  </select>
+                </div>
+                
+                <div class="form-group scheduled-options" style="display: none;">
+                  <label>Publish Date:</label>
+                  <input type="text" id="publish-date" placeholder="Select Date & Time">
+                </div>
+                
+                <div class="form-group">
+                  <label>Visibility:</label>
+                  <select id="post-visibility">
+                    <option value="public">Public</option>
+                    <option value="password">Password Protected</option>
+                    <option value="private">Private</option>
+                  </select>
+                </div>
+                
+                <div class="form-group password-field" style="display: none;">
+                  <label>Password:</label>
+                  <input type="password" id="post-password">
+                </div>
+                
+                <div class="form-actions">
+                  <button id="save-draft-sidebar" class="btn-default">
+                    <i class="fas fa-save"></i> Save Draft
+                  </button>
+                  <button id="publish-post-sidebar" class="btn-primary">
+                    <i class="fas fa-paper-plane"></i> Publish
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Categories -->
+            <div class="sidebar-widget">
+              <div class="widget-header">
+                <h3>Categories</h3>
+              </div>
+              <div class="widget-content">
+                <div class="category-list">
+                  <div class="checkbox-group">
+                    <input type="checkbox" id="cat-business" name="category[]" value="business-growth">
+                    <label for="cat-business">Business Growth</label>
+                  </div>
+                  <div class="checkbox-group">
+                    <input type="checkbox" id="cat-outsourcing" name="category[]" value="outsourcing">
+                    <label for="cat-outsourcing">Outsourcing Tips</label>
+                  </div>
+                  <div class="checkbox-group">
+                    <input type="checkbox" id="cat-hr" name="category[]" value="hr-management">
+                    <label for="cat-hr">HR Management</label>
+                  </div>
+                  <div class="checkbox-group">
+                    <input type="checkbox" id="cat-finance" name="category[]" value="finance">
+                    <label for="cat-finance">Finance & Accounting</label>
+                  </div>
+                  <div class="checkbox-group">
+                    <input type="checkbox" id="cat-insurance" name="category[]" value="insurance">
+                    <label for="cat-insurance">Insurance Updates</label>
+                  </div>
+                  <div class="checkbox-group">
+                    <input type="checkbox" id="cat-compliance" name="category[]" value="compliance">
+                    <label for="cat-compliance">Compliance & Admin</label>
+                  </div>
+                </div>
+                <div class="add-new-category">
+                  <button id="add-category-btn" class="btn-default">
+                    <i class="fas fa-plus"></i> Add New Category
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Tags -->
+            <div class="sidebar-widget">
+              <div class="widget-header">
+                <h3>Tags</h3>
+              </div>
+              <div class="widget-content">
+                <div class="form-group">
+                  <input type="text" id="post-tags" placeholder="Add tags, separated by commas...">
+                </div>
+                <div class="tags-cloud">
+                  <span class="tag-suggestion">outsourcing</span>
+                  <span class="tag-suggestion">business growth</span>
+                  <span class="tag-suggestion">finance</span>
+                  <span class="tag-suggestion">HR</span>
+                  <span class="tag-suggestion">remote work</span>
+                  <span class="tag-suggestion">UAE</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Featured Image -->
+            <div class="sidebar-widget">
+              <div class="widget-header">
+                <h3>Featured Image</h3>
+              </div>
+              <div class="widget-content">
+                <div class="featured-image-preview" id="featured-image-container">
+                  <div class="upload-placeholder" id="image-placeholder">
+                    <i class="fas fa-image"></i>
+                    <span>Set featured image</span>
+                  </div>
+                  <img id="featured-image-preview" style="display: none;">
+                </div>
+                <div class="form-actions">
+                  <button id="upload-image-btn" class="btn-default">
+                    <i class="fas fa-upload"></i> Upload Image
+                  </button>
+                  <button id="remove-image-btn" class="btn-default" style="display: none;">
+                    <i class="fas fa-trash"></i> Remove Image
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- SEO Settings -->
+            <div class="sidebar-widget">
+              <div class="widget-header">
+                <h3>SEO Settings</h3>
+              </div>
+              <div class="widget-content">
+                <div class="form-group">
+                  <label for="meta-title">Meta Title:</label>
+                  <input type="text" id="meta-title" placeholder="SEO Title">
+                  <div class="character-count">
+                    <span id="title-characters">0</span>/60 characters
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="meta-description">Meta Description:</label>
+                  <textarea id="meta-description" rows="3" placeholder="SEO Description"></textarea>
+                  <div class="character-count">
+                    <span id="description-characters">0</span>/160 characters
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="meta-keywords">Meta Keywords (comma separated):</label>
+                  <input type="text" id="meta-keywords" placeholder="keyword1, keyword2, ...">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Admin Footer -->
+      <footer class="admin-footer">
+        <div class="footer-left">
+          <p>&copy; 2025 Backsure Global Support. All rights reserved.</p>
+        </div>
+        <div class="footer-right">
+          <span>Admin Panel v1.0</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+  
+  <!-- Category Modal -->
+  <div class="modal" id="category-modal">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Add New Category</h3>
+          <button class="close-modal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="category-name">Category Name:</label>
+            <input type="text" id="category-name" placeholder="Enter category name">
+          </div>
+          <div class="form-group">
+            <label for="category-slug">Slug (URL-friendly version):</label>
+            <input type="text" id="category-slug" placeholder="Enter category slug">
+          </div>
+          <div class="form-group">
+            <label for="parent-category">Parent Category (optional):</label>
+            <select id="parent-category">
+              <option value="">None</option>
+              <option value="business-growth">Business Growth</option>
+              <option value="outsourcing">Outsourcing Tips</option>
+              <option value="hr-management">HR Management</option>
+              <option value="finance">Finance & Accounting</option>
+              <option value="insurance">Insurance Updates</option>
+              <option value="compliance">Compliance & Admin</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="category-description">Description (optional):</label>
+            <textarea id="category-description" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="cancel-category">Cancel</button>
+          <button class="btn-primary" id="add-category">Add Category</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Media Library Modal -->
+  <div class="modal" id="media-modal">
+    <div class="modal-dialog large">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Media Library</h3>
+          <button class="close-modal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="media-tabs">
+            <button class="tab-btn active" data-tab="media-library">Media Library</button>
+            <button class="tab-btn" data-tab="upload-media">Upload Files</button>
+          </div>
+          
+          <div class="tab-content active" id="media-library">
+            <div class="media-filter">
+              <div class="search-box">
+                <input type="text" placeholder="Search media...">
+                <button type="button">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+              <select id="media-filter-type">
+                <option value="all">All Media Items</option>
+                <option value="image">Images</option>
+                <option value="document">Documents</option>
+                <option value="video">Video</option>
+                <option value="audio">Audio</option>
+              </select>
+              <select id="media-filter-date">
+                <option value="all">All Dates</option>
+                <option value="current-month">Current Month</option>
+                <option value="prev-month">Previous Month</option>
+                <option value="current-year">Current Year</option>
+              </select>
+            </div>
+            
+            <div class="media-grid">
+              <!-- Sample Media Items -->
+              <div class="media-item" data-type="image">
+                <div class="media-preview">
+                  <img src="images/blog/placeholder-1.jpg" alt="Media Item">
+                </div>
+                <div class="media-info">
+                  <h4 class="media-title">placeholder-1.jpg</h4>
+                  <span class="media-date">April 15, 2025</span>
+                </div>
+              </div>
+              
+              <div class="media-item" data-type="image">
+                <div class="media-preview">
+                  <img src="images/blog/placeholder-2.jpg" alt="Media Item">
+                </div>
+                <div class="media-info">
+                  <h4 class="media-title">placeholder-2.jpg</h4>
+                  <span class="media-date">April 12, 2025</span>
+                </div>
+              </div>
+              
+              <div class="media-item" data-type="image">
+                <div class="media-preview">
+                  <img src="images/blog/placeholder-3.jpg" alt="Media Item">
+                </div>
+                <div class="media-info">
+                  <h4 class="media-title">placeholder-3.jpg</h4>
+                  <span class="media-date">April 10, 2025</span>
+                </div>
+              </div>
+              
+              <div class="media-item" data-type="document">
+                <div class="media-preview document">
+                  <i class="fas fa-file-pdf"></i>
+                </div>
+                <div class="media-info">
+                  <h4 class="media-title">annual-report.pdf</h4>
+                  <span class="media-date">April 5, 2025</span>
+                </div>
+              </div>
+              
+              <div class="media-item" data-type="image">
+                <div class="media-preview">
+                  <img src="images/blog/placeholder-4.jpg" alt="Media Item">
+                </div>
+                <div class="media-info">
+                  <h4 class="media-title">placeholder-4.jpg</h4>
+                  <span class="media-date">April 1, 2025</span>
+                </div>
+              </div>
+              
+              <div class="media-item" data-type="document">
+                <div class="media-preview document">
+                  <i class="fas fa-file-word"></i>
+                </div>
+                <div class="media-info">
+                  <h4 class="media-title">guidelines.docx</h4>
+                  <span class="media-date">March 28, 2025</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="media-selection">
+              <button class="btn-primary" id="select-media">Set Featured Image</button>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="upload-media">
+            <div class="upload-container">
+              <div class="upload-area" id="upload-dropzone">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Drop files here to upload</h3>
+                <p>or</p>
+                <button class="btn-secondary" id="select-files">Select Files</button>
+                <input type="file" id="file-input" multiple style="display: none;">
+              </div>
+              
+              <div class="upload-progress" style="display: none;">
+                <div class="files-list" id="upload-files-list">
+                  <!-- Upload progress will be shown here -->
+                </div>
+                <div class="upload-actions">
+                  <button class="btn-primary" id="upload-all">Upload All</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- JavaScript for Admin Dashboard -->
+  <script src="admin/js/admin.js"></script>
+  <!-- Quill Editor -->
+  <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
+  <!-- Flatpickr for Date Picking -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Load sidebar content
+      const sidebar = document.querySelector('.admin-sidebar');
+      fetch('admin-sidebar.html')
+        .then(response => response.text())
+        .then(data => {
+          sidebar.innerHTML = data;
+          
+          // Highlight active menu item
+          const blogMenuItem = document.querySelector('.sidebar-nav a[href="admin-blog.html"]');
+          if (blogMenuItem) {
+            const parentMenu = blogMenuItem.closest('.has-submenu');
+            if (parentMenu) {
+              parentMenu.classList.add('open');
+              const submenu = parentMenu.querySelector('.submenu');
+              submenu.style.maxHeight = submenu.scrollHeight + 'px';
+            }
+          }
+          
+          // Initialize sidebar toggle
+          const sidebarToggle = document.getElementById('sidebar-toggle');
+          const adminContainer = document.querySelector('.admin-container');
+          
+          sidebarToggle.addEventListener('click', function() {
+            adminContainer.classList.toggle('sidebar-collapsed');
+          });
+          
+          // Initialize submenu toggles
+          initializeSubmenus();
+        })
+        .catch(error => console.error('Error loading sidebar:', error));
+      
+      // Initialize Quill Editor
+      const quill = new Quill('#editor-content', {
+        theme: 'snow',
+        modules: {
+          toolbar: '#editor-toolbar'
+        },
+        placeholder: 'Write your post content here...'
+      });
+      
+      // Initialize Flatpickr
+      flatpickr("#publish-date", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        minDate: "today"
+      });
+      
+      // Post Status Change Handler
+      const postStatus = document.getElementById('post-status');
+      const scheduledOptions = document.querySelector('.scheduled-options');
+      
+      postStatus.addEventListener('change', function() {
+        if (this.value === 'scheduled') {
+          scheduledOptions.style.display = 'block';
+        } else {
+          scheduledOptions.style.display = 'none';
+        }
+      });
+      
+      // Post Visibility Change Handler
+      const postVisibility = document.getElementById('post-visibility');
+      const passwordField = document.querySelector('.password-field');
+      
+      postVisibility.addEventListener('change', function() {
+        if (this.value === 'password') {
+          passwordField.style.display = 'block';
+        } else {
+          passwordField.style.display = 'none';
+        }
+      });
+      
+      // Character Count for Excerpt
+      const postExcerpt = document.getElementById('post-excerpt');
+      const excerptCharacters = document.getElementById('excerpt-characters');
+      
+      postExcerpt.addEventListener('input', function() {
+        excerptCharacters.textContent = this.value.length;
+      });
+      
+      // Character Count for Meta Title and Description
+      const metaTitle = document.getElementById('meta-title');
+      const titleCharacters = document.getElementById('title-characters');
+      
+      metaTitle.addEventListener('input', function() {
+        titleCharacters.textContent = this.value.length;
+      });
+      
+      const metaDescription = document.getElementById('meta-description');
+      const descriptionCharacters = document.getElementById('description-characters');
+      
+      metaDescription.addEventListener('input', function() {
+        descriptionCharacters.textContent = this.value.length;
+      });
+      
+      // URL Slug Generation
+      const postTitle = document.getElementById('post-title');
+      const postSlug = document.getElementById('post-slug');
+      
+      postTitle.addEventListener('input', function() {
+        if (postSlug.textContent === 'post-title' || postSlug.textContent === '') {
+          postSlug.textContent = generateSlug(this.value);
+        }
+      });
+      
+      function generateSlug(text) {
+        return text
+          .toLowerCase()
+          .replace(/[^\w\s-]/g, '')  // Remove special characters
+          .replace(/\s+/g, '-')      // Replace spaces with hyphens
+          .replace(/-+/g, '-')       // Replace multiple hyphens with a single one
+          .trim();                    // Trim leading/trailing whitespace
+      }
+      
+      // Featured Image Handling
+      const uploadImageBtn = document.getElementById('upload-image-btn');
+      const removeImageBtn = document.getElementById('remove-image-btn');
+      const imagePlaceholder = document.getElementById('image-placeholder');
+      const featuredImagePreview = document.getElementById('featured-image-preview');
+      
+      uploadImageBtn.addEventListener('click', function() {
+        // Open the media modal
+        document.getElementById('media-modal').style.display = 'flex';
+      });
+      
+      removeImageBtn.addEventListener('click', function() {
+        // Remove the featured image
+        featuredImagePreview.style.display = 'none';
+        imagePlaceholder.style.display = 'flex';
+        removeImageBtn.style.display = 'none';
+      });
+      
+      // Media Modal Handling
+      const mediaModal = document.getElementById('media-modal');
+      const closeModalButtons = document.querySelectorAll('.close-modal');
+      const mediaItems = document.querySelectorAll('.media-item');
+      const selectMediaBtn = document.getElementById('select-media');
+      
+      closeModalButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // Close the parent modal
+          this.closest('.modal').style.display = 'none';
+        });
+      });
+      
+      // Select media item on click
+      let selectedMediaItem = null;
+      
+      mediaItems.forEach(item => {
+        item.addEventListener('click', function() {
+          // Remove selection from all items
+          mediaItems.forEach(i => i.classList.remove('selected'));
+          
+          // Add selection to clicked item
+          this.classList.add('selected');
+          selectedMediaItem = this;
+        });
+      });
+      
+      // Set featured image from media library
+      selectMediaBtn.addEventListener('click', function() {
+        if (selectedMediaItem) {
+          const imgSrc = selectedMediaItem.querySelector('img').src;
+          
+          // Set the preview image
+          featuredImagePreview.src = imgSrc;
+          featuredImagePreview.style.display = 'block';
+          imagePlaceholder.style.display = 'none';
+          removeImageBtn.style.display = 'inline-block';
+          
+          // Close the modal
+          mediaModal.style.display = 'none';
+        }
+      });
+      
+      // Media Tab Switching
+      const mediaTabs = document.querySelectorAll('.media-tabs .tab-btn');
+      const mediaTabContents = document.querySelectorAll('.modal .tab-content');
+      
+      mediaTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remove active class from all tabs and contents
+          mediaTabs.forEach(t => t.classList.remove('active'));
+          mediaTabContents.forEach(c => c.classList.remove('active'));
+          
+          // Add active class to clicked tab and corresponding content
+          this.classList.add('active');
+          const tabId = this.getAttribute('data-tab');
+          document.getElementById(tabId).classList.add('active');
+        });
+      });
+      
+      // File Upload Handling
+      const uploadDropzone = document.getElementById('upload-dropzone');
+      const fileInput = document.getElementById('file-input');
+      const selectFilesBtn = document.getElementById('select-files');
+      
+      selectFilesBtn.addEventListener('click', function() {
+        fileInput.click();
+      });
+      
+      fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          showUploadProgress(this.files);
+        }
+      });
+      
+      uploadDropzone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+      });
+      
+      uploadDropzone.addEventListener('dragleave', function() {
+        this.classList.remove('dragover');
+      });
+      
+      uploadDropzone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        
+        if (e.dataTransfer.files.length > 0) {
+          showUploadProgress(e.dataTransfer.files);
+        }
+      });
+      
+      function showUploadProgress(files) {
+        const uploadProgress = document.querySelector('.upload-progress');
+        const filesList = document.getElementById('upload-files-list');
+        
+        // Show upload progress area
+        uploadProgress.style.display = 'block';
+        filesList.innerHTML = '';
+        
+        // Create file list items
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const fileItem = document.createElement('div');
+          fileItem.className = 'file-item';
+          
+          const fileIcon = getFileIcon(file.type);
+          
+          fileItem.innerHTML = `
+            <div class="file-info">
+              <div class="file-icon">${fileIcon}</div>
+              <div class="file-details">
+                <div class="file-name">${file.name}</div>
+                <div class="file-size">${formatFileSize(file.size)}</div>
+              </div>
+            </div>
+            <div class="file-progress">
+              <div
