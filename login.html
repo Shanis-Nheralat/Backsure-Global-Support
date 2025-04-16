@@ -3,47 +3,58 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Client Portal | BSG Support</title>
+  <title>Login | Backsure Global Support</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
 <body>
-  <header>
-    <div class="container">
-      <h1 class="logo">BSG Support</h1>
-      <nav>
-        <ul>
-          <li><a href="index.html">Home</a></li>
-          <li><a href="login.html" class="active">Client Portal</a></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+  <!-- Load Header -->
+  <div id="header-placeholder"></div>
 
-  <section class="login-section">
-    <div class="container">
-      <h2>Client Portal</h2>
-      <p>Welcome to the BSG Support Client Portal. Please log in below to access your dashboard and tools.</p>
-
-      <div class="login-box">
-        <form action="#" method="POST">
-          <label for="username">Username</label>
-          <input type="text" id="username" name="username" required />
-
-          <label for="password">Password</label>
-          <input type="password" id="password" name="password" required />
-
-          <button type="submit">Log In</button>
-        </form>
-
-        <p class="note">Note: This is a placeholder. Integration with a secure platform like your ERP will be added later.</p>
+  <main id="main-content">
+    <section class="login-section">
+      <div class="container">
+        <div class="login-container">
+          <div class="login-form">
+            <h2>Login</h2>
+            <p>Access your account dashboard</p>
+            
+            <form id="login-form">
+              <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-with-icon">
+                  <i class="fas fa-user"></i>
+                  <input type="text" id="username" name="username" required placeholder="Enter your username">
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-with-icon">
+                  <i class="fas fa-lock"></i>
+                  <input type="password" id="password" name="password" required placeholder="Enter your password">
+                </div>
+              </div>
+              
+              <div class="error-message" id="error-message"></div>
+              
+              <button type="submit" class="btn-primary">
+                Login <i class="fas fa-arrow-right"></i>
+              </button>
+            </form>
+          </div>
+        </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </main>
 
-  <footer>
-    <div class="container">
-      <p>© 2025 BSG Support. All rights reserved.</p>
-    </div>
-  </footer>
+  <!-- Footer Placeholder -->
+  <div id="footer-placeholder"></div>
+
+  <!-- Include JS -->
+  <script src="include.js"></script>
+  <script src="js/login.js"></script>
 </body>
 </html>
