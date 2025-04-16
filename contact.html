@@ -90,7 +90,7 @@
               If you're looking for a long-term, committed outsourcing partner who understands your business, let's build it together.
             </p>
             
-            <form class="contact-form" id="general-inquiry-form" action="/submit-form.php" method="POST">
+            <form class="contact-form" id="general-inquiry-form" action="submit-form.php" method="POST">
               <input type="hidden" name="form_type" value="general_inquiry">
               
               <div class="form-group">
@@ -138,7 +138,7 @@
               Book a time with our specialists to discuss your business needs and how we can support your growth.
             </p>
             
-            <form class="contact-form meeting-form" id="meeting-form" action="/submit-form.php" method="POST">
+            <form class="contact-form meeting-form" id="meeting-form" action="submit-form.php" method="POST">
               <input type="hidden" name="form_type" value="meeting_request">
               
               <div class="form-section">
@@ -213,15 +213,15 @@
                   <label>Which service or services are you interested in?</label>
                   <div class="checkbox-grid">
                     <div class="checkbox-container">
-                      <input type="checkbox" id="service-sales" name="services[]" value="Dedicated sales support" />
+                      <input type="checkbox" id="service-sales" name="services[]" value="Dedicated Employee Support" />
                       <label for="service-sales">Dedicated Employee Support</label>
                     </div>
                     <div class="checkbox-container">
-                      <input type="checkbox" id="service-data" name="services[]" value="Comprehensive data entry solutions" />
+                      <input type="checkbox" id="service-data" name="services[]" value="On-Demand Service Support" />
                       <label for="service-data">On-Demand Service Support</label>
                     </div>
                     <div class="checkbox-container">
-                      <input type="checkbox" id="service-backend" name="services[]" value="Reliable backend support" />
+                      <input type="checkbox" id="service-backend" name="services[]" value="Business Care Plans" />
                       <label for="service-backend">Business Care Plans</label>
                     </div>
                   </div>
@@ -246,7 +246,7 @@
               Fill out this brief intake form to help us understand your specific needs and better prepare our solutions for you.
             </p>
             
-            <form class="contact-form intake-form" id="service-intake-form" action="/submit-form.php" method="POST">
+            <form class="contact-form intake-form" id="service-intake-form" action="submit-form.php" method="POST">
               <input type="hidden" name="form_type" value="service_intake">
               
               <div class="form-group">
@@ -328,6 +328,11 @@
   <!-- ONLY ONE Footer Placeholder -->
   <div id="footer-placeholder"></div>
 
+  <!-- Admin Login Link (hidden in footer) -->
+  <div class="admin-login-link" style="text-align: center; padding-bottom: 20px;">
+    <a href="admin-login.html" class="admin-link" style="color: rgba(6, 39, 103, 0.3); font-size: 0.75rem; text-decoration: none;">Admin</a>
+  </div>
+
   <!-- JavaScript for Time Conversion -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -386,64 +391,41 @@
         input.addEventListener('change', updateIndianTime);
       });
       
-      // Form submission handling for email notifications
+      // Check if any time slot is already selected on page load
+      const selectedTimeInput = document.querySelector('input[name="time"]:checked');
+      if (selectedTimeInput) {
+        updateIndianTime();
+      }
+      
+      // Form submission handling
       const generalForm = document.getElementById('general-inquiry-form');
       const meetingForm = document.getElementById('meeting-form');
       const serviceForm = document.getElementById('service-intake-form');
       
-      function handleFormSubmit(event, formType) {
-        event.preventDefault();
-        
-        const formData = new FormData(event.target);
-        
-        // Add Indian time to meeting form data if applicable
-        if (formType === 'meeting_request' && indianTimeSpan.textContent) {
-          formData.append('indian_time', indianTimeSpan.textContent);
-        }
-        
-        // Convert FormData to object
-        const data = {};
-        formData.forEach((value, key) => {
-          data[key] = value;
-        });
-        
-        // Add submission timestamp
-        data.submission_date = new Date().toISOString();
-        
-        // Send the form data to server
-        fetch('/submit-form.php', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(result => {
-          alert('Form submitted successfully. We will contact you shortly.');
-          event.target.reset();
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('There was an error submitting your form. Please try again later.');
-        });
-      }
-      
       if (generalForm) {
-        generalForm.addEventListener('submit', (e) => handleFormSubmit(e, 'general_inquiry'));
+        generalForm.addEventListener('submit', function(e) {
+          const indianTime = document.getElementById('indian-time').textContent;
+          if (indianTime) {
+            const indianTimeInput = document.createElement('input');
+            indianTimeInput.type = 'hidden';
+            indianTimeInput.name = 'indian_time';
+            indianTimeInput.value = indianTime;
+            this.appendChild(indianTimeInput);
+          }
+        });
       }
       
       if (meetingForm) {
-        meetingForm.addEventListener('submit', (e) => handleFormSubmit(e, 'meeting_request'));
-      }
-      
-      if (serviceForm) {
-        serviceForm.addEventListener('submit', (e) => handleFormSubmit(e, 'service_intake'));
+        meetingForm.addEventListener('submit', function(e) {
+          const indianTime = document.getElementById('indian-time').textContent;
+          if (indianTime) {
+            const indianTimeInput = document.createElement('input');
+            indianTimeInput.type = 'hidden';
+            indianTimeInput.name = 'indian_time';
+            indianTimeInput.value = indianTime;
+            this.appendChild(indianTimeInput);
+          }
+        });
       }
     });
   </script>
