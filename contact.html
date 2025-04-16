@@ -325,112 +325,16 @@
     </section>
   </main>
 
-  <!-- ONLY ONE Footer Placeholder -->
-  <div id="footer-placeholder"></div>
-
   <!-- Admin Login Link (hidden in footer) -->
   <div class="admin-login-link" style="text-align: center; padding-bottom: 20px;">
     <a href="admin-login.html" class="admin-link" style="color: rgba(6, 39, 103, 0.3); font-size: 0.75rem; text-decoration: none;">Admin</a>
   </div>
 
-  <!-- JavaScript for Time Conversion -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Tab switching functionality
-      const tabButtons = document.querySelectorAll('.tab-btn');
-      const tabContents = document.querySelectorAll('.tab-content');
-      
-      tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          // Remove active class from all buttons and contents
-          tabButtons.forEach(btn => btn.classList.remove('active'));
-          tabContents.forEach(content => content.classList.remove('active'));
-          
-          // Add active class to clicked button and corresponding content
-          button.classList.add('active');
-          const tabId = button.getAttribute('data-tab');
-          document.getElementById(tabId).classList.add('active');
-        });
-      });
-      
-      // UAE to Indian time conversion for time slots
-      const timeSlotInputs = document.querySelectorAll('input[name="time"]');
-      const indianTimeSpan = document.getElementById('indian-time');
-      
-      function updateIndianTime() {
-        const selectedTimeInput = document.querySelector('input[name="time"]:checked');
-        
-        if (selectedTimeInput) {
-          // Get the UAE time value
-          const uaeHours = parseInt(selectedTimeInput.value);
-          
-          // Convert to Indian time (UAE + 1:30 hours)
-          let indianHours = uaeHours + 1;
-          let indianMinutes = 30;
-          
-          // Format the time strings
-          const formattedStartHours = indianHours.toString().padStart(2, '0');
-          const formattedStartMinutes = indianMinutes.toString().padStart(2, '0');
-          
-          // For end time (1 hour later)
-          let endIndianHours = indianHours + 1;
-          let endIndianMinutes = indianMinutes;
-          
-          const formattedEndHours = endIndianHours.toString().padStart(2, '0');
-          const formattedEndMinutes = endIndianMinutes.toString().padStart(2, '0');
-          
-          // Display the Indian time range
-          indianTimeSpan.textContent = `${formattedStartHours}:${formattedStartMinutes} - ${formattedEndHours}:${formattedEndMinutes}`;
-        } else {
-          indianTimeSpan.textContent = '';
-        }
-      }
-      
-      // Add event listeners to all time slot inputs
-      timeSlotInputs.forEach(input => {
-        input.addEventListener('change', updateIndianTime);
-      });
-      
-      // Check if any time slot is already selected on page load
-      const selectedTimeInput = document.querySelector('input[name="time"]:checked');
-      if (selectedTimeInput) {
-        updateIndianTime();
-      }
-      
-      // Form submission handling
-      const generalForm = document.getElementById('general-inquiry-form');
-      const meetingForm = document.getElementById('meeting-form');
-      const serviceForm = document.getElementById('service-intake-form');
-      
-      if (generalForm) {
-        generalForm.addEventListener('submit', function(e) {
-          const indianTime = document.getElementById('indian-time').textContent;
-          if (indianTime) {
-            const indianTimeInput = document.createElement('input');
-            indianTimeInput.type = 'hidden';
-            indianTimeInput.name = 'indian_time';
-            indianTimeInput.value = indianTime;
-            this.appendChild(indianTimeInput);
-          }
-        });
-      }
-      
-      if (meetingForm) {
-        meetingForm.addEventListener('submit', function(e) {
-          const indianTime = document.getElementById('indian-time').textContent;
-          if (indianTime) {
-            const indianTimeInput = document.createElement('input');
-            indianTimeInput.type = 'hidden';
-            indianTimeInput.name = 'indian_time';
-            indianTimeInput.value = indianTime;
-            this.appendChild(indianTimeInput);
-          }
-        });
-      }
-    });
-  </script>
+  <!-- ONLY ONE Footer Placeholder -->
+  <div id="footer-placeholder"></div>
 
-  <!-- Include JS to load header and footer -->
+  <!-- Include necessary JS files -->
   <script src="include.js"></script>
+  <script src="js/contact.js"></script>
 </body>
 </html>
