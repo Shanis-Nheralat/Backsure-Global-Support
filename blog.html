@@ -3,41 +3,197 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Blog & Insights | BSG Support</title>
+  <meta name="description" content="Explore insights, tips, and industry updates from Backsure Global Support on outsourcing, business operations, and growth strategies.">
+  <title>Blog | Backsure Global Support</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <!-- Blog-specific CSS -->
+  <link rel="stylesheet" href="css/blog.css">
 </head>
 <body>
-  <!-- Load header -->
-<div id="header-placeholder"></div>
+  <!-- Load Header -->
+  <div id="header-placeholder"></div>
 
-<!-- Your page content stays here -->
-
-  <section class="blog-section">
+  <!-- Page Header Banner -->
+  <section class="page-header">
     <div class="container">
-      <h2>BSG Insights & Updates</h2>
-      <p>Stay updated on our latest strategies, tips, and company news.</p>
-
-      <article>
-        <h3><a href="#">3 Ways to Streamline Your Back Office in 2025</a></h3>
-        <p>A practical guide to cutting costs and improving operational efficiency.</p>
-      </article>
-
-      <article>
-        <h3><a href="#">Inside BSG: Our ERP Platform Rollout</a></h3>
-        <p>How we're integrating with tools like Zoho CRM and redefining outsourcing.</p>
-      </article>
-
-      <article>
-        <h3><a href="#">Scaling with Smart Support: Startup Case Study</a></h3>
-        <p>How we helped a UAE insurance aggregator cut costs and boost productivity.</p>
-      </article>
+      <h1>BSG Support Blog</h1>
+      <p>Insights, Industry Updates & Business Growth Strategies</p>
     </div>
   </section>
 
-  <!-- Load footer -->
-<div id="footer-placeholder"></div>
+  <main id="main-content">
+    <div class="container">
+      <div class="blog-container">
+        <!-- Blog Sidebar -->
+        <aside class="blog-sidebar">
+          <!-- Search Box -->
+          <div class="blog-search">
+            <form action="#" method="get">
+              <div class="search-input">
+                <input type="text" placeholder="Search articles...">
+                <button type="submit"><i class="fas fa-search"></i></button>
+              </div>
+            </form>
+          </div>
 
-<!-- JavaScript to include header/footer -->
-<script src="include.js"></script>
+          <!-- Categories -->
+          <div class="sidebar-section">
+            <h3>Categories</h3>
+            <ul class="category-list">
+              <li><a href="#" class="active">All Categories</a></li>
+              <li><a href="#">Business Growth</a></li>
+              <li><a href="#">Outsourcing Tips</a></li>
+              <li><a href="#">HR Management</a></li>
+              <li><a href="#">Finance & Accounting</a></li>
+              <li><a href="#">Insurance Updates</a></li>
+              <li><a href="#">Compliance & Admin</a></li>
+            </ul>
+          </div>
+
+          <!-- Recent Posts -->
+          <div class="sidebar-section">
+            <h3>Recent Posts</h3>
+            <ul class="recent-posts">
+              <li>
+                <a href="blog-post.html">
+                  <span class="post-title">Coming Soon: New Articles</span>
+                  <span class="post-date">Stay tuned for updates</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Newsletter Signup -->
+          <div class="sidebar-section newsletter-signup">
+            <h3>Subscribe to Our Newsletter</h3>
+            <p>Get the latest insights delivered to your inbox</p>
+            <form action="#" method="post">
+              <div class="form-group">
+                <input type="email" placeholder="Your email address" required>
+              </div>
+              <button type="submit" class="btn-secondary">Subscribe</button>
+            </form>
+          </div>
+        </aside>
+
+        <!-- Blog Content -->
+        <div class="blog-content">
+          <!-- Blog Filter Controls -->
+          <div class="blog-controls">
+            <div class="blog-filter">
+              <span>Filter by: </span>
+              <select id="sort-posts">
+                <option value="latest">Latest</option>
+                <option value="popular">Most Popular</option>
+                <option value="trending">Trending</option>
+              </select>
+            </div>
+            <div class="blog-view-toggle">
+              <button class="view-btn active" data-view="grid"><i class="fas fa-th-large"></i></button>
+              <button class="view-btn" data-view="list"><i class="fas fa-list"></i></button>
+            </div>
+          </div>
+
+          <!-- Featured Post -->
+          <div class="featured-post">
+            <div class="post-image">
+              <img src="images/blog/coming-soon.jpg" alt="Coming Soon: Blog Posts">
+            </div>
+            <div class="post-content">
+              <div class="post-meta">
+                <span class="post-category">Announcement</span>
+                <span class="post-date">Coming Soon</span>
+              </div>
+              <h2 class="post-title">Stay Tuned for Our Upcoming Blog Series</h2>
+              <p class="post-excerpt">We're working on bringing you valuable insights, tips, and success stories to help you grow your business and optimize your operations. Our blog will cover topics from outsourcing best practices to industry trends and practical business solutions.</p>
+              <a href="#" class="btn-readmore">Subscribe for Updates <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+
+          <!-- Blog Grid -->
+          <div class="blog-grid">
+            <!-- Placeholder Posts -->
+            <div class="blog-card coming-soon">
+              <div class="post-image">
+                <img src="images/blog/placeholder-1.jpg" alt="Business Growth Strategies">
+              </div>
+              <div class="card-content">
+                <div class="post-meta">
+                  <span class="post-category">Business Growth</span>
+                  <span class="post-date">Coming Soon</span>
+                </div>
+                <h3 class="post-title">5 Ways Outsourcing Can Accelerate Your Business Growth</h3>
+                <p class="post-excerpt">Learn how strategic outsourcing can help you scale faster, reduce costs, and focus on your core business strengths.</p>
+                <div class="card-footer">
+                  <a href="#" class="btn-readmore">Subscribe <i class="fas fa-arrow-right"></i></a>
+                </div>
+              </div>
+            </div>
+
+            <div class="blog-card coming-soon">
+              <div class="post-image">
+                <img src="images/blog/placeholder-2.jpg" alt="Remote Teams">
+              </div>
+              <div class="card-content">
+                <div class="post-meta">
+                  <span class="post-category">HR Management</span>
+                  <span class="post-date">Coming Soon</span>
+                </div>
+                <h3 class="post-title">Building Effective Remote Teams: Best Practices for Success</h3>
+                <p class="post-excerpt">Discover proven strategies for managing remote teams effectively and maintaining strong team culture across borders.</p>
+                <div class="card-footer">
+                  <a href="#" class="btn-readmore">Subscribe <i class="fas fa-arrow-right"></i></a>
+                </div>
+              </div>
+            </div>
+
+            <div class="blog-card coming-soon">
+              <div class="post-image">
+                <img src="images/blog/placeholder-3.jpg" alt="Financial Operations">
+              </div>
+              <div class="card-content">
+                <div class="post-meta">
+                  <span class="post-category">Finance & Accounting</span>
+                  <span class="post-date">Coming Soon</span>
+                </div>
+                <h3 class="post-title">Streamlining Financial Operations: Key Strategies for SMEs</h3>
+                <p class="post-excerpt">Learn practical approaches to optimize your financial processes, reduce costs, and improve financial visibility.</p>
+                <div class="card-footer">
+                  <a href="#" class="btn-readmore">Subscribe <i class="fas fa-arrow-right"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Newsletter Sign-Up (Mobile) -->
+          <div class="newsletter-mobile">
+            <div class="newsletter-content">
+              <h3>Subscribe to Our Blog</h3>
+              <p>Be the first to know when we publish new articles</p>
+              <form action="#" method="post">
+                <div class="form-group">
+                  <input type="email" placeholder="Your email address" required>
+                </div>
+                <button type="submit" class="btn-secondary">Subscribe</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer Placeholder -->
+  <div id="footer-placeholder"></div>
+
+  <!-- Include JS files -->
+  <script src="include.js"></script>
+  <script src="js/nav.js"></script>
+  <!-- Blog specific JS -->
+  <script src="js/blog.js"></script>
 </body>
 </html>
