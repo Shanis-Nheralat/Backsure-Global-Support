@@ -807,10 +807,31 @@
           
           // Simulate login (for demo)
           setTimeout(() => {
-            // Demo credentials (for testing)
+            // First check admin credentials
             if ((username === 'admin' && password === 'admin123') || 
                 (username === 'admin@example.com' && password === 'admin123')) {
               // Success - redirect to dashboard
+              window.location.href = 'admin-dashboard.html';
+              return;
+            }
+            
+            // Check against registered users in localStorage
+            const users = JSON.parse(localStorage.getItem('demoUsers') || '[]');
+            const user = users.find(user => 
+              (user.username === username || user.email === username) && 
+              user.password === password
+            );
+            
+            if (user) {
+              // User found, log them in
+              // Update login time
+              user.lastLogin = new Date().toISOString();
+              localStorage.setItem('demoUsers', JSON.stringify(users));
+              
+              // Store logged in user
+              localStorage.setItem('currentUser', JSON.stringify(user));
+              
+              // Redirect to dashboard
               window.location.href = 'admin-dashboard.html';
             } else {
               // Error - show message
@@ -933,6 +954,21 @@
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
             
+            // Store the user credentials in localStorage so they can actually log in
+            const userData = {
+              username: username,
+              email: email,
+              password: password,
+              fullname: fullname,
+              role: 'user',
+              lastLogin: new Date().toISOString()
+            };
+            
+            // Save to localStorage
+            let users = JSON.parse(localStorage.getItem('demoUsers') || '[]');
+            users.push(userData);
+            localStorage.setItem('demoUsers', JSON.stringify(users));
+            
             // Show success message
             showSuccessMessage('signup-success-message', 'Account created successfully! In this demo, no actual email is sent.');
             
@@ -952,8 +988,17 @@
               if (confirmAccountBtn) {
                 confirmAccountBtn.style.cursor = 'pointer';
                 confirmAccountBtn.addEventListener('click', function() {
-                  // Navigate to login form
+                  // Navigate to login form with username pre-filled
                   showFormContainer(loginContainer);
+                  
+                  // Pre-fill username field with the email or username they registered with
+                  const loginUsernameField = document.getElementById('username');
+                  if (loginUsernameField) {
+                    loginUsernameField.value = email; // Use their email
+                  }
+                  
+                  // Show success message in login form
+                  showSuccessMessage('error-message', 'Email confirmed! You can now log in with your credentials.');
                 });
               }
             }
