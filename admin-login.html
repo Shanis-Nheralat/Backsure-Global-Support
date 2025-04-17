@@ -1,48 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login - BackSure Global Support</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow">
+  <title>Login | Backsure Global Support</title>
+  <link rel="stylesheet" href="admin/css/admin-style.css" />
+  <link rel="stylesheet" href="admin/css/admin-login.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
 </head>
-<body>
-    <div class="login-container">
-        <div class="login-form">
-            <div class="logo">
-                <h1>BackSure Global Support</h1>
-                <p>Admin Dashboard</p>
+<body class="login-body">
+  <div class="login-container">
+    <div class="login-box">
+      <!-- Logo -->
+      <div class="login-logo">
+        <img src="images/backsure-logo.png" alt="Backsure Global Support">
+      </div>
+      
+      <!-- Login Form -->
+      <div class="login-form-container active" id="login-form-container">
+        <h2>Admin Login</h2>
+        <p class="form-subtitle">Sign in to access your dashboard</p>
+        
+        <form id="admin-login-form" action="admin-login-process.php" method="POST">
+          <div class="form-group">
+            <label for="username">Username or Email</label>
+            <div class="input-with-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" id="username" name="username" required>
             </div>
-            
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="username" name="username" required>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" id="password" name="password" required>
-                    </div>
-                </div>
-                
-                <div class="error-message" id="error-message"></div>
-                
-                <button type="submit" class="login-btn">
-                    <span>Login</span>
-                    <i class="fas fa-arrow-right"></i>
-                </button>
-            </form>
+          </div>
+          
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="input-with-icon">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="password" name="password" required>
+            </div>
+          </div>
+          
+          <div class="form-options">
+            <div class="remember-me">
+              <input type="checkbox" id="remember" name="remember">
+              <label for="remember">Remember me</label>
+            </div>
+            <div class="forgot-password">
+              <a href="#" id="forgot-password-link">Forgot Password?</a>
+            </div>
+          </div>
+          
+          <div id="error-message" class="error-message"></div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">
+              <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+          </div>
+        </form>
+        
+        <div class="login-footer">
+          <p>Don't have an account? <a href="#" id="signup-link">Sign Up</a></p>
         </div>
+      </div>
+      
+      <!-- Forgot Password Form -->
+      <div class="login-form-container" id="forgot-password-container">
+        <h2>Reset Password</h2>
+        <p class="form-subtitle">Enter your email address to receive a reset link</p>
+        
+        <form id="forgot-password-form" action="forgot-password-process.php" method="POST">
+          <div class="form-group">
+            <label for="reset-email">Email Address</label>
+            <div class="input-with-icon">
+              <i class="fas fa-envelope"></i>
+              <input type="email" id="reset-email" name="email" required>
+            </div>
+          </div>
+          
+          <div id="forgot-error-message" class="error-message"></div>
+          <div id="forgot-success-message" class="success-message"></div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">
+              <i class="fas fa-paper-plane"></i> Send Reset Link
+            </button>
+          </div>
+        </form>
+        
+        <div class="login-footer">
+          <p><a href="#" id="back-to-login-link">Back to Login</a></p>
+        </div>
+      </div>
+      
+      <!-- Sign Up Form -->
+      <div class="login-form-container" id="signup-container">
+        <h2>Create Account</h2>
+        <p class="form-subtitle">Sign up for administrative access</p>
+        
+        <form id="signup-form" action="signup-process.php" method="POST">
+          <div class="form-group">
+            <label for="fullname">Full Name</label>
+            <div class="input-with-icon">
+              <i class="fas fa-user"></i>
+              <input type="text" id="fullname" name="fullname" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="signup-email">Email Address</label>
+            <div class="input-with-icon">
+              <i class="fas fa-envelope"></i>
+              <input type="email" id="signup-email" name="email" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="signup-username">Username</label>
+            <div class="input-with-icon">
+              <i class="fas fa-user-tag"></i>
+              <input type="text" id="signup-username" name="username" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="signup-password">Password</label>
+            <div class="input-with-icon">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="signup-password" name="password" required>
+            </div>
+            <div class="password-strength">
+              <div class="strength-meter">
+                <div class="strength-meter-fill" data-strength="0"></div>
+              </div>
+              <div class="strength-text">Password strength: <span>Too weak</span></div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="confirm-password">Confirm Password</label>
+            <div class="input-with-icon">
+              <i class="fas fa-lock"></i>
+              <input type="password" id="confirm-password" name="confirm-password" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <div class="terms-checkbox">
+              <input type="checkbox" id="terms" name="terms" required>
+              <label for="terms">I agree to the <a href="#" target="_blank">Terms &amp; Conditions</a></label>
+            </div>
+          </div>
+          
+          <div id="signup-error-message" class="error-message"></div>
+          
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">
+              <i class="fas fa-user-plus"></i> Sign Up
+            </button>
+          </div>
+        </form>
+        
+        <div class="login-footer">
+          <p>Already have an account? <a href="#" id="login-link">Login</a></p>
+        </div>
+      </div>
     </div>
     
-    <script src="js/admin-login.js"></script>
+    <div class="login-footer-main">
+      <p>&copy; 2025 Backsure Global Support. All rights reserved.</p>
+    </div>
+  </div>
+  
+  <!-- JavaScript for Login Page -->
+  <script src="admin/js/admin-login.js"></script>
 </body>
 </html>
