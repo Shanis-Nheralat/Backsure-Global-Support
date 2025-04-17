@@ -1,0 +1,248 @@
+/**
+ * admin-settings.css
+ * Styles specific to the admin settings pages
+ */
+
+/* Settings Container */
+.settings-container {
+  display: flex;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+/* Settings Navigation */
+.settings-navigation {
+  width: 250px;
+  background-color: var(--gray-100);
+  border-right: 1px solid var(--gray-200);
+}
+
+.settings-tabs {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-tabs li {
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all 0.3s;
+  border-left: 3px solid transparent;
+}
+
+.settings-tabs li:hover {
+  background-color: var(--gray-200);
+}
+
+.settings-tabs li.active {
+  background-color: white;
+  color: var(--primary-color);
+  border-left-color: var(--primary-color);
+  font-weight: 600;
+}
+
+.settings-tabs li i {
+  margin-right: 10px;
+  width: 20px;
+  text-align: center;
+}
+
+/* Settings Content */
+.settings-content {
+  flex: 1;
+  padding: 25px;
+  overflow: auto;
+}
+
+.settings-panel {
+  display: none;
+}
+
+.settings-panel.active {
+  display: block;
+}
+
+.settings-panel h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+/* Settings Section */
+.settings-section {
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.settings-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.settings-section h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--gray-800);
+}
+
+.form-group input[type="text"],
+.form-group input[type="url"],
+.form-group input[type="email"],
+.form-group input[type="password"],
+.form-group input[type="number"],
+.form-group input[type="tel"],
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--gray-300);
+  border-radius: 4px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(6, 39, 103, 0.1);
+  outline: none;
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.field-help {
+  margin-top: 5px;
+  font-size: 0.85rem;
+  color: var(--gray-600);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-switch label {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--gray-300);
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.toggle-switch label:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+.toggle-switch input:checked + label {
+  background-color: var(--primary-color);
+}
+
+.toggle-switch input:checked + label:before {
+  transform: translateX(26px);
+}
+
+/* Custom Colors */
+.color-scheme-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.color-option {
+  position: relative;
+}
+
+.color-option input[type="radio"] {
+  opacity: 0;
+  position: absolute;
+}
+
+.color-option label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.color-preview {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  border: 3px solid transparent;
+  transition: all 0.3s;
+}
+
+.color-option input[type="radio"]:checked + label .color-preview {
+  border-color: var(--primary-color);
+}
+
+.color-name {
+  font-size: 0.9rem;
+  color: var(--gray-700);
+}
+
+/* Color scheme previews */
+.color-preview.default {
+  background: linear-gradient(135deg, #062767 0%, #062767 50%, #b19763 50%, #b19763 100%);
+}
+
+.color-preview.blue {
+  background: linear-gradient(135deg, #1a56db 0%, #1a56db 50%, #3f83f8 50%, #3f83f8 100%);
+}
+
+.color-preview.green {
+  background: linear-gradient(135deg, #046c4e 0%, #046c4e 50%, #0e9f6e 50%, #0e9f6e 100%);
+}
+
+.color-preview.purple {
+  background: linear-gradient(135deg, #5521b5 0%, #5521b5 50%, #8b5cf6 50%, #8b5cf6 100%);
+}
+
+.color-preview.dark
