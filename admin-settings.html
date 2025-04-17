@@ -655,3 +655,524 @@ Sitemap: https://www.backsureglobalsupport.com/sitemap.xml</textarea>
                       <input type="checkbox" id="dash-notify-comments" name="dash_notify_events[]" value="comments">
                       <label for="dash-notify-comments">Blog comments</label>
                     </div>
+
+                    <div class="checkbox-item">
+                      <input type="checkbox" id="dash-notify-system" name="dash_notify_events[]" value="system" checked>
+                      <label for="dash-notify-system">System alerts</label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="settings-section">
+                  <h3>Email Notification Templates</h3>
+                  
+                  <div class="form-group">
+                    <label for="contact-email-template">Contact Form Notification Template</label>
+                    <textarea id="contact-email-template" name="contact_email_template" rows="6">
+Subject: New Contact Form Submission: {{subject}}
+
+Hello Admin,
+
+A new message has been submitted through the contact form on your website.
+
+Name: {{name}}
+Email: {{email}}
+Subject: {{subject}}
+
+Message:
+{{message}}
+
+This message was sent on {{date}} at {{time}}.
+
+Regards,
+Backsure Global Support System
+                    </textarea>
+                    <p class="field-help">Available variables: {{name}}, {{email}}, {{subject}}, {{message}}, {{date}}, {{time}}</p>
+                  </div>
+                </div>
+                
+                <div class="form-actions">
+                  <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Notification Settings
+                  </button>
+                  <button type="reset" class="btn-secondary">
+                    <i class="fas fa-undo"></i> Reset
+                  </button>
+                </div>
+              </form>
+            </div>
+            
+            <!-- Backup & Restore Settings -->
+            <div class="settings-panel" id="backup-settings">
+              <h2>Backup & Restore</h2>
+              
+              <div class="settings-section">
+                <h3>Manual Backup</h3>
+                <p>Create a backup of your website's database and files. This can be downloaded and stored safely.</p>
+                
+                <div class="backup-options">
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="backup-database" name="backup_options[]" value="database" checked>
+                    <label for="backup-database">Database</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="backup-files" name="backup_options[]" value="files" checked>
+                    <label for="backup-files">Files (images, documents, uploads)</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="backup-themes" name="backup_options[]" value="themes">
+                    <label for="backup-themes">Themes and Templates</label>
+                  </div>
+                  
+                  <div class="checkbox-item">
+                    <input type="checkbox" id="backup-settings" name="backup_options[]" value="settings" checked>
+                    <label for="backup-settings">Site Settings</label>
+                  </div>
+                </div>
+                
+                <div class="action-buttons">
+                  <button id="create-backup" class="btn-primary">
+                    <i class="fas fa-download"></i> Create Backup
+                  </button>
+                </div>
+              </div>
+              
+              <div class="settings-section">
+                <h3>Automatic Backups</h3>
+                
+                <div class="form-group">
+                  <label for="auto-backup">Enable Automatic Backups</label>
+                  <div class="toggle-switch">
+                    <input type="checkbox" id="auto-backup" name="auto_backup" checked>
+                    <label for="auto-backup"></label>
+                  </div>
+                  <p class="field-help">Automatically create backups on a scheduled basis.</p>
+                </div>
+                
+                <div class="form-group">
+                  <label for="backup-frequency">Backup Frequency</label>
+                  <select id="backup-frequency" name="backup_frequency">
+                    <option value="daily">Daily</option>
+                    <option value="weekly" selected>Weekly</option>
+                    <option value="monthly">Monthly</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label for="backup-retention">Backup Retention</label>
+                  <select id="backup-retention" name="backup_retention">
+                    <option value="3">Keep last 3 backups</option>
+                    <option value="5" selected>Keep last 5 backups</option>
+                    <option value="10">Keep last 10 backups</option>
+                    <option value="0">Keep all backups</option>
+                  </select>
+                  <p class="field-help">How many previous backup versions to retain before deleting the oldest.</p>
+                </div>
+                
+                <div class="action-buttons">
+                  <button id="save-backup-settings" class="btn-primary">
+                    <i class="fas fa-save"></i> Save Backup Settings
+                  </button>
+                </div>
+              </div>
+              
+              <div class="settings-section">
+                <h3>Previous Backups</h3>
+                
+                <div class="backup-list">
+                  <table class="admin-table">
+                    <thead>
+                      <tr>
+                        <th>Date & Time</th>
+                        <th>Type</th>
+                        <th>Size</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Apr 15, 2025 - 10:30 AM</td>
+                        <td>Full Backup</td>
+                        <td>25.4 MB</td>
+                        <td><span class="status-badge success">Completed</span></td>
+                        <td>
+                          <div class="table-actions">
+                            <a href="#" class="download-btn" title="Download"><i class="fas fa-download"></i></a>
+                            <a href="#" class="restore-btn" title="Restore"><i class="fas fa-undo"></i></a>
+                            <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Apr 8, 2025 - 10:30 AM</td>
+                        <td>Full Backup</td>
+                        <td>24.9 MB</td>
+                        <td><span class="status-badge success">Completed</span></td>
+                        <td>
+                          <div class="table-actions">
+                            <a href="#" class="download-btn" title="Download"><i class="fas fa-download"></i></a>
+                            <a href="#" class="restore-btn" title="Restore"><i class="fas fa-undo"></i></a>
+                            <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>Apr 1, 2025 - 10:30 AM</td>
+                        <td>Full Backup</td>
+                        <td>24.7 MB</td>
+                        <td><span class="status-badge success">Completed</span></td>
+                        <td>
+                          <div class="table-actions">
+                            <a href="#" class="download-btn" title="Download"><i class="fas fa-download"></i></a>
+                            <a href="#" class="restore-btn" title="Restore"><i class="fas fa-undo"></i></a>
+                            <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div class="settings-section">
+                <h3>Restore Backup</h3>
+                <p>Upload a previously downloaded backup file to restore your website.</p>
+                <p><strong>Warning:</strong> Restoring a backup will overwrite your current website data.</p>
+                
+                <div class="form-group">
+                  <label>Upload Backup File</label>
+                  <div class="file-upload">
+                    <input type="file" id="backup-file" name="backup_file" accept=".zip,.sql,.gz">
+                    <label for="backup-file" class="upload-label">
+                      <i class="fas fa-upload"></i>
+                      <span>Choose Backup File</span>
+                    </label>
+                  </div>
+                  <p class="field-help">Accepted formats: .zip, .sql, .gz</p>
+                </div>
+                
+                <div class="action-buttons">
+                  <button id="restore-backup" class="btn-danger" disabled>
+                    <i class="fas fa-undo"></i> Restore Backup
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Advanced Settings -->
+            <div class="settings-panel" id="advanced-settings">
+              <h2>Advanced Settings</h2>
+              
+              <div class="settings-section">
+                <h3>Performance</h3>
+                
+                <form id="performance-settings-form">
+                  <div class="form-group">
+                    <label for="enable-caching">Enable Page Caching</label>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="enable-caching" name="enable_caching" checked>
+                      <label for="enable-caching"></label>
+                    </div>
+                    <p class="field-help">Cache pages to improve loading speed. Disable when making frequent changes.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="cache-expiration">Cache Expiration</label>
+                    <select id="cache-expiration" name="cache_expiration">
+                      <option value="1">1 hour</option>
+                      <option value="4">4 hours</option>
+                      <option value="12">12 hours</option>
+                      <option value="24" selected>24 hours</option>
+                      <option value="168">1 week</option>
+                    </select>
+                    <p class="field-help">How long to keep cached pages before refreshing.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="minify-html">Minify HTML</label>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="minify-html" name="minify_html" checked>
+                      <label for="minify-html"></label>
+                    </div>
+                    <p class="field-help">Remove whitespace and comments from HTML to reduce file size.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="minify-css">Minify CSS</label>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="minify-css" name="minify_css" checked>
+                      <label for="minify-css"></label>
+                    </div>
+                    <p class="field-help">Compress CSS files to improve loading time.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="minify-js">Minify JavaScript</label>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="minify-js" name="minify_js" checked>
+                      <label for="minify-js"></label>
+                    </div>
+                    <p class="field-help">Compress JavaScript files to improve loading time.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="lazy-loading">Enable Lazy Loading for Images</label>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="lazy-loading" name="lazy_loading" checked>
+                      <label for="lazy-loading"></label>
+                    </div>
+                    <p class="field-help">Load images only when they enter the viewport to improve initial page load time.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="image-optimization">Auto-Optimize Uploaded Images</label>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="image-optimization" name="image_optimization" checked>
+                      <label for="image-optimization"></label>
+                    </div>
+                    <p class="field-help">Automatically compress and optimize images when uploaded.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="webp-conversion">Convert Images to WebP Format</label>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="webp-conversion" name="webp_conversion" checked>
+                      <label for="webp-conversion"></label>
+                    </div>
+                    <p class="field-help">Convert uploaded images to WebP format for better performance.</p>
+                  </div>
+                  
+                  <div class="action-buttons">
+                    <button type="submit" class="btn-primary">
+                      <i class="fas fa-save"></i> Save Performance Settings
+                    </button>
+                    <button type="button" id="clear-cache" class="btn-secondary">
+                      <i class="fas fa-broom"></i> Clear Cache
+                    </button>
+                  </div>
+                </form>
+              </div>
+              
+              <div class="settings-section">
+                <h3>Security</h3>
+                
+                <form id="security-settings-form">
+                  <div class="form-group">
+                    <label for="enable-recaptcha">Enable reCAPTCHA on Forms</label>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="enable-recaptcha" name="enable_recaptcha" checked>
+                      <label for="enable-recaptcha"></label>
+                    </div>
+                    <p class="field-help">Protect forms from spam using Google reCAPTCHA.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="recaptcha-site-key">reCAPTCHA Site Key</label>
+                    <input type="text" id="recaptcha-site-key" name="recaptcha_site_key" value="6LcXXXXXXXXXXXXXXXXXXXXXX">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="recaptcha-secret-key">reCAPTCHA Secret Key</label>
+                    <input type="password" id="recaptcha-secret-key" name="recaptcha_secret_key" value="6LcXXXXXXXXXXXXXXXXXXXXXX">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="login-attempts">Max Login Attempts</label>
+                    <input type="number" id="login-attempts" name="login_attempts" value="5" min="1" max="10">
+                    <p class="field-help">Number of failed login attempts before temporary lockout.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="password-expiry">Password Expiry (Days)</label>
+                    <input type="number" id="password-expiry" name="password_expiry" value="90" min="0" max="365">
+                    <p class="field-help">Days before users are required to change passwords. Use 0 for no expiry.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="force-ssl">Force SSL (HTTPS)</label>
+                    <div class="toggle-switch">
+                      <input type="checkbox" id="force-ssl" name="force_ssl" checked>
+                      <label for="force-ssl"></label>
+                    </div>
+                    <p class="field-help">Automatically redirect HTTP requests to HTTPS.</p>
+                  </div>
+                  
+                  <div class="action-buttons">
+                    <button type="submit" class="btn-primary">
+                      <i class="fas fa-save"></i> Save Security Settings
+                    </button>
+                  </div>
+                </form>
+              </div>
+              
+              <div class="settings-section">
+                <h3>API Integrations</h3>
+                
+                <form id="api-settings-form">
+                  <div class="form-group">
+                    <label for="mailchimp-api">Mailchimp API Key</label>
+                    <input type="password" id="mailchimp-api" name="mailchimp_api" value="">
+                    <p class="field-help">API key for Mailchimp integration for newsletters.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="mailchimp-list">Mailchimp List ID</label>
+                    <input type="text" id="mailchimp-list" name="mailchimp_list" value="">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="google-maps-api">Google Maps API Key</label>
+                    <input type="password" id="google-maps-api" name="google_maps_api" value="">
+                    <p class="field-help">API key for Google Maps integration.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="smtp-host">SMTP Server Host</label>
+                    <input type="text" id="smtp-host" name="smtp_host" value="smtp.gmail.com">
+                    <p class="field-help">SMTP server for sending emails.</p>
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="smtp-port">SMTP Port</label>
+                    <input type="number" id="smtp-port" name="smtp_port" value="587">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="smtp-username">SMTP Username</label>
+                    <input type="text" id="smtp-username" name="smtp_username" value="notifications@backsureglobalsupport.com">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="smtp-password">SMTP Password</label>
+                    <input type="password" id="smtp-password" name="smtp_password" value="">
+                  </div>
+                  
+                  <div class="form-group">
+                    <label for="smtp-secure">SMTP Security</label>
+                    <select id="smtp-secure" name="smtp_secure">
+                      <option value="tls" selected>TLS</option>
+                      <option value="ssl">SSL</option>
+                      <option value="none">None</option>
+                    </select>
+                  </div>
+                  
+                  <div class="action-buttons">
+                    <button type="submit" class="btn-primary">
+                      <i class="fas fa-save"></i> Save API Settings
+                    </button>
+                    <button type="button" id="test-email" class="btn-secondary">
+                      <i class="fas fa-paper-plane"></i> Send Test Email
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Admin Footer -->
+      <footer class="admin-footer">
+        <div class="footer-left">
+          <p>&copy; 2025 Backsure Global Support. All rights reserved.</p>
+        </div>
+        <div class="footer-right">
+          <span>Admin Panel v1.0</span>
+        </div>
+      </footer>
+    </main>
+  </div>
+  
+  <!-- Media Library Modal -->
+  <div class="modal" id="media-modal">
+    <div class="modal-dialog large">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Media Library</h3>
+          <button class="close-modal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="media-tabs">
+            <button class="tab-btn active" data-tab="media-library">Media Library</button>
+            <button class="tab-btn" data-tab="upload-media">Upload Files</button>
+          </div>
+          
+          <div class="tab-content active" id="media-library">
+            <div class="media-filter">
+              <div class="search-box">
+                <input type="text" placeholder="Search media...">
+                <button type="button">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+              <select id="media-filter-type">
+                <option value="all">All Media Items</option>
+                <option value="image">Images</option>
+                <option value="document">Documents</option>
+                <option value="video">Video</option>
+                <option value="audio">Audio</option>
+              </select>
+              <select id="media-filter-date">
+                <option value="all">All Dates</option>
+                <option value="current-month">Current Month</option>
+                <option value="prev-month">Previous Month</option>
+                <option value="current-year">Current Year</option>
+              </select>
+            </div>
+            
+            <div class="media-grid">
+              <!-- Sample Media Items -->
+              <div class="media-item" data-type="image">
+                <div class="media-preview">
+                  <img src="images/backsure-logo.png" alt="Media Item">
+                </div>
+                <div class="media-info">
+                  <h4 class="media-title">backsure-logo.png</h4>
+                  <span class="media-date">April 15, 2025</span>
+                </div>
+              </div>
+              
+              <div class="media-item" data-type="image">
+                <div class="media-preview">
+                  <img src="images/favicon.ico" alt="Media Item">
+                </div>
+                <div class="media-info">
+                  <h4 class="media-title">favicon.ico</h4>
+                  <span class="media-date">April 12, 2025</span>
+                </div>
+              </div>
+              
+              <!-- More media items would be here -->
+            </div>
+            
+            <div class="media-selection">
+              <button class="btn-primary" id="select-media">Select Media</button>
+            </div>
+          </div>
+          
+          <div class="tab-content" id="upload-media">
+            <div class="upload-container">
+              <div class="upload-area" id="upload-dropzone">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <h3>Drop files here to upload</h3>
+                <p>or</p>
+                <button class="btn-secondary" id="select-files">Select Files</button>
+                <input type="file" id="file-input" multiple style="display: none;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- JavaScript -->
+  <script src="admin/js/admin.js"></script>
+  <script src="admin/js/settings.js"></script>
+</body>
+</html>
