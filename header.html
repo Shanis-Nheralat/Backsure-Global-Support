@@ -46,7 +46,7 @@
         </li>
 
         <li><a href="contact.html" class="contact-btn">Contact Us</a></li>
-        <li><a href="admin-login.html" class="login-btn">Login</a></li>
+        <li><a href="admin-login.html" class="admin-login-btn">Login</a></li>
       </ul>
     </nav>
   </div>
@@ -174,8 +174,8 @@
     transform: translateY(-2px);
   }
 
-  /* Login Button */
-  .login-btn {
+  /* admin-Login Button */
+  .admin-login-btn {
     background-color: transparent;
     color: white;
     border: 1px solid var(--accent-color);
@@ -185,7 +185,7 @@
     transition: all 0.3s ease;
   }
 
-  .login-btn:hover {
+  .admin-login-btn:hover {
     background-color: rgba(255, 255, 255, 0.1);
     color: var(--accent-color);
     transform: translateY(-2px);
@@ -283,18 +283,18 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .contact-btn, .login-btn {
+    .contact-btn, .admin-login-btn {
       margin: 10px 20px;
       text-align: center;
       display: block;
     }
 
-    .login-btn {
+    .admin-login-btn {
       margin-top: 5px;
     }
     
     /* Clear the hover styles that would cause layout shifts */
-    .contact-btn:hover, .login-btn:hover {
+    .contact-btn:hover, .admin-login-btn:hover {
       transform: none;
     }
     
