@@ -280,6 +280,154 @@
       color: #777;
     }
     
+    /* Modal styles for Terms & Conditions */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background-color: white;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 20px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .modal-header h3 {
+      margin: 0;
+      color: var(--primary-color);
+    }
+    
+    .close-modal {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      color: #777;
+    }
+    
+    .modal-body {
+      margin-bottom: 20px;
+    }
+    
+    .modal-footer {
+      text-align: right;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+    
+    .modal-footer button {
+      padding: 8px 16px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    /* Demo Notice Styles */
+    .demo-notice {
+      margin-top: 20px;
+    }
+    
+    .demo-box {
+      background-color: #f8f9fa;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    
+    .demo-box h3 {
+      color: #062767;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .demo-box h3 i {
+      margin-right: 8px;
+      color: #b19763;
+    }
+    
+    .sample-email {
+      background-color: white;
+      border: 1px solid #eee;
+      border-radius: 5px;
+      margin: 15px 0;
+      overflow: hidden;
+    }
+    
+    .email-header {
+      background-color: #f5f5f5;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+    }
+    
+    .email-body {
+      padding: 15px;
+      font-size: 0.9rem;
+    }
+    
+    .email-button {
+      background-color: #062767;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      margin: 15px auto;
+      width: 180px;
+      border-radius: 5px;
+      font-weight: 600;
+    }
+    
+    .btn-secondary {
+      background-color: white;
+      color: #062767;
+      border: 1px solid #062767;
+      padding: 8px 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      margin: 0 auto;
+    }
+    
+    .btn-secondary i {
+      margin-right: 8px;
+    }
+    
+    .btn-secondary:hover {
+      background-color: #f0f0f0;
+    }
+    
     @media (max-width: 480px) {
       .login-container {
         width: 95%;
@@ -438,12 +586,37 @@
           <div class="form-group">
             <div class="terms-checkbox">
               <input type="checkbox" id="terms" name="terms" required>
-              <label for="terms">I agree to the <a href="#" target="_blank">Terms &amp; Conditions</a></label>
+              <label for="terms">I agree to the <a href="#" id="terms-link">Terms &amp; Conditions</a></label>
             </div>
           </div>
           
           <div id="signup-error-message" class="error-message"></div>
           <div id="signup-success-message" class="success-message"></div>
+          
+          <!-- Demo Notice Section -->
+          <div id="demo-notice" class="demo-notice" style="display: none;">
+            <div class="demo-box">
+              <h3><i class="fas fa-info-circle"></i> Demo Mode Active</h3>
+              <p>This is a demo website. No actual emails are being sent.</p>
+              <p>In a real implementation, you would receive an email with a confirmation link.</p>
+              <div class="sample-email">
+                <div class="email-header">
+                  <div><strong>From:</strong> support@backsure-global.com</div>
+                  <div><strong>Subject:</strong> Confirm Your Backsure Global Support Account</div>
+                </div>
+                <div class="email-body">
+                  <p>Dear <span id="sample-name">User</span>,</p>
+                  <p>Thank you for signing up with Backsure Global Support. Please click the button below to confirm your account:</p>
+                  <div class="email-button">Confirm Account</div>
+                  <p>If you did not create this account, please ignore this email.</p>
+                  <p>Regards,<br>The Backsure Global Support Team</p>
+                </div>
+              </div>
+              <button id="fake-resend" class="btn-secondary">
+                <i class="fas fa-paper-plane"></i> Simulate Resend
+              </button>
+            </div>
+          </div>
           
           <div class="form-actions">
             <button type="submit" class="btn-primary">
@@ -460,6 +633,47 @@
     
     <div class="login-footer-main">
       <p>&copy; 2025 Backsure Global Support. All rights reserved.</p>
+    </div>
+  </div>
+  
+  <!-- Terms and Conditions Modal -->
+  <div id="terms-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Terms and Conditions</h3>
+        <button class="close-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4>1. Acceptance of Terms</h4>
+        <p>By accessing and using the administrative services of Backsure Global Support, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.</p>
+        
+        <h4>2. Account Responsibilities</h4>
+        <p>You are responsible for maintaining the confidentiality of your account information, including your password, and for all activity that occurs under your account. You agree to notify us immediately of any unauthorized use of your account.</p>
+        
+        <h4>3. Acceptable Use</h4>
+        <p>You agree to use the administrative access only for legitimate business purposes related to Backsure Global Support. Any unauthorized use, including but not limited to data mining, scraping, or accessing data not intended for you, is strictly prohibited.</p>
+        
+        <h4>4. Privacy and Data Protection</h4>
+        <p>You acknowledge that you will handle all client and company data in accordance with applicable privacy laws and Backsure Global Support's privacy policies.</p>
+        
+        <h4>5. Intellectual Property</h4>
+        <p>All content, features, and functionality of the administrative interface are the exclusive property of Backsure Global Support and are protected by international copyright, trademark, and other intellectual property laws.</p>
+        
+        <h4>6. Termination</h4>
+        <p>Backsure Global Support reserves the right to terminate or suspend your access to the administrative interface at any time, without prior notice or liability, for any reason.</p>
+        
+        <h4>7. Changes to Terms</h4>
+        <p>Backsure Global Support reserves the right to modify these Terms and Conditions at any time. Your continued use of the administrative interface following the posting of revised Terms and Conditions means you accept and agree to the changes.</p>
+        
+        <h4>8. Limitation of Liability</h4>
+        <p>In no event shall Backsure Global Support be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of the administrative interface.</p>
+        
+        <h4>9. Governing Law</h4>
+        <p>These Terms and Conditions shall be governed by and construed in accordance with the laws of the jurisdiction in which Backsure Global Support is registered, without regard to its conflict of law provisions.</p>
+      </div>
+      <div class="modal-footer">
+        <button id="accept-terms">I Understand and Accept</button>
+      </div>
     </div>
   </div>
   
@@ -480,6 +694,43 @@
       const signupLink = document.getElementById('signup-link');
       const loginLink = document.getElementById('login-link');
       const backToLoginLink = document.getElementById('back-to-login-link');
+      
+      // Terms and conditions modal elements
+      const termsLink = document.getElementById('terms-link');
+      const termsModal = document.getElementById('terms-modal');
+      const closeModal = termsModal.querySelector('.close-modal');
+      const acceptTermsBtn = document.getElementById('accept-terms');
+      const termsCheckbox = document.getElementById('terms');
+      
+      // Show terms and conditions modal
+      if (termsLink) {
+        termsLink.addEventListener('click', function(e) {
+          e.preventDefault();
+          termsModal.classList.add('show');
+        });
+      }
+      
+      // Close terms modal when clicking the close button
+      if (closeModal) {
+        closeModal.addEventListener('click', function() {
+          termsModal.classList.remove('show');
+        });
+      }
+      
+      // Accept terms and close modal
+      if (acceptTermsBtn) {
+        acceptTermsBtn.addEventListener('click', function() {
+          termsCheckbox.checked = true;
+          termsModal.classList.remove('show');
+        });
+      }
+      
+      // Close modal when clicking outside the content
+      window.addEventListener('click', function(e) {
+        if (e.target === termsModal) {
+          termsModal.classList.remove('show');
+        }
+      });
       
       // Function to show a form container
       function showFormContainer(container) {
@@ -648,7 +899,7 @@
             showErrorMessage('signup-error-message', 'You must agree to the Terms & Conditions');
             return;
           }
-          
+         
           // Calculate password strength
           const strength = calculatePasswordStrength(password);
           if (strength < 2) {
@@ -677,18 +928,46 @@
             submitBtn.disabled = false;
             
             // Show success message
-            showSuccessMessage('signup-success-message', 'Account created successfully! A confirmation email has been sent to your email address.');
+            showSuccessMessage('signup-success-message', 'Account created successfully! In this demo, no actual email is sent.');
             
-            // Clear the form
+            // Show demo notice
+            const demoNotice = document.getElementById('demo-notice');
+            if (demoNotice) {
+              demoNotice.style.display = 'block';
+              
+              // Update sample name in the email template
+              const sampleName = document.getElementById('sample-name');
+              if (sampleName && fullname) {
+                sampleName.textContent = fullname.split(' ')[0]; // Just use the first name
+              }
+            }
+            
+            // Add resend button handler
+            const fakeResendBtn = document.getElementById('fake-resend');
+            if (fakeResendBtn) {
+              fakeResendBtn.addEventListener('click', function() {
+                const originalBtnText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                  this.innerHTML = originalBtnText;
+                  this.disabled = false;
+                  alert('In a real implementation, a new confirmation email would be sent.');
+                }, 1500);
+              });
+            }
+            
+            // Clear the form but keep demo notice visible
             signupForm.reset();
             
             // Update password strength
             updatePasswordStrength('');
             
-            // Only redirect to login after 3 seconds
+            // Only redirect to login after 5 seconds (increased from 3 to give more time to see demo)
             setTimeout(() => {
               showFormContainer(loginContainer);
-            }, 3000);
+            }, 5000);
           }, 1500);
         });
       }
@@ -717,6 +996,12 @@
         msg.textContent = '';
         msg.classList.remove('show');
       });
+      
+      // Don't hide demo notice when clearing messages
+      const demoNotice = document.getElementById('demo-notice');
+      if (demoNotice && demoNotice.style.display === 'block') {
+        // Keep demo notice visible
+      }
     }
 
     function showErrorMessage(elementId, message) {
