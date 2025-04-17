@@ -388,7 +388,7 @@
         <h2>Create Account</h2>
         <p class="form-subtitle">Sign up for administrative access</p>
         
-        <form id="signup-form" action="signup-process.php" method="POST">
+        <form id="signup-form">
           <div class="form-group">
             <label for="fullname">Full Name</label>
             <div class="input-with-icon">
@@ -443,6 +443,7 @@
           </div>
           
           <div id="signup-error-message" class="error-message"></div>
+          <div id="signup-success-message" class="success-message"></div>
           
           <div class="form-actions">
             <button type="submit" class="btn-primary">
@@ -490,9 +491,6 @@
         
         // Show selected container
         container.classList.add('active');
-        
-        // Clear forms and error messages
-        clearErrorMessages();
       }
       
       // Switch between forms
@@ -674,17 +672,12 @@
               return;
             }
             
-            // Success
+            // Reset button
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
             
             // Show success message
-            const successMessage = document.createElement('div');
-            successMessage.className = 'success-message show';
-            successMessage.textContent = 'Account created successfully! A confirmation email has been sent to your email address.';
-            
-            const errorMessage = document.getElementById('signup-error-message');
-            errorMessage.parentNode.insertBefore(successMessage, errorMessage);
+            showSuccessMessage('signup-success-message', 'Account created successfully! A confirmation email has been sent to your email address.');
             
             // Clear the form
             signupForm.reset();
@@ -692,7 +685,7 @@
             // Update password strength
             updatePasswordStrength('');
             
-            // Redirect to login after 3 seconds
+            // Only redirect to login after 3 seconds
             setTimeout(() => {
               showFormContainer(loginContainer);
             }, 3000);
@@ -721,12 +714,8 @@
       });
       
       successMessages.forEach(msg => {
-        if (msg.parentNode) {
-          msg.remove();
-        } else if (msg.classList) {
-          msg.textContent = '';
-          msg.classList.remove('show');
-        }
+        msg.textContent = '';
+        msg.classList.remove('show');
       });
     }
 
