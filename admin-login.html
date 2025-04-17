@@ -404,6 +404,12 @@
       width: 180px;
       border-radius: 5px;
       font-weight: 600;
+      cursor: pointer; /* Add cursor pointer to make it look clickable */
+    }
+    
+    .email-button:hover {
+      background-color: #0b3a84; /* Add hover effect */
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Add shadow on hover */
     }
     
     .btn-secondary {
@@ -607,7 +613,7 @@
                 <div class="email-body">
                   <p>Dear <span id="sample-name">User</span>,</p>
                   <p>Thank you for signing up with Backsure Global Support. Please click the button below to confirm your account:</p>
-                  <div class="email-button">Confirm Account</div>
+                  <div class="email-button" id="confirm-account-btn">Confirm Account</div>
                   <p>If you did not create this account, please ignore this email.</p>
                   <p>Regards,<br>The Backsure Global Support Team</p>
                 </div>
@@ -889,7 +895,7 @@
             showErrorMessage('signup-error-message', 'Password must be at least 8 characters long');
             return;
           }
-          
+
           if (password !== confirmPassword) {
             showErrorMessage('signup-error-message', 'Passwords do not match');
             return;
@@ -940,6 +946,16 @@
               if (sampleName && fullname) {
                 sampleName.textContent = fullname.split(' ')[0]; // Just use the first name
               }
+              
+              // Add confirm button click handler
+              const confirmAccountBtn = document.getElementById('confirm-account-btn');
+              if (confirmAccountBtn) {
+                confirmAccountBtn.style.cursor = 'pointer';
+                confirmAccountBtn.addEventListener('click', function() {
+                  // Navigate to login form
+                  showFormContainer(loginContainer);
+                });
+              }
             }
             
             // Add resend button handler
@@ -958,16 +974,18 @@
               });
             }
             
-            // Clear the form but keep demo notice visible
-            signupForm.reset();
+            // Reset form fields but keep demo notice visible
+            document.getElementById('fullname').value = '';
+            document.getElementById('signup-email').value = '';
+            document.getElementById('signup-username').value = '';
+            document.getElementById('signup-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            document.getElementById('terms').checked = false;
             
             // Update password strength
             updatePasswordStrength('');
             
-            // Only redirect to login after 5 seconds (increased from 3 to give more time to see demo)
-            setTimeout(() => {
-              showFormContainer(loginContainer);
-            }, 5000);
+            // We won't automatically redirect - let the user click the confirm button instead
           }, 1500);
         });
       }
