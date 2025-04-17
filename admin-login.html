@@ -5,19 +5,279 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="robots" content="noindex, nofollow">
   <title>Login | Backsure Global Support</title>
-  <link rel="stylesheet" href="admin/css/admin-style.css" />
-  <link rel="stylesheet" href="admin/css/admin-login.css" />
+  <!-- Fixed CSS paths -->
+  <link rel="stylesheet" href="style (1).css" />
+  <link rel="stylesheet" href="admin-style (1).css" />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  
+  <!-- Additional CSS for login styling -->
+  <style>
+    /* Login specific styles */
+    .login-body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #062767 0%, #0b3a84 100%);
+    }
+    
+    .login-container {
+      max-width: 450px;
+      width: 90%;
+      margin: 30px auto;
+    }
+    
+    .login-box {
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+    }
+    
+    .login-logo {
+      text-align: center;
+      padding: 30px 0;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .login-logo img {
+      height: 60px;
+    }
+    
+    .login-form-container {
+      padding: 30px;
+      display: none;
+    }
+    
+    .login-form-container.active {
+      display: block;
+    }
+    
+    .login-form-container h2 {
+      color: #062767;
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 1.8rem;
+    }
+    
+    .form-subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    
+    .input-with-icon {
+      position: relative;
+    }
+    
+    .input-with-icon i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #aaa;
+    }
+    
+    .input-with-icon input {
+      padding-left: 40px !important;
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+    
+    .form-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .remember-me {
+      display: flex;
+      align-items: center;
+    }
+    
+    .remember-me input {
+      margin-right: 8px;
+    }
+    
+    .forgot-password a {
+      color: #062767;
+      text-decoration: none;
+    }
+    
+    .forgot-password a:hover {
+      text-decoration: underline;
+    }
+    
+    .error-message {
+      color: #e74c3c;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      min-height: 20px;
+      display: none;
+    }
+    
+    .error-message.show {
+      display: block;
+    }
+    
+    .success-message {
+      color: #2ecc71;
+      margin-top: 5px;
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      min-height: 20px;
+      display: none;
+    }
+    
+    .success-message.show {
+      display: block;
+    }
+    
+    .form-actions {
+      margin-top: 20px;
+    }
+    
+    .form-actions button {
+      width: 100%;
+      padding: 12px;
+      background-color: #b19763;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .form-actions button:hover {
+      background-color: #a48852;
+    }
+    
+    .login-footer {
+      text-align: center;
+      margin-top: 20px;
+      color: #666;
+    }
+    
+    .login-footer a {
+      color: #062767;
+      text-decoration: none;
+    }
+    
+    .login-footer a:hover {
+      text-decoration: underline;
+    }
+    
+    .login-footer-main {
+      text-align: center;
+      margin-top: 20px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.9rem;
+    }
+    
+    .terms-checkbox {
+      display: flex;
+      align-items: flex-start;
+    }
+    
+    .terms-checkbox input {
+      margin-right: 10px;
+      margin-top: 4px;
+    }
+    
+    .password-strength {
+      margin-top: 10px;
+    }
+    
+    .strength-meter {
+      height: 5px;
+      background-color: #eee;
+      border-radius: 3px;
+      margin-bottom: 5px;
+    }
+    
+    .strength-meter-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    
+    .strength-meter-fill[data-strength="0"] {
+      width: 20%;
+      background-color: #e74c3c;
+    }
+    
+    .strength-meter-fill[data-strength="1"] {
+      width: 40%;
+      background-color: #f39c12;
+    }
+    
+    .strength-meter-fill[data-strength="2"] {
+      width: 60%;
+      background-color: #f1c40f;
+    }
+    
+    .strength-meter-fill[data-strength="3"] {
+      width: 80%;
+      background-color: #2ecc71;
+    }
+    
+    .strength-meter-fill[data-strength="4"] {
+      width: 100%;
+      background-color: #27ae60;
+    }
+    
+    .strength-text {
+      font-size: 0.8rem;
+      color: #777;
+    }
+    
+    @media (max-width: 480px) {
+      .login-container {
+        width: 95%;
+      }
+      
+      .login-form-container {
+        padding: 20px;
+      }
+      
+      .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .forgot-password {
+        margin-top: 10px;
+      }
+    }
+  </style>
 </head>
 <body class="login-body">
   <div class="login-container">
     <div class="login-box">
       <!-- Logo -->
       <div class="login-logo">
-        <img src="images/backsure-logo.png" alt="Backsure Global Support">
+        <img src="Logo.png" alt="Backsure Global Support">
       </div>
       
       <!-- Login Form -->
@@ -175,6 +435,6 @@
   </div>
   
   <!-- JavaScript for Login Page -->
-  <script src="admin/js/admin-login.js"></script>
+  <script src="admin-login (1).js"></script>
 </body>
 </html>
