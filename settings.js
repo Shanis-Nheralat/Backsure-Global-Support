@@ -619,4 +619,363 @@ function initializeBackupFunctions() {
         
         // Get backup date from row
         const row = this.closest('tr');
-        const date = row.cells[0].textContent
+        const date = row.cells[0].textContent;
+        
+        // Confirm restore
+        if (!confirm(`Warning: You are about to restore the backup from "${date}". This will overwrite your current website data. Are you sure you want to continue?`)) {
+          return;
+        }
+        
+        // Show loading on the row
+        row.classList.add('restoring');
+        
+        // In a real app, send restore request to server
+        // For demo purposes, simulate server delay
+        setTimeout(() => {
+          // Remove restoring class
+          row.classList.remove('restoring');
+          
+          // Show success message
+          showNotification('Backup restored successfully! Reloading page...', 'success');
+          
+          // Reload page after restoration
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+        }, 3000);
+      });
+    });
+  }
+  
+  // Delete backup buttons
+  if (deleteButtons.length) {
+    deleteButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Get backup date from row
+        const row = this.closest('tr');
+        const date = row.cells[0].textContent;
+        
+        // Confirm delete
+        if (!confirm(`Are you sure you want to delete the backup from "${date}"? This action cannot be undone.`)) {
+          return;
+        }
+        
+        // Show deleting animation
+        row.classList.add('deleting');
+        
+        // In a real app, send delete request to server
+        // For demo purposes, simulate server delay
+        setTimeout(() => {
+          // Remove row
+          row.remove();
+          
+          // Show success message
+          showNotification('Backup deleted successfully.', 'success');
+        }, 500);
+      });
+    });
+  }
+}
+
+/**
+ * Initialize "Save All" button functionality
+ */
+function initializeSaveAllButton() {
+  const saveAllBtn = document.getElementById('save-all-settings');
+  
+  if (!saveAllBtn) return;
+  
+  saveAllBtn.addEventListener('click', function() {
+    // Find all visible forms in the active tab panel
+    const activePanel = document.querySelector('.settings-panel.active');
+    
+    if (!activePanel) return;
+    
+    const forms = activePanel.querySelectorAll('form');
+    
+    if (forms.length === 0) return;
+    
+    // Show loading state
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving All...';
+    
+    // Submit each form
+    let formsProcessed = 0;
+    
+    forms.forEach(form => {
+      // Create form submission event
+      const submitEvent = new Event('submit', {
+        bubbles: true,
+        cancelable: true
+      });
+      
+      // Submit form
+      form.dispatchEvent(submitEvent);
+      
+      // Count processed forms
+      formsProcessed++;
+    });
+    
+    // Reset button after all forms are processed
+    setTimeout(() => {
+      this.disabled = false;
+      this.innerHTML = '<i class="fas fa-save"></i> Save All Changes';
+      
+      // Show success message
+      if (formsProcessed > 0) {
+        showNotification('All settings saved successfully!', 'success');
+      }
+    }, 1500);
+  });
+}
+
+/**
+ * Initialize sitemap regeneration functionality
+ */
+function initializeSitemapRegeneration() {
+  const regenerateBtn = document.getElementById('regenerate-sitemap');
+  
+  if (!regenerateBtn) return;
+  
+  regenerateBtn.addEventListener('click', function() {
+    // Show loading state
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Regenerating...';
+    
+    // In a real app, send request to regenerate sitemap
+    // For demo purposes, simulate server delay
+    setTimeout(() => {
+      // Reset button
+      this.disabled = false;
+      this.innerHTML = '<i class="fas fa-sync"></i> Regenerate Sitemap Now';
+      
+      // Show success message
+      showNotification('Sitemap regenerated successfully!', 'success');
+    }, 2000);
+  });
+}
+
+/**
+ * Initialize cache clearing functionality
+ */
+function initializeCacheClear() {
+  const clearCacheBtn = document.getElementById('clear-cache');
+  
+  if (!clearCacheBtn) return;
+  
+  clearCacheBtn.addEventListener('click', function() {
+    // Show loading state
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Clearing...';
+    
+    // In a real app, send request to clear cache
+    // For demo purposes, simulate server delay
+    setTimeout(() => {
+      // Reset button
+      this.disabled = false;
+      this.innerHTML = '<i class="fas fa-broom"></i> Clear Cache';
+      
+      // Show success message
+      showNotification('Cache cleared successfully!', 'success');
+    }, 1500);
+  });
+}
+
+/**
+ * Initialize test email functionality
+ */
+function initializeTestEmail() {
+  const testEmailBtn = document.getElementById('test-email');
+  
+  if (!testEmailBtn) return;
+  
+  testEmailBtn.addEventListener('click', function() {
+    // Get email settings
+    const host = document.getElementById('smtp-host').value;
+    const port = document.getElementById('smtp-port').value;
+    const username = document.getElementById('smtp-username').value;
+    const password = document.getElementById('smtp-password').value;
+    
+    // Basic validation
+    if (!host || !port || !username || !password) {
+      showNotification('Please fill in all SMTP settings before sending a test email.', 'error');
+      return;
+    }
+    
+    // Show loading state
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    
+    // In a real app, send test email request
+    // For demo purposes, simulate server delay
+    setTimeout(() => {
+      // Random success or failure for demo purposes
+      const success = Math.random() > 0.3; // 70% success rate
+      
+      // Reset button
+      this.disabled = false;
+      this.innerHTML = '<i class="fas fa-paper-plane"></i> Send Test Email';
+      
+      // Show message
+      if (success) {
+        showNotification('Test email sent successfully!', 'success');
+      } else {
+        showNotification('Failed to send test email. Please check your SMTP settings.', 'error');
+      }
+    }, 2000);
+  });
+}
+
+/**
+ * Show notification message
+ */
+function showNotification(message, type = 'info') {
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.innerHTML = `
+    <div class="notification-content">
+      <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+      <span>${message}</span>
+    </div>
+    <button class="notification-close"><i class="fas fa-times"></i></button>
+  `;
+  
+  // Add to document
+  document.body.appendChild(notification);
+  
+  // Add close button functionality
+  const closeButton = notification.querySelector('.notification-close');
+  
+  if (closeButton) {
+    closeButton.addEventListener('click', function() {
+      document.body.removeChild(notification);
+    });
+  }
+  
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (document.body.contains(notification)) {
+      notification.classList.add('fade-out');
+      
+      setTimeout(() => {
+        if (document.body.contains(notification)) {
+          document.body.removeChild(notification);
+        }
+      }, 300);
+    }
+  }, 5000);
+}
+
+/**
+ * Initialize color scheme preview 
+ */
+function initializeColorSchemePreview() {
+  const colorOptions = document.querySelectorAll('.color-option input[type="radio"]');
+  const primaryColorInput = document.getElementById('primary-color');
+  const secondaryColorInput = document.getElementById('secondary-color');
+  const accentColorInput = document.getElementById('accent-color');
+  
+  if (colorOptions.length) {
+    colorOptions.forEach(option => {
+      option.addEventListener('change', function() {
+        if (this.checked) {
+          const scheme = this.value;
+          
+          // Apply color scheme preview
+          applyColorScheme(scheme);
+        }
+      });
+    });
+  }
+  
+  // Custom color inputs
+  if (primaryColorInput && secondaryColorInput && accentColorInput) {
+    [primaryColorInput, secondaryColorInput, accentColorInput].forEach(input => {
+      input.addEventListener('change', function() {
+        // Select custom scheme
+        const customOption = document.getElementById('color-custom');
+        
+        if (customOption) {
+          customOption.checked = true;
+        }
+        
+        // Apply custom colors
+        applyCustomColors(
+          primaryColorInput.value,
+          secondaryColorInput.value,
+          accentColorInput.value
+        );
+      });
+    });
+  }
+}
+
+/**
+ * Apply color scheme
+ */
+function applyColorScheme(scheme) {
+  // In a real app, this would apply CSS variables or update a stylesheet
+  console.log(`Applying color scheme: ${scheme}`);
+  
+  // For demo purposes, show message
+  showNotification(`Color scheme "${scheme}" would be applied in a production environment.`, 'info');
+  
+  // Predefined color sets
+  const colorSets = {
+    default: {
+      primary: '#062767',
+      secondary: '#b19763',
+      accent: '#1cc88a'
+    },
+    blue: {
+      primary: '#1a56db',
+      secondary: '#3f83f8',
+      accent: '#0694a2'
+    },
+    green: {
+      primary: '#046c4e',
+      secondary: '#0e9f6e',
+      accent: '#e3a008'
+    },
+    purple: {
+      primary: '#5521b5',
+      secondary: '#8b5cf6',
+      accent: '#f05252'
+    },
+    dark: {
+      primary: '#111827',
+      secondary: '#374151',
+      accent: '#f59e0b'
+    }
+  };
+  
+  // Update color inputs
+  if (scheme in colorSets) {
+    const colors = colorSets[scheme];
+    
+    const primaryColorInput = document.getElementById('primary-color');
+    const secondaryColorInput = document.getElementById('secondary-color');
+    const accentColorInput = document.getElementById('accent-color');
+    
+    if (primaryColorInput) primaryColorInput.value = colors.primary;
+    if (secondaryColorInput) secondaryColorInput.value = colors.secondary;
+    if (accentColorInput) accentColorInput.value = colors.accent;
+  }
+}
+
+/**
+ * Apply custom colors
+ */
+function applyCustomColors(primary, secondary, accent) {
+  // In a real app, this would apply CSS variables or update a stylesheet
+  console.log(`Applying custom colors - Primary: ${primary}, Secondary: ${secondary}, Accent: ${accent}`);
+  
+  // For demo purposes, show message
+  showNotification('Custom colors would be applied in a production environment.', 'info');
+}
+
+// Call color scheme preview initialization
+initializeColorSchemePreview();
