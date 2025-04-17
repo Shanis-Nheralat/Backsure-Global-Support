@@ -164,6 +164,7 @@
 
 .source-list, .page-list {
   list-style: none;
+  padding: 0;
 }
 
 .source-list li, .page-list li {
@@ -326,6 +327,8 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s;
+  color: var(--gray-800);
+  text-decoration: none;
 }
 
 .quick-action-btn i {
@@ -418,6 +421,7 @@
   align-items: center;
   justify-content: center;
   transition: all 0.3s;
+  text-decoration: none;
 }
 
 .view-btn {
@@ -439,226 +443,7 @@
   opacity: 0.8;
 }
 
-/* ===== Date Display ===== */
-.date-display {
-  display: flex;
-  align-items: center;
-  color: var(--gray-600);
-  font-size: 0.9rem;
-}
-
-.date-display i {
-  margin-right: 5px;
-}
-
-/* ===== Pagination ===== */
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
-}
-
-.pagination-info {
-  color: var(--gray-600);
-  font-size: 0.9rem;
-}
-
-.pagination-links {
-  display: flex;
-  gap: 5px;
-}
-
-.pagination-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  background-color: white;
-  border: 1px solid var(--gray-300);
-  color: var(--gray-800);
-  transition: all 0.3s;
-}
-
-.pagination-link.active {
-  background-color: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.pagination-link.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination-link:not(.disabled):hover {
-  background-color: var(--gray-100);
-}
-
-/* ===== Responsive Adjustments ===== */
-@media (max-width: 992px) {
-  .analytics-section {
-    flex-direction: column;
-  }
-  
-  .quick-access-section {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .stats-overview {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .action-buttons {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .table-actions a {
-    width: 24px;
-    height: 24px;
-  }
-}
-
-@media (max-width: 576px) {
-  .stats-overview {
-    grid-template-columns: 1fr;
-  }
-  
-  .action-buttons {
-    grid-template-columns: 1fr;
-  }
-  
-  .activity-item {
-    flex-direction: column;
-  }
-  
-  .activity-icon {
-    margin-bottom: 10px;
-  }
-}.admin-table tr:hover {
-  background-color: var(--gray-100);
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.status-badge.new {
-  background-color: #e3f2fd;
-  color: #0d47a1;
-}
-
-.status-badge.replied {
-  background-color: #e0f2f1;
-  color: #00695c;
-}
-
-.status-badge.closed {
-  background-color: #f5f5f5;
-  color: #616161;
-}
-
-.table-actions {
-  display: flex;
-  gap: 5px;
-}
-
-.table-actions a {
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-}
-
-.view-btn {
-  background-color: var(--primary-color);
-  color: white;
-}
-
-.reply-btn {
-  background-color: var(--info-color);
-  color: white;
-}
-
-.delete-btn {
-  background-color: var(--danger-color);
-  color: white;
-}
-
-.table-actions a:hover {
-  opacity: 0.8;
-}
-
-/* ===== Date Display ===== */
-.date-display {
-  display: flex;
-  align-items: center;
-  color: var(--gray-600);
-  font-size: 0.9rem;
-}
-
-.date-display i {
-  margin-right: 5px;
-}
-
-/* ===== Pagination ===== */
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
-}
-
-.pagination-info {
-  color: var(--gray-600);
-  font-size: 0.9rem;
-}
-
-.pagination-links {
-  display: flex;
-  gap: 5px;
-}
-
-.pagination-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 4px;
-  background-color: white;
-  border: 1px solid var(--gray-300);
-  color: var(--gray-800);
-  transition: all 0.3s;
-}
-
-.pagination-link.active {
-  background-color: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.pagination-link.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination-link:not(.disabled):hover {
-  background-color: var(--gray-100);
-}
-
-/* ===== Responsive Adjustments ===== */
+/* ===== Responsive Styles ===== */
 @media (max-width: 992px) {
   .analytics-section {
     flex-direction: column;
