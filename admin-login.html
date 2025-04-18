@@ -1,16 +1,16 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="robots" content="noindex, nofollow">
-  <title>Login | Backsure Global Support</title>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-  
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="noindex, nofollow" name="robots"/>
+<title>Login | Backsure Global Support</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="favicon.ico" rel="icon" type="image/x-icon"/>
+<!-- Font Awesome for icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" rel="stylesheet"/>
+<style>
     /* Color variables */
     :root {
       --primary-color: #062767;
@@ -455,235 +455,211 @@
   </style>
 </head>
 <body class="login-body">
-  <div class="login-container">
-    <div class="login-box">
-      <!-- Logo -->
-      <div class="login-logo">
-        <img src="Logo.png" alt="Backsure Global Support">
-      </div>
-      
-      <!-- Login Form -->
-      <div class="login-form-container active" id="login-form-container">
-        <h2>Admin Login</h2>
-        <p class="form-subtitle">Sign in to access your dashboard</p>
-        
-        <form id="admin-login-form" action="admin-login-process.php" method="POST">
-          <div class="form-group">
-            <label for="username">Username or Email</label>
-            <div class="input-with-icon">
-              <i class="fas fa-user"></i>
-              <input type="text" id="username" name="username" required>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="password">Password</label>
-            <div class="input-with-icon">
-              <i class="fas fa-lock"></i>
-              <input type="password" id="password" name="password" required>
-            </div>
-          </div>
-          
-          <div class="form-options">
-            <div class="remember-me">
-              <input type="checkbox" id="remember" name="remember">
-              <label for="remember">Remember me</label>
-            </div>
-            <div class="forgot-password">
-              <a href="#" id="forgot-password-link">Forgot Password?</a>
-            </div>
-          </div>
-          
-          <div id="error-message" class="error-message"></div>
-          
-          <div class="form-actions">
-            <button type="submit" class="btn-primary">
-              <i class="fas fa-sign-in-alt"></i> Login
+<div class="login-container">
+<div class="login-box">
+<!-- Logo -->
+<div class="login-logo">
+<img alt="Backsure Global Support" src="Logo.png"/>
+</div>
+<!-- Login Form -->
+<div class="login-form-container active" id="login-form-container">
+<h2>Admin Login</h2>
+<p class="form-subtitle">Sign in to access your dashboard</p>
+<div id="login-error"><script>
+const urlParams = new URLSearchParams(window.location.search);
+const error = urlParams.get('error');
+if (error === 'invalid') {
+  document.write('<p class="error-msg">Invalid email or password.</p>');
+} else if (error === 'empty') {
+  document.write('<p class="error-msg">Please enter both email and password.</p>');
+} else if (error === 'inactive') {
+  document.write('<p class="error-msg">Your account is inactive. Contact Super Admin.</p>');
+}
+</script></div><form action="admin-login-process.php" id="loginForm" method="POST">
+<div class="form-group">
+<label for="username">Username or Email</label>
+<div class="input-with-icon">
+<i class="fas fa-user"></i>
+<input id="username" name="username" required="" type="text"/>
+</div>
+</div>
+<div class="form-group">
+<label for="password">Password</label>
+<div class="input-with-icon">
+<i class="fas fa-lock"></i>
+<input id="password" name="password" required="" type="password"/>
+</div>
+</div>
+<div class="form-options">
+<div class="remember-me">
+<input id="remember" name="remember" type="checkbox"/>
+<label for="remember">Remember me</label>
+</div>
+<div class="forgot-password">
+<a href="#" id="forgot-password-link">Forgot Password?</a>
+</div>
+</div>
+<div class="error-message" id="error-message"></div>
+<div class="form-actions">
+<button class="btn-primary" type="submit">
+<i class="fas fa-sign-in-alt"></i> Login
             </button>
-          </div>
-        </form>
-        
-        <div class="login-footer">
-          <p>Don't have an account? <a href="#" id="signup-link">Sign Up</a></p>
-        </div>
-      </div>
-      
-      <!-- Forgot Password Form -->
-      <div class="login-form-container" id="forgot-password-container">
-        <h2>Reset Password</h2>
-        <p class="form-subtitle">Enter your email address to receive a reset link</p>
-        
-        <form id="forgot-password-form" action="forgot-password-process.php" method="POST">
-          <div class="form-group">
-            <label for="reset-email">Email Address</label>
-            <div class="input-with-icon">
-              <i class="fas fa-envelope"></i>
-              <input type="email" id="reset-email" name="email" required>
-            </div>
-          </div>
-          
-          <div id="forgot-error-message" class="error-message"></div>
-          <div id="forgot-success-message" class="success-message"></div>
-          
-          <div class="form-actions">
-            <button type="submit" class="btn-primary">
-              <i class="fas fa-paper-plane"></i> Send Reset Link
+</div>
+</form><p class="forgot-link"><a href="forgot-password.html">Forgot Password?</a></p>
+<div class="login-footer">
+<p>Don't have an account? <a href="#" id="signup-link">Sign Up</a></p>
+</div>
+</div>
+<!-- Forgot Password Form -->
+<div class="login-form-container" id="forgot-password-container">
+<h2>Reset Password</h2>
+<p class="form-subtitle">Enter your email address to receive a reset link</p>
+<form action="forgot-password-process.php" id="forgot-password-form" method="POST">
+<div class="form-group">
+<label for="reset-email">Email Address</label>
+<div class="input-with-icon">
+<i class="fas fa-envelope"></i>
+<input id="reset-email" name="email" required="" type="email"/>
+</div>
+</div>
+<div class="error-message" id="forgot-error-message"></div>
+<div class="success-message" id="forgot-success-message"></div>
+<div class="form-actions">
+<button class="btn-primary" type="submit">
+<i class="fas fa-paper-plane"></i> Send Reset Link
             </button>
-          </div>
-        </form>
-        
-        <div class="login-footer">
-          <p><a href="#" id="back-to-login-link">Back to Login</a></p>
-        </div>
-      </div>
-      
-      <!-- Sign Up Form -->
-      <div class="login-form-container" id="signup-container">
-        <h2>Create Account</h2>
-        <p class="form-subtitle">Sign up for administrative access</p>
-        
-        <form id="signup-form">
-          <div class="form-group">
-            <label for="fullname">Full Name</label>
-            <div class="input-with-icon">
-              <i class="fas fa-user"></i>
-              <input type="text" id="fullname" name="fullname" required>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="signup-email">Email Address</label>
-            <div class="input-with-icon">
-              <i class="fas fa-envelope"></i>
-              <input type="email" id="signup-email" name="email" required>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="signup-username">Username</label>
-            <div class="input-with-icon">
-              <i class="fas fa-user-tag"></i>
-              <input type="text" id="signup-username" name="username" required>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="signup-password">Password</label>
-            <div class="input-with-icon">
-              <i class="fas fa-lock"></i>
-              <input type="password" id="signup-password" name="password" required>
-            </div>
-            <div class="password-strength">
-              <div class="strength-meter">
-                <div class="strength-meter-fill" data-strength="0"></div>
-              </div>
-              <div class="strength-text">Password strength: <span>Too weak</span></div>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <label for="confirm-password">Confirm Password</label>
-            <div class="input-with-icon">
-              <i class="fas fa-lock"></i>
-              <input type="password" id="confirm-password" name="confirm-password" required>
-            </div>
-          </div>
-          
-          <div class="form-group">
-            <div class="terms-checkbox">
-              <input type="checkbox" id="terms" name="terms" required>
-              <label for="terms">I agree to the <a href="#" id="terms-link">Terms &amp; Conditions</a></label>
-            </div>
-          </div>
-          
-          <div id="signup-error-message" class="error-message"></div>
-          <div id="signup-success-message" class="success-message"></div>
-          
-          <!-- Demo Notice Section -->
-          <div id="demo-notice" class="demo-notice" style="display: none;">
-            <div class="demo-box">
-              <h3><i class="fas fa-info-circle"></i> Demo Mode Active</h3>
-              <p>This is a demo website. No actual emails are being sent.</p>
-              <p>In a real implementation, you would receive an email with a confirmation link.</p>
-              <div class="sample-email">
-                <div class="email-header">
-                  <div><strong>From:</strong> support@backsure-global.com</div>
-                  <div><strong>Subject:</strong> Confirm Your Backsure Global Support Account</div>
-                </div>
-                <div class="email-body">
-                  <p>Dear <span id="sample-name">User</span>,</p>
-                  <p>Thank you for signing up with Backsure Global Support. Please click the button below to confirm your account:</p>
-                  <div class="email-button" id="confirm-account-btn">Confirm Account</div>
-                  <p>If you did not create this account, please ignore this email.</p>
-                  <p>Regards,<br>The Backsure Global Support Team</p>
-                </div>
-              </div>
-              <button id="fake-resend" class="btn-secondary">
-                <i class="fas fa-paper-plane"></i> Simulate Resend
+</div>
+</form>
+<div class="login-footer">
+<p><a href="#" id="back-to-login-link">Back to Login</a></p>
+</div>
+</div>
+<!-- Sign Up Form -->
+<div class="login-form-container" id="signup-container">
+<h2>Create Account</h2>
+<p class="form-subtitle">Sign up for administrative access</p>
+<form id="signup-form">
+<div class="form-group">
+<label for="fullname">Full Name</label>
+<div class="input-with-icon">
+<i class="fas fa-user"></i>
+<input id="fullname" name="fullname" required="" type="text"/>
+</div>
+</div>
+<div class="form-group">
+<label for="signup-email">Email Address</label>
+<div class="input-with-icon">
+<i class="fas fa-envelope"></i>
+<input id="signup-email" name="email" required="" type="email"/>
+</div>
+</div>
+<div class="form-group">
+<label for="signup-username">Username</label>
+<div class="input-with-icon">
+<i class="fas fa-user-tag"></i>
+<input id="signup-username" name="username" required="" type="text"/>
+</div>
+</div>
+<div class="form-group">
+<label for="signup-password">Password</label>
+<div class="input-with-icon">
+<i class="fas fa-lock"></i>
+<input id="signup-password" name="password" required="" type="password"/>
+</div>
+<div class="password-strength">
+<div class="strength-meter">
+<div class="strength-meter-fill" data-strength="0"></div>
+</div>
+<div class="strength-text">Password strength: <span>Too weak</span></div>
+</div>
+</div>
+<div class="form-group">
+<label for="confirm-password">Confirm Password</label>
+<div class="input-with-icon">
+<i class="fas fa-lock"></i>
+<input id="confirm-password" name="confirm-password" required="" type="password"/>
+</div>
+</div>
+<div class="form-group">
+<div class="terms-checkbox">
+<input id="terms" name="terms" required="" type="checkbox"/>
+<label for="terms">I agree to the <a href="#" id="terms-link">Terms &amp; Conditions</a></label>
+</div>
+</div>
+<div class="error-message" id="signup-error-message"></div>
+<div class="success-message" id="signup-success-message"></div>
+<!-- Demo Notice Section -->
+<div class="demo-notice" id="demo-notice" style="display: none;">
+<div class="demo-box">
+<h3><i class="fas fa-info-circle"></i> Demo Mode Active</h3>
+<p>This is a demo website. No actual emails are being sent.</p>
+<p>In a real implementation, you would receive an email with a confirmation link.</p>
+<div class="sample-email">
+<div class="email-header">
+<div><strong>From:</strong> support@backsure-global.com</div>
+<div><strong>Subject:</strong> Confirm Your Backsure Global Support Account</div>
+</div>
+<div class="email-body">
+<p>Dear <span id="sample-name">User</span>,</p>
+<p>Thank you for signing up with Backsure Global Support. Please click the button below to confirm your account:</p>
+<div class="email-button" id="confirm-account-btn">Confirm Account</div>
+<p>If you did not create this account, please ignore this email.</p>
+<p>Regards,<br/>The Backsure Global Support Team</p>
+</div>
+</div>
+<button class="btn-secondary" id="fake-resend">
+<i class="fas fa-paper-plane"></i> Simulate Resend
               </button>
-            </div>
-          </div>
-          
-          <div class="form-actions">
-            <button type="submit" class="btn-primary">
-              <i class="fas fa-user-plus"></i> Sign Up
+</div>
+</div>
+<div class="form-actions">
+<button class="btn-primary" type="submit">
+<i class="fas fa-user-plus"></i> Sign Up
             </button>
-          </div>
-        </form>
-        
-        <div class="login-footer">
-          <p>Already have an account? <a href="#" id="login-link">Login</a></p>
-        </div>
-      </div>
-    </div>
-    
-    <div class="login-footer-main">
-      <p>&copy; 2025 Backsure Global Support. All rights reserved.</p>
-    </div>
-  </div>
-  
-  <!-- Terms and Conditions Modal -->
-  <div id="terms-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Terms and Conditions</h3>
-        <button class="close-modal">&times;</button>
-      </div>
-      <div class="modal-body">
-        <h4>1. Acceptance of Terms</h4>
-        <p>By accessing and using the administrative services of Backsure Global Support, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.</p>
-        
-        <h4>2. Account Responsibilities</h4>
-        <p>You are responsible for maintaining the confidentiality of your account information, including your password, and for all activity that occurs under your account. You agree to notify us immediately of any unauthorized use of your account.</p>
-        
-        <h4>3. Acceptable Use</h4>
-        <p>You agree to use the administrative access only for legitimate business purposes related to Backsure Global Support. Any unauthorized use, including but not limited to data mining, scraping, or accessing data not intended for you, is strictly prohibited.</p>
-        
-        <h4>4. Privacy and Data Protection</h4>
-        <p>You acknowledge that you will handle all client and company data in accordance with applicable privacy laws and Backsure Global Support's privacy policies.</p>
-        
-        <h4>5. Intellectual Property</h4>
-        <p>All content, features, and functionality of the administrative interface are the exclusive property of Backsure Global Support and are protected by international copyright, trademark, and other intellectual property laws.</p>
-        
-        <h4>6. Termination</h4>
-        <p>Backsure Global Support reserves the right to terminate or suspend your access to the administrative interface at any time, without prior notice or liability, for any reason.</p>
-        
-        <h4>7. Changes to Terms</h4>
-        <p>Backsure Global Support reserves the right to modify these Terms and Conditions at any time. Your continued use of the administrative interface following the posting of revised Terms and Conditions means you accept and agree to the changes.</p>
-        
-        <h4>8. Limitation of Liability</h4>
-        <p>In no event shall Backsure Global Support be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of the administrative interface.</p>
-        
-        <h4>9. Governing Law</h4>
-        <p>These Terms and Conditions shall be governed by and construed in accordance with the laws of the jurisdiction in which Backsure Global Support is registered, without regard to its conflict of law provisions.</p>
-      </div>
-      <div class="modal-footer">
-        <button id="accept-terms">I Understand and Accept</button>
-      </div>
-    </div>
-  </div>
-  
-  <script>
+</div>
+</form>
+<div class="login-footer">
+<p>Already have an account? <a href="#" id="login-link">Login</a></p>
+</div>
+</div>
+</div>
+<div class="login-footer-main">
+<p>© 2025 Backsure Global Support. All rights reserved.</p>
+</div>
+</div>
+<!-- Terms and Conditions Modal -->
+<div class="modal" id="terms-modal">
+<div class="modal-content">
+<div class="modal-header">
+<h3>Terms and Conditions</h3>
+<button class="close-modal">×</button>
+</div>
+<div class="modal-body">
+<h4>1. Acceptance of Terms</h4>
+<p>By accessing and using the administrative services of Backsure Global Support, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.</p>
+<h4>2. Account Responsibilities</h4>
+<p>You are responsible for maintaining the confidentiality of your account information, including your password, and for all activity that occurs under your account. You agree to notify us immediately of any unauthorized use of your account.</p>
+<h4>3. Acceptable Use</h4>
+<p>You agree to use the administrative access only for legitimate business purposes related to Backsure Global Support. Any unauthorized use, including but not limited to data mining, scraping, or accessing data not intended for you, is strictly prohibited.</p>
+<h4>4. Privacy and Data Protection</h4>
+<p>You acknowledge that you will handle all client and company data in accordance with applicable privacy laws and Backsure Global Support's privacy policies.</p>
+<h4>5. Intellectual Property</h4>
+<p>All content, features, and functionality of the administrative interface are the exclusive property of Backsure Global Support and are protected by international copyright, trademark, and other intellectual property laws.</p>
+<h4>6. Termination</h4>
+<p>Backsure Global Support reserves the right to terminate or suspend your access to the administrative interface at any time, without prior notice or liability, for any reason.</p>
+<h4>7. Changes to Terms</h4>
+<p>Backsure Global Support reserves the right to modify these Terms and Conditions at any time. Your continued use of the administrative interface following the posting of revised Terms and Conditions means you accept and agree to the changes.</p>
+<h4>8. Limitation of Liability</h4>
+<p>In no event shall Backsure Global Support be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of the administrative interface.</p>
+<h4>9. Governing Law</h4>
+<p>These Terms and Conditions shall be governed by and construed in accordance with the laws of the jurisdiction in which Backsure Global Support is registered, without regard to its conflict of law provisions.</p>
+</div>
+<div class="modal-footer">
+<button id="accept-terms">I Understand and Accept</button>
+</div>
+</div>
+</div>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
       // Get form containers
       const loginContainer = document.getElementById('login-form-container');
@@ -1143,5 +1119,5 @@
       }
     }
   </script>
-</body>
+<script src="admin.js"></script></body>
 </html>
