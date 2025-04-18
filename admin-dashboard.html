@@ -5,16 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta name="robots" content="noindex, nofollow">
   <title>Admin Dashboard | Backsure Global Support</title>
-  <!-- Direct CSS link - no subdirectory -->
+  <!-- CSS Files -->
   <link rel="stylesheet" href="admin-style.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin-dashboard.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Chart.js for analytics -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Additional dashboard CSS -->
-  <link rel="stylesheet" href="admin-dashboard.css" />
   <style>
     /* Emergency inline styles in case external CSS fails */
     :root {
@@ -44,6 +43,8 @@
       --sidebar-collapsed-width: 80px;
       --header-height: 60px;
       --transition-speed: 0.3s;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
     * {
@@ -57,187 +58,7 @@
       font-size: 14px;
       line-height: 1.6;
       color: var(--gray-800);
-      background-color: var(--gray-100);
-    }
-
-    .admin-body {
-      min-height: 100vh;
-    }
-
-    .admin-container {
-      display: flex;
-      min-height: 100vh;
-    }
-
-    /* Sidebar Styles */
-    .admin-sidebar {
-      width: var(--sidebar-width);
-      background-color: var(--primary-color);
-      color: white;
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-      transition: width var(--transition-speed);
-      z-index: 100;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .admin-main {
-      flex: 1;
-      margin-left: var(--sidebar-width);
-      transition: margin-left var(--transition-speed);
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-
-    .sidebar-header {
-      padding: 15px 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-    }
-
-    .admin-logo {
-      height: 40px;
-      margin-bottom: 10px;
-    }
-
-    .sidebar-header h2 {
-      color: white;
-      font-size: 1.2rem;
-      text-align: center;
-      margin: 0;
-    }
-
-    .admin-user {
-      padding: 15px 20px;
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      position: relative;
-    }
-
-    .sidebar-nav {
-      flex: 1;
-      padding: 15px 0;
-    }
-
-    .sidebar-nav ul {
-      list-style: none;
-    }
-
-    .sidebar-nav ul li {
-      margin-bottom: 2px;
-    }
-
-    .sidebar-nav ul li a {
-      color: rgba(255, 255, 255, 0.8);
-      display: flex;
-      align-items: center;
-      padding: 10px 20px;
-      transition: all 0.3s;
-      text-decoration: none;
-    }
-
-    .sidebar-nav ul li a i {
-      width: 20px;
-      margin-right: 10px;
-      text-align: center;
-    }
-
-    .sidebar-nav ul li a:hover {
-      background-color: rgba(255, 255, 255, 0.1);
-      color: white;
-    }
-
-    .sidebar-nav ul li.active > a {
-      background-color: var(--accent-color);
-      color: white;
-    }
-
-    /* Header Styles */
-    .admin-header {
-      height: var(--header-height);
-      background-color: white;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 20px;
-      position: sticky;
-      top: 0;
-      z-index: 99;
-    }
-
-    /* Main Content */
-    .admin-content {
-      padding: 20px;
-      flex: 1;
-    }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .page-header h1 {
-      margin: 0;
-      color: var(--primary-color);
-    }
-
-    /* Stats Cards */
-    .stats-overview {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-
-    .stat-card {
-      background-color: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .stat-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 15px;
-      color: white;
-      font-size: 1.5rem;
-    }
-
-    .blue { background-color: var(--primary-color); }
-    .green { background-color: var(--success-color); }
-    .purple { background-color: #6f42c1; }
-    .orange { background-color: var(--warning-color); }
-
-    /* Footer */
-    .admin-footer {
-      background-color: white;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid var(--gray-200);
-      font-size: 0.9rem;
-      color: var(--gray-600);
+      background-color: var(--gray-200);
     }
   </style>
 </head>
@@ -382,18 +203,104 @@
           </div>
           
           <div class="header-actions">
-            <button class="action-btn notification-btn">
+            <button class="action-btn notification-btn" title="Notifications">
               <i class="fas fa-bell"></i>
               <span class="badge">5</span>
+              <div class="dropdown-menu notification-dropdown">
+                <div class="dropdown-header">
+                  <h4>Notifications</h4>
+                  <a href="#">Mark All as Read</a>
+                </div>
+                <ul class="notification-list">
+                  <li class="unread">
+                    <a href="#">
+                      <div class="notification-icon inquiry"><i class="fas fa-envelope"></i></div>
+                      <div class="notification-content">
+                        <p>New inquiry received from John Smith</p>
+                        <span class="time">2 hours ago</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="unread">
+                    <a href="#">
+                      <div class="notification-icon user"><i class="fas fa-user-plus"></i></div>
+                      <div class="notification-content">
+                        <p>New user registered: Sarah Johnson</p>
+                        <span class="time">Yesterday</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#">
+                      <div class="notification-icon system"><i class="fas fa-server"></i></div>
+                      <div class="notification-content">
+                        <p>System backup completed successfully</p>
+                        <span class="time">2 days ago</span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+                <div class="dropdown-footer">
+                  <a href="admin-notifications.html">View All Notifications</a>
+                </div>
+              </div>
             </button>
             
-            <button class="action-btn task-btn">
+            <button class="action-btn task-btn" title="Tasks">
               <i class="fas fa-check-circle"></i>
               <span class="badge">2</span>
+              <div class="dropdown-menu task-dropdown">
+                <div class="dropdown-header">
+                  <h4>Pending Tasks</h4>
+                  <a href="#">View All</a>
+                </div>
+                <ul class="task-list">
+                  <li>
+                    <a href="#">
+                      <div class="task-checkbox">
+                        <input type="checkbox" id="task1">
+                        <label for="task1"></label>
+                      </div>
+                      <div class="task-content">
+                        <p>Update homepage banner</p>
+                        <div class="task-meta">
+                          <span class="priority high">High</span>
+                          <span class="due">Today</span>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#">
+                      <div class="task-checkbox">
+                        <input type="checkbox" id="task2">
+                        <label for="task2"></label>
+                      </div>
+                      <div class="task-content">
+                        <p>Review new testimonials</p>
+                        <div class="task-meta">
+                          <span class="priority medium">Medium</span>
+                          <span class="due">Tomorrow</span>
+                        </div>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+                <div class="dropdown-footer">
+                  <a href="admin-tasks.html">Manage Tasks</a>
+                </div>
+              </div>
             </button>
             
-            <button class="action-btn help-btn">
+            <button class="action-btn help-btn" title="Help & Resources">
               <i class="fas fa-question-circle"></i>
+              <div class="dropdown-menu help-dropdown">
+                <ul>
+                  <li><a href="#"><i class="fas fa-book"></i> Documentation</a></li>
+                  <li><a href="#"><i class="fas fa-video"></i> Video Tutorials</a></li>
+                  <li><a href="#"><i class="fas fa-headset"></i> Support Center</a></li>
+                </ul>
+              </div>
             </button>
           </div>
         </div>
@@ -685,7 +592,7 @@
                     <td><span class="status-badge new">New</span></td>
                     <td>
                       <div class="table-actions">
-                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="#" class="view-btn" title="View Details"><i class="fas fa-eye"></i></a>
                         <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
                         <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
                       </div>
@@ -699,7 +606,7 @@
                     <td><span class="status-badge new">New</span></td>
                     <td>
                       <div class="table-actions">
-                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="#" class="view-btn" title="View Details"><i class="fas fa-eye"></i></a>
                         <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
                         <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
                       </div>
@@ -713,7 +620,7 @@
                     <td><span class="status-badge replied">Replied</span></td>
                     <td>
                       <div class="table-actions">
-                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="#" class="view-btn" title="View Details"><i class="fas fa-eye"></i></a>
                         <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
                         <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
                       </div>
@@ -727,7 +634,7 @@
                     <td><span class="status-badge closed">Closed</span></td>
                     <td>
                       <div class="table-actions">
-                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="#" class="view-btn" title="View Details"><i class="fas fa-eye"></i></a>
                         <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
                         <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
                       </div>
@@ -750,119 +657,12 @@
         </div>
       </footer>
     </main>
+    
+    <!-- For mobile sidebar backdrop -->
+    <div class="sidebar-backdrop"></div>
   </div>
   
   <!-- JavaScript for Admin Dashboard -->
-  <script>
-    // Initialize dashboard functionality
-    document.addEventListener('DOMContentLoaded', function() {
-      // Set current date
-      const now = new Date();
-      document.getElementById('current-date').innerText = now.toLocaleDateString('en-US', { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-      
-      // Traffic chart
-      const trafficCtx = document.getElementById('traffic-chart').getContext('2d');
-      const trafficChart = new Chart(trafficCtx, {
-        type: 'line',
-        data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          datasets: [{
-            label: 'Visitors',
-            data: [320, 420, 395, 450, 380, 285, 310],
-            backgroundColor: 'rgba(78, 115, 223, 0.05)',
-            borderColor: 'rgba(78, 115, 223, 1)',
-            pointBackgroundColor: 'rgba(78, 115, 223, 1)',
-            pointBorderColor: '#fff',
-            pointHoverBackgroundColor: '#fff',
-            pointHoverBorderColor: 'rgba(78, 115, 223, 1)',
-            borderWidth: 2,
-            tension: 0.3,
-            fill: true
-          }]
-        },
-        options: {
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: 'rgba(0, 0, 0, 0.05)'
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      });
-      
-      // Sidebar toggle
-      const sidebarToggle = document.getElementById('sidebar-toggle');
-      const adminContainer = document.querySelector('.admin-container');
-      
-      sidebarToggle.addEventListener('click', function() {
-        adminContainer.classList.toggle('sidebar-collapsed');
-      });
-      
-      // User dropdown
-      const userDropdownToggle = document.getElementById('user-dropdown-toggle');
-      const userDropdown = document.getElementById('user-dropdown');
-      
-      if (userDropdownToggle && userDropdown) {
-        userDropdownToggle.addEventListener('click', function() {
-          userDropdown.classList.toggle('show');
-        });
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-          if (!userDropdownToggle.contains(e.target) && !userDropdown.contains(e.target)) {
-            userDropdown.classList.remove('show');
-          }
-        });
-      }
-      
-      // Submenu toggle
-      const submenuItems = document.querySelectorAll('.has-submenu > a');
-      
-      submenuItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-          e.preventDefault();
-          const parent = this.parentElement;
-          
-          // Close other open submenus
-          const openItems = document.querySelectorAll('.has-submenu.open');
-          openItems.forEach(openItem => {
-            if (openItem !== parent) {
-              openItem.classList.remove('open');
-              const submenu = openItem.querySelector('.submenu');
-              if (submenu) {
-                submenu.style.maxHeight = null;
-              }
-            }
-          });
-          
-          // Toggle current submenu
-          parent.classList.toggle('open');
-          const submenu = parent.querySelector('.submenu');
-          
-          if (submenu) {
-            if (parent.classList.contains('open')) {
-              submenu.style.maxHeight = submenu.scrollHeight + 'px';
-            } else {
-              submenu.style.maxHeight = null;
-            }
-          }
-        });
-      });
+  <script src="admin-dashboard.js"></script>
+</body>
+</html>
