@@ -522,3 +522,32 @@ window.adminDashboard = {
   logout,
   showNotification
 };
+
+
+// Login form enhancements
+const loginForm = document.getElementById("loginForm");
+
+if (loginForm) {
+  loginForm.addEventListener("submit", (e) => {
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+
+    if (!email.value.trim() || !password.value.trim()) {
+      alert("Please fill in both email and password.");
+      e.preventDefault();
+      return;
+    }
+
+    const submitBtn = loginForm.querySelector("button[type='submit']");
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Logging in...";
+    }
+  });
+}
+
+// Future enhancement: Role-based UI control (stub)
+// const userRole = sessionStorage.getItem("user_role");
+// if (userRole === "hr") {
+//   document.querySelectorAll(".superadmin-only").forEach(el => el.style.display = "none");
+// }
