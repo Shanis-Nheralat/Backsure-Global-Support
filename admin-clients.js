@@ -1,1262 +1,2387 @@
 /**
  * Backsure Global Support
- * Inquiry Management System - Backend
+ * Client Management JavaScript
  * Version: 1.0
- * 
- * This file contains the server-side code for handling inquiries,
- * including database interactions, email notifications, and API endpoints.
  */
 
-// Import required modules
-const express = require('express');
-const router = express.Router();
-const mongoose = require('mongoose');
-const multer = require('multer');
-const nodemailer = require('nodemailer');
-const validator = require('validator');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const { check, validationResult } = require('express-validator');
-
-// Initialize Express app
-const app = express();
-
-// Middleware configuration
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const fileExt = file.originalname.split('.').pop();
-    cb(null, `${file.fieldname}-${uniqueSuffix}.${fileExt}`);
-  }
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize DataTables
+  initClientsTable();
+  
+  // Initialize event listeners
+  initBulkActions();
+  initModals();
+  initFilters();
+  initRowActions();
+  initFormValidation();
+  initFlatpickr();
+  
+  // Initialize any notifications
+  checkForNotifications();
 });
 
-const fileFilter = (req, file, cb) => {
-  // Accept only specific file types
-  if (file.mimetype === 'application/pdf' || 
-      file.mimetype === 'application/msword' || 
-      file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-      file.mimetype === 'image/jpeg' || 
-      file.mimetype === 'image/png') {
-    cb(null, true);
-  } else {
-    cb(new Error('Invalid file type. Only PDF, DOC, DOCX, JPG, and PNG files are allowed.'), false);
-  }
-};
-
-const upload = multer({ 
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB size limit
-  }
-});
-
-// Database connection
-mongoose.connect('mongodb://localhost:27017/backsure_inquiries', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useFindAndModify: false,
-  useCreateIndex: true
-}).then(() => {
-  console.log('Connected to MongoDB');
-}).catch(err => {
-  console.error('MongoDB connection error:', err);
-});
-
-// Define Mongoose schemas and models
-const inquirySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  email: {
-    type: String,
-    required: true,
-    trim: true,
-    lowercase: true,
-    validate: {
-      validator: validator.isEmail,
-      message: 'Invalid email format'
-    }
-  },
-  phone: {
-    type: String,
-    trim: true
-  },
-  company: {
-    type: String,
-    trim: true
-  },
-  subject: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  message: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  service: {
-    type: String,
-    enum: ['Finance & Accounting', 'Insurance Support', 'Dedicated Teams', 'Business Care', 'Other'],
-    default: 'Other'
-  },
-  status: {
-    type: String,
-    enum: ['New', 'Contacted', 'In Progress', 'Qualified', 'Unqualified', 'Closed'],
-    default: 'New'
-  },
-  source: {
-    type: String,
-    enum: ['Website', 'Referral', 'Social Media', 'Email Campaign', 'Event', 'Other'],
-    default: 'Website'
-  },
-  priority: {
-    type: String,
-    enum: ['Low', 'Medium', 'High', 'Urgent'],
-    default: 'Medium'
-  },
-  attachments: [
-    {
-      filename: String,
-      path: String,
-      mimetype: String,
-      size: Number
-    }
-  ],
-  notes: [
-    {
-      content: String,
-      createdBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-      },
-      createdAt: {
-        type: Date,
-        default: Date.now
+/**
+ * Initialize the clients DataTable
+ */
+function initClientsTable() {
+  const clientsTable = $('#clients-table').DataTable({
+    responsive: true,
+    language: {
+      search: "",
+      searchPlaceholder: "Search clients...",
+      lengthMenu: "Show _MENU_ clients per page",
+      info: "Showing _START_ to _END_ of _TOTAL_ clients",
+      infoEmpty: "No clients available",
+      infoFiltered: "(filtered from _MAX_ total clients)",
+      paginate: {
+        first: '<i class="fas fa-angle-double-left"></i>',
+        previous: '<i class="fas fa-angle-left"></i>',
+        next: '<i class="fas fa-angle-right"></i>',
+        last: '<i class="fas fa-angle-double-right"></i>'
       }
-    }
-  ],
-  assignedTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  },
-  followUpDate: {
-    type: Date
-  },
-  lastContactDate: {
-    type: Date
-  }
-});
-
-// Add index for faster queries
-inquirySchema.index({ email: 1 });
-inquirySchema.index({ status: 1 });
-inquirySchema.index({ createdAt: 1 });
-inquirySchema.index({ assignedTo: 1 });
-
-// Pre-save middleware to update the updatedAt field
-inquirySchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
-
-// User schema for admin users
-const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true
-  },
-  password: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true,
-    lowercase: true,
-    validate: {
-      validator: validator.isEmail,
-      message: 'Invalid email format'
-    }
-  },
-  fullName: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  role: {
-    type: String,
-    enum: ['admin', 'sales', 'support', 'marketing'],
-    default: 'support'
-  },
-  department: {
-    type: String,
-    enum: ['Finance & Accounting', 'Insurance Support', 'Dedicated Teams', 'Business Care', 'General'],
-    default: 'General'
-  },
-  active: {
-    type: Boolean,
-    default: true
-  },
-  lastLogin: {
-    type: Date
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
-});
-
-// Pre-save middleware to hash password
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+    },
+    columnDefs: [
+      {
+        targets: 0, // Checkbox column
+        orderable: false,
+        className: 'select-checkbox',
+        width: '30px'
+      },
+      {
+        targets: 8, // Actions column
+        orderable: false,
+        width: '120px'
+      }
+    ],
+    order: [[5, 'desc']], // Sort by inquiry date by default
+    pageLength: 10,
+    lengthMenu: [
+      [10, 25, 50, 100, -1],
+      [10, 25, 50, 100, "All"]
+    ],
+    dom: 'Bfrtip',
+    buttons: [
+      'copy', 'csv', 'excel', 'pdf', 'print'
+    ]
+  });
   
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
-
-// Method to compare password
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  return bcrypt.compare(candidatePassword, this.password);
-};
-
-// Create models
-const Inquiry = mongoose.model('Inquiry', inquirySchema);
-const User = mongoose.model('User', userSchema);
-
-// Email configuration
-const emailTransporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.backsure.com',
-  port: process.env.EMAIL_PORT || 587,
-  secure: process.env.EMAIL_SECURE === 'true',
-  auth: {
-    user: process.env.EMAIL_USER || 'notifications@backsure.com',
-    pass: process.env.EMAIL_PASS || 'your-password'
-  }
-});
-
-// Helper function to send email
-async function sendEmail(to, subject, html) {
-  try {
-    const mailOptions = {
-      from: '"Backsure Global Support" <notifications@backsure.com>',
-      to: to,
-      subject: subject,
-      html: html
-    };
-    
-    const info = await emailTransporter.sendMail(mailOptions);
-    console.log('Email sent:', info.messageId);
-    return info;
-  } catch (error) {
-    console.error('Error sending email:', error);
-    throw error;
-  }
-}
-
-// Authentication middleware
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  // Add the DataTable search box functionality to our custom search box
+  $('#search-clients').on('keyup', function() {
+    clientsTable.search(this.value).draw();
+  });
   
-  if (!token) {
-    return res.status(401).json({ error: 'Access denied. No token provided.' });
-  }
+  // Make select-all checkbox work with DataTables
+  $('#select-all').on('click', function() {
+    $('.row-checkbox').prop('checked', this.checked);
+    updateBulkActionCounter();
+  });
   
-  jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
-    if (err) {
-      return res.status(403).json({ error: 'Invalid or expired token.' });
+  // Update select-all when individual checkboxes change
+  $('#clients-table tbody').on('change', '.row-checkbox', function() {
+    if (!this.checked) {
+      $('#select-all').prop('checked', false);
+    } else {
+      const allChecked = $('.row-checkbox:checked').length === $('.row-checkbox').length;
+      $('#select-all').prop('checked', allChecked);
     }
-    
-    req.user = user;
-    next();
+    updateBulkActionCounter();
+  });
+  
+  // Update select-all state when table is redrawn
+  clientsTable.on('draw', function() {
+    const allChecked = $('.row-checkbox:checked').length === $('.row-checkbox').length;
+    $('#select-all').prop('checked', allChecked && $('.row-checkbox').length > 0);
+    updateBulkActionCounter();
   });
 }
 
-// Role-based authorization middleware
-function authorize(roles = []) {
-  if (typeof roles === 'string') {
-    roles = [roles];
+/**
+ * Initialize date picker
+ */
+function initFlatpickr() {
+  if (typeof flatpickr !== 'undefined') {
+    // Date picker for follow-up scheduling
+    flatpickr("#followup-date", {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      minDate: "today",
+      time_24hr: false
+    });
+    
+    // Date picker for client detail follow-up
+    flatpickr("#client-followup-date", {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      minDate: "today",
+      time_24hr: false
+    });
   }
-  
-  return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-    
-    if (roles.length && !roles.includes(req.user.role)) {
-      return res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
-    }
-    
-    next();
-  };
 }
 
-// API Endpoints
-
-// User login
-router.post('/api/login', [
-  check('username').notEmpty().withMessage('Username is required'),
-  check('password').notEmpty().withMessage('Password is required')
-], async (req, res) => {
-  // Validate request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+/**
+ * Initialize bulk actions functionality
+ */
+function initBulkActions() {
+  // Show/hide bulk actions panel
+  $('#bulk-actions-btn').on('click', function() {
+    $('#bulk-actions-panel').slideToggle(200);
+  });
   
-  try {
-    // Find user by username
-    const user = await User.findOne({ username: req.body.username });
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid username or password' });
-    }
-    
-    // Check if user is active
-    if (!user.active) {
-      return res.status(401).json({ error: 'Account is disabled. Please contact administrator.' });
-    }
-    
-    // Verify password
-    const isMatch = await user.comparePassword(req.body.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid username or password' });
-    }
-    
-    // Update last login time
-    user.lastLogin = Date.now();
-    await user.save();
-    
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        id: user._id, 
-        username: user.username, 
-        role: user.role,
-        department: user.department 
-      },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '12h' }
-    );
-    
-    // Return user data and token
-    res.json({
-      token,
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-        department: user.department
-      }
-    });
-    
-  } catch (err) {
-    console.error('Login error:', err);
-    res.status(500).json({ error: 'Server error during login' });
-  }
-});
-
-// Public inquiry submission endpoint
-router.post('/api/inquiries', [
-  upload.array('attachments', 5),
-  check('name').notEmpty().withMessage('Name is required'),
-  check('email').isEmail().withMessage('Valid email is required'),
-  check('subject').notEmpty().withMessage('Subject is required'),
-  check('message').notEmpty().withMessage('Message is required')
-], async (req, res) => {
-  // Validate request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  // Close bulk actions panel
+  $('.bulk-close').on('click', function() {
+    $('#bulk-actions-panel').slideUp(200);
+  });
   
-  try {
-    // Process file attachments
-    const attachments = req.files ? req.files.map(file => ({
-      filename: file.originalname,
-      path: file.path,
-      mimetype: file.mimetype,
-      size: file.size
-    })) : [];
-    
-    // Create new inquiry
-    const inquiry = new Inquiry({
-      name: req.body.name,
-      email: req.body.email,
-      phone: req.body.phone || '',
-      company: req.body.company || '',
-      subject: req.body.subject,
-      message: req.body.message,
-      service: req.body.service || 'Other',
-      source: req.body.source || 'Website',
-      attachments: attachments
-    });
-    
-    // Save to database
-    await inquiry.save();
-    
-    // Send confirmation email to client
-    const clientEmailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Thank you for contacting Backsure Global Support</h2>
-        <p>Dear ${req.body.name},</p>
-        <p>We have received your inquiry regarding "${req.body.subject}".</p>
-        <p>Our team will review your message and get back to you as soon as possible, usually within 1-2 business days.</p>
-        <p>For your reference, here's a summary of your inquiry:</p>
-        <ul>
-          <li><strong>Inquiry ID:</strong> ${inquiry._id}</li>
-          <li><strong>Subject:</strong> ${req.body.subject}</li>
-          <li><strong>Service:</strong> ${req.body.service || 'Other'}</li>
-          <li><strong>Date Submitted:</strong> ${new Date().toLocaleString()}</li>
-        </ul>
-        <p>If you have any additional information to provide, please reply to this email.</p>
-        <p>Best regards,<br>Backsure Global Support Team</p>
-      </div>
-    `;
-    
-    await sendEmail(req.body.email, 'Your Inquiry Received - Backsure Global Support', clientEmailHtml);
-    
-    // Send notification to admin/staff
-    const notificationEmail = process.env.NOTIFICATION_EMAIL || 'inquiries@backsure.com';
-    const staffEmailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>New Inquiry Received</h2>
-        <p>A new inquiry has been submitted through the website:</p>
-        <ul>
-          <li><strong>Name:</strong> ${req.body.name}</li>
-          <li><strong>Email:</strong> ${req.body.email}</li>
-          <li><strong>Phone:</strong> ${req.body.phone || 'Not provided'}</li>
-          <li><strong>Company:</strong> ${req.body.company || 'Not provided'}</li>
-          <li><strong>Subject:</strong> ${req.body.subject}</li>
-          <li><strong>Service:</strong> ${req.body.service || 'Other'}</li>
-          <li><strong>Source:</strong> ${req.body.source || 'Website'}</li>
-          <li><strong>Attachments:</strong> ${attachments.length} file(s)</li>
-        </ul>
-        <p><strong>Message:</strong></p>
-        <p>${req.body.message}</p>
-        <p><a href="${process.env.ADMIN_URL || 'https://admin.backsure.com'}/inquiries/${inquiry._id}">View in Admin Panel</a></p>
-      </div>
-    `;
-    
-    await sendEmail(notificationEmail, 'New Inquiry: ' + req.body.subject, staffEmailHtml);
-    
-    // Return success response
-    res.status(201).json({ 
-      success: true, 
-      message: 'Inquiry submitted successfully', 
-      inquiryId: inquiry._id 
-    });
-    
-  } catch (err) {
-    console.error('Inquiry submission error:', err);
-    res.status(500).json({ error: 'Error submitting inquiry' });
-  }
-});
-
-// Get all inquiries (admin only)
-router.get('/api/inquiries', authenticateToken, authorize(['admin', 'sales']), async (req, res) => {
-  try {
-    // Parse query parameters
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const skip = (page - 1) * limit;
-    
-    // Build query based on filters
-    let query = {};
-    
-    if (req.query.status) {
-      query.status = req.query.status;
-    }
-    
-    if (req.query.service) {
-      query.service = req.query.service;
-    }
-    
-    if (req.query.search) {
-      query.$or = [
-        { name: { $regex: req.query.search, $options: 'i' } },
-        { email: { $regex: req.query.search, $options: 'i' } },
-        { company: { $regex: req.query.search, $options: 'i' } },
-        { subject: { $regex: req.query.search, $options: 'i' } },
-        { message: { $regex: req.query.search, $options: 'i' } }
-      ];
-    }
-    
-    // Filter by assigned user (for non-admin roles)
-    if (req.user.role !== 'admin' && !req.query.all) {
-      query.assignedTo = req.user.id;
-    }
-    
-    // Date range filter
-    if (req.query.startDate && req.query.endDate) {
-      const startDate = new Date(req.query.startDate);
-      const endDate = new Date(req.query.endDate);
-      endDate.setHours(23, 59, 59, 999); // Set to end of day
-      
-      query.createdAt = {
-        $gte: startDate,
-        $lte: endDate
-      };
-    }
-    
-    // Sort options
-    const sortOptions = {};
-    if (req.query.sortBy) {
-      sortOptions[req.query.sortBy] = req.query.sortOrder === 'desc' ? -1 : 1;
+  // Export button
+  $('#export-clients-btn').on('click', function() {
+    const selectedIds = getSelectedClientIds();
+    if (selectedIds.length > 0) {
+      exportClients(selectedIds);
     } else {
-      sortOptions.createdAt = -1; // Default sort by newest
+      // If none selected, export all visible
+      exportClients('all');
     }
-    
-    // Execute query with pagination
-    const inquiries = await Inquiry.find(query)
-      .populate('assignedTo', 'fullName email')
-      .sort(sortOptions)
-      .skip(skip)
-      .limit(limit);
-    
-    // Get total count for pagination
-    const total = await Inquiry.countDocuments(query);
-    
-    // Return results
-    res.json({
-      inquiries,
-      pagination: {
-        total,
-        page,
-        limit,
-        pages: Math.ceil(total / limit)
-      }
-    });
-    
-  } catch (err) {
-    console.error('Error fetching inquiries:', err);
-    res.status(500).json({ error: 'Server error while fetching inquiries' });
-  }
-});
-
-// Get single inquiry by ID
-router.get('/api/inquiries/:id', authenticateToken, async (req, res) => {
-  try {
-    const inquiry = await Inquiry.findById(req.params.id)
-      .populate('assignedTo', 'fullName email')
-      .populate('notes.createdBy', 'fullName');
-    
-    if (!inquiry) {
-      return res.status(404).json({ error: 'Inquiry not found' });
-    }
-    
-    // Check if user has permission to view this inquiry
-    if (req.user.role !== 'admin' && 
-        inquiry.assignedTo && 
-        inquiry.assignedTo._id.toString() !== req.user.id) {
-      return res.status(403).json({ error: 'You do not have permission to view this inquiry' });
-    }
-    
-    res.json(inquiry);
-    
-  } catch (err) {
-    console.error('Error fetching inquiry:', err);
-    res.status(500).json({ error: 'Server error while fetching inquiry' });
-  }
-});
-
-// Update inquiry
-router.put('/api/inquiries/:id', authenticateToken, [
-  check('status').optional().isIn(['New', 'Contacted', 'In Progress', 'Qualified', 'Unqualified', 'Closed']),
-  check('priority').optional().isIn(['Low', 'Medium', 'High', 'Urgent']),
-  check('assignedTo').optional().isMongoId()
-], async (req, res) => {
-  // Validate request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+  });
   
-  try {
-    const inquiry = await Inquiry.findById(req.params.id);
+  // Bulk action buttons
+  $('.bulk-btn').on('click', function() {
+    const action = $(this).data('action');
+    const selectedIds = getSelectedClientIds();
     
-    if (!inquiry) {
-      return res.status(404).json({ error: 'Inquiry not found' });
+    if (selectedIds.length === 0) {
+      showToast('Please select at least one client', 'warning');
+      return;
     }
     
-    // Check if user has permission to update this inquiry
-    if (req.user.role !== 'admin' && 
-        inquiry.assignedTo && 
-        inquiry.assignedTo.toString() !== req.user.id) {
-      return res.status(403).json({ error: 'You do not have permission to update this inquiry' });
+    switch (action) {
+      case 'contact':
+        showConfirmModal('Are you sure you want to mark the selected clients as contacted?', function() {
+          performBulkAction('contact', selectedIds);
+        });
+        break;
+      case 'followup':
+        $('#followup-modal').show();
+        break;
+      case 'assign':
+        $('#assign-modal').show();
+        break;
+      case 'export':
+        exportClients(selectedIds);
+        break;
+      case 'delete':
+        showConfirmModal('Are you sure you want to delete the selected clients? This action cannot be undone.', function() {
+          performBulkAction('delete', selectedIds);
+        });
+        break;
+    }
+  });
+  
+  // Schedule followup button in modal
+  $('#schedule-followup-btn').on('click', function() {
+    const selectedIds = getSelectedClientIds();
+    const followupDate = $('#followup-date').val();
+    const followupNote = $('#followup-note').val();
+    
+    if (!followupDate) {
+      showToast('Please select a followup date', 'warning');
+      return;
     }
     
-    // Fields that can be updated
-    const updatableFields = [
-      'status', 'priority', 'assignedTo', 'followUpDate'
-    ];
+    scheduleFollowup(selectedIds, followupDate, followupNote);
+    $('#followup-modal').hide();
+  });
+  
+  // Assign to user button in modal
+  $('#assign-to-btn').on('click', function() {
+    const selectedIds = getSelectedClientIds();
+    const assignedUser = $('#assigned-user').val();
+    const assignedNote = $('#assign-note').val();
     
-    // Update fields if provided in request
-    updatableFields.forEach(field => {
-      if (req.body[field] !== undefined) {
-        inquiry[field] = req.body[field];
-      }
+    if (!assignedUser) {
+      showToast('Please select a user to assign', 'warning');
+      return;
+    }
+    
+    assignToUser(selectedIds, assignedUser, assignedNote);
+    $('#assign-modal').hide();
+  });
+}
+
+/**
+ * Initialize modal dialogs
+ */
+function initModals() {
+  // Close modal when clicking the X or Cancel button
+  $('.modal-close, .modal-cancel').on('click', function() {
+    $(this).closest('.modal').hide();
+  });
+  
+  // Close modal when clicking outside the modal content
+  $('.modal').on('click', function(e) {
+    if (e.target === this) {
+      $(this).hide();
+    }
+  });
+  
+  // Add Client button
+  $('#add-client-btn').on('click', function() {
+    // Reset form
+    $('#add-client-form')[0].reset();
+    $('#client-id').val('');
+    $('#client-form-title').text('Add New Client');
+    
+    // Show modal
+    $('#client-form-modal').show();
+  });
+  
+  // Save Client button
+  $('#save-client-btn').on('click', function() {
+    const isValid = validateClientForm();
+    if (isValid) {
+      submitClientForm();
+    }
+  });
+  
+  // Client details modal tabs
+  $('.client-modal-tab').on('click', function() {
+    const tabId = $(this).data('tab');
+    
+    // Hide all tab contents
+    $('.client-tab-content').hide();
+    
+    // Show the selected tab content
+    $(`#${tabId}`).show();
+    
+    // Update active tab
+    $('.client-modal-tab').removeClass('active');
+    $(this).addClass('active');
+  });
+}
+
+/**
+ * Initialize filter functionality
+ */
+function initFilters() {
+  // Apply filters button
+  $('#apply-filters').on('click', function() {
+    applyFilters();
+  });
+  
+  // Reset filters button
+  $('#reset-filters').on('click', function() {
+    resetFilters();
+  });
+  
+  // Set today's date as default for date-to filter
+  const today = new Date();
+  const formattedDate = today.toISOString().split('T')[0];
+  $('#date-to').val(formattedDate);
+  
+  // Set date 30 days ago as default for date-from filter
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(today.getDate() - 30);
+  const formattedThirtyDaysAgo = thirtyDaysAgo.toISOString().split('T')[0];
+  $('#date-from').val(formattedThirtyDaysAgo);
+}
+
+/**
+ * Initialize row action buttons (view, contact, edit, delete)
+ */
+function initRowActions() {
+  // View client details
+  $('#clients-table').on('click', '.action-btn.view', function(e) {
+    e.preventDefault();
+    const clientId = $(this).data('id');
+    viewClientDetails(clientId);
+  });
+  
+  // Edit client
+  $('#clients-table').on('click', '.action-btn.edit', function(e) {
+    e.preventDefault();
+    const clientId = $(this).data('id');
+    editClient(clientId);
+  });
+  
+  // Contact client
+  $('#clients-table').on('click', '.action-btn.contact', function(e) {
+    e.preventDefault();
+    const clientId = $(this).data('id');
+    contactClient(clientId);
+  });
+  
+  // Delete client
+  $('#clients-table').on('click', '.action-btn.delete', function() {
+    const clientId = $(this).data('id');
+    const clientName = $(this).closest('tr').find('.client-name').text();
+    
+    showConfirmModal(`Are you sure you want to delete "${clientName}"? This action cannot be undone.`, function() {
+      deleteClient(clientId);
     });
+  });
+  
+  // Edit button in client details modal
+  $('#edit-client-btn').on('click', function() {
+    const clientId = $(this).data('client-id');
+    $('#client-detail-modal').hide();
+    editClient(clientId);
+  });
+  
+  // Send email button in client details modal
+  $('#send-email-btn').on('click', function() {
+    const clientId = $(this).data('client-id');
+    const emailSubject = $('#email-subject').val();
+    const emailBody = $('#email-body').val();
     
-    // Check if status changed to "Contacted"
-    if (req.body.status === 'Contacted' && inquiry.status !== 'Contacted') {
-      inquiry.lastContactDate = Date.now();
+    if (!emailSubject || !emailBody) {
+      showToast('Please fill in both subject and message', 'warning');
+      return;
     }
     
-    // Save changes
-    await inquiry.save();
+    sendEmail(clientId, emailSubject, emailBody);
+  });
+  
+  // Add note button in client details modal
+  $('#add-note-btn').on('click', function() {
+    const clientId = $(this).data('client-id');
+    const noteContent = $('#note-content').val();
     
-    // If inquiry was assigned to someone, send notification
-    if (req.body.assignedTo && 
-        (!inquiry.assignedTo || 
-         inquiry.assignedTo.toString() !== req.body.assignedTo)) {
-      
-      const assignedUser = await User.findById(req.body.assignedTo);
-      
-      if (assignedUser) {
-        const assignmentEmailHtml = `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>New Inquiry Assigned to You</h2>
-            <p>Dear ${assignedUser.fullName},</p>
-            <p>An inquiry has been assigned to you for follow-up:</p>
-            <ul>
-              <li><strong>Inquiry ID:</strong> ${inquiry._id}</li>
-              <li><strong>Client:</strong> ${inquiry.name} (${inquiry.email})</li>
-              <li><strong>Subject:</strong> ${inquiry.subject}</li>
-              <li><strong>Status:</strong> ${inquiry.status}</li>
-              <li><strong>Priority:</strong> ${inquiry.priority}</li>
-            </ul>
-            <p><a href="${process.env.ADMIN_URL || 'https://admin.backsure.com'}/inquiries/${inquiry._id}">View Inquiry Details</a></p>
-            <p>Please review and follow up as soon as possible.</p>
-            <p>Best regards,<br>Backsure Global Support</p>
+    if (!noteContent) {
+      showToast('Please enter a note', 'warning');
+      return;
+    }
+    
+    addClientNote(clientId, noteContent);
+  });
+  
+  // Schedule followup in client details modal
+  $('#schedule-client-followup-btn').on('click', function() {
+    const clientId = $(this).data('client-id');
+    const followupDate = $('#client-followup-date').val();
+    const followupNote = $('#client-followup-note').val();
+    
+    if (!followupDate) {
+      showToast('Please select a followup date', 'warning');
+      return;
+    }
+    
+    scheduleFollowup([clientId], followupDate, followupNote);
+  });
+}
+
+/**
+ * Initialize form validation
+ */
+function initFormValidation() {
+  // Source field should be required when adding a new client
+  $('#client-source').on('change', function() {
+    if ($(this).val() === 'referral') {
+      // If referral is selected, show referral source field
+      if ($('#referral-source-group').length === 0) {
+        const referralField = `
+          <div class="form-group" id="referral-source-group">
+            <label for="referral-source">Referral Source</label>
+            <input type="text" id="referral-source" class="form-control" placeholder="Who referred this client?">
           </div>
         `;
-        
-        await sendEmail(
-          assignedUser.email, 
-          `New Inquiry Assigned: ${inquiry.subject}`, 
-          assignmentEmailHtml
-        );
+        $(this).closest('.form-row').after(referralField);
       }
+    } else {
+      // Hide referral source field if not needed
+      $('#referral-source-group').remove();
+    }
+  });
+}
+
+/**
+ * Check for notifications and upcoming followups
+ */
+function checkForNotifications() {
+  // In a real implementation, this would make an API call
+  // For now, we'll just simulate with a timeout
+  
+  setTimeout(() => {
+    // Check for today's followups
+    const todaysFollowups = 3; // This would come from API
+    
+    if (todaysFollowups > 0) {
+      showToast(`You have ${todaysFollowups} client followups scheduled for today`, 'info', 8000);
     }
     
-    res.json({ 
-      success: true, 
-      message: 'Inquiry updated successfully', 
-      inquiry 
-    });
+    // Check for overdue followups
+    const overdueFollowups = 2; // This would come from API
     
-  } catch (err) {
-    console.error('Error updating inquiry:', err);
-    res.status(500).json({ error: 'Server error while updating inquiry' });
-  }
-});
+    if (overdueFollowups > 0) {
+      showToast(`You have ${overdueFollowups} overdue client followups`, 'warning', 8000);
+    }
+  }, 2000);
+}
 
-// Add note to inquiry
-router.post('/api/inquiries/:id/notes', authenticateToken, [
-  check('content').notEmpty().withMessage('Note content is required')
-], async (req, res) => {
-  // Validate request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+/**
+ * Get array of selected client IDs
+ */
+function getSelectedClientIds() {
+  const selectedIds = [];
+  $('.row-checkbox:checked').each(function() {
+    const clientId = $(this).closest('tr').data('id');
+    selectedIds.push(clientId);
+  });
+  return selectedIds;
+}
+
+/**
+ * Update the bulk action counter with the number of selected clients
+ */
+function updateBulkActionCounter() {
+  const count = $('.row-checkbox:checked').length;
+  $('.selected-count').text(`${count} item${count !== 1 ? 's' : ''} selected`);
+}
+
+/**
+ * Apply filters to the clients table
+ */
+function applyFilters() {
+  const statusFilter = $('#filter-status').val();
+  const serviceFilter = $('#filter-service').val();
+  const sourceFilter = $('#filter-source').val();
+  const assignedFilter = $('#filter-assigned').val();
+  const dateFrom = $('#date-from').val();
+  const dateTo = $('#date-to').val();
+  
+  // Apply filters to DataTable
+  const table = $('#clients-table').DataTable();
+  
+  // Clear existing filters
+  table.search('').columns().search('').draw();
+  
+  // Apply each filter if set
+  if (statusFilter) {
+    table.column(6).search(statusFilter, true, false).draw();
   }
   
-  try {
-    const inquiry = await Inquiry.findById(req.params.id);
-    
-    if (!inquiry) {
-      return res.status(404).json({ error: 'Inquiry not found' });
-    }
-    
-    // Check if user has permission to add note
-    if (req.user.role !== 'admin' && 
-        inquiry.assignedTo && 
-        inquiry.assignedTo.toString() !== req.user.id) {
-      return res.status(403).json({ error: 'You do not have permission to add notes to this inquiry' });
-    }
-    
-    // Add new note
-    const newNote = {
-      content: req.body.content,
-      createdBy: req.user.id,
-      createdAt: Date.now()
-    };
-    
-    inquiry.notes.push(newNote);
-    await inquiry.save();
-    
-    // Get the populated note to return
-    const populatedInquiry = await Inquiry.findById(req.params.id)
-      .populate('notes.createdBy', 'fullName');
-    
-    const addedNote = populatedInquiry.notes[populatedInquiry.notes.length - 1];
-    
-    res.status(201).json({ 
-      success: true, 
-      message: 'Note added successfully', 
-      note: addedNote 
-    });
-    
-  } catch (err) {
-    console.error('Error adding note:', err);
-    res.status(500).json({ error: 'Server error while adding note' });
+  if (serviceFilter) {
+    table.column(4).search(serviceFilter).draw();
   }
-});
-
-// Delete note from inquiry
-router.delete('/api/inquiries/:inquiryId/notes/:noteId', authenticateToken, authorize(['admin']), async (req, res) => {
-  try {
-    const inquiry = await Inquiry.findById(req.params.inquiryId);
-    
-    if (!inquiry) {
-      return res.status(404).json({ error: 'Inquiry not found' });
-    }
-    
-    // Find note index
-    const noteIndex = inquiry.notes.findIndex(
-      note => note._id.toString() === req.params.noteId
-    );
-    
-    if (noteIndex === -1) {
-      return res.status(404).json({ error: 'Note not found' });
-    }
-    
-    // Remove note
-    inquiry.notes.splice(noteIndex, 1);
-    await inquiry.save();
-    
-    res.json({ 
-      success: true, 
-      message: 'Note deleted successfully' 
-    });
-    
-  } catch (err) {
-    console.error('Error deleting note:', err);
-    res.status(500).json({ error: 'Server error while deleting note' });
+  
+  if (sourceFilter) {
+    // Source filter would be applied to a hidden column in a real implementation
+    console.log(`Source filter: ${sourceFilter}`);
   }
-});
-
-// Upload additional attachments to inquiry
-router.post('/api/inquiries/:id/attachments', authenticateToken, upload.array('attachments', 5), async (req, res) => {
-  try {
-    const inquiry = await Inquiry.findById(req.params.id);
-    
-    if (!inquiry) {
-      return res.status(404).json({ error: 'Inquiry not found' });
-    }
-    
-    // Check if user has permission
-    if (req.user.role !== 'admin' && 
-        inquiry.assignedTo && 
-        inquiry.assignedTo.toString() !== req.user.id) {
-      return res.status(403).json({ error: 'You do not have permission to add attachments to this inquiry' });
-    }
-    
-    // Process file attachments
-    const newAttachments = req.files ? req.files.map(file => ({
-      filename: file.originalname,
-      path: file.path,
-      mimetype: file.mimetype,
-      size: file.size
-    })) : [];
-    
-    // Add attachments to inquiry
-    inquiry.attachments = [...inquiry.attachments, ...newAttachments];
-    await inquiry.save();
-    
-    res.status(201).json({ 
-      success: true, 
-      message: 'Attachments added successfully', 
-      attachments: newAttachments 
-    });
-    
-  } catch (err) {
-    console.error('Error adding attachments:', err);
-    res.status(500).json({ error: 'Server error while adding attachments' });
+  
+  if (assignedFilter) {
+    table.column(7).search(assignedFilter).draw();
   }
-});
-
-// Delete attachment from inquiry
-router.delete('/api/inquiries/:inquiryId/attachments/:attachmentId', authenticateToken, authorize(['admin']), async (req, res) => {
-  try {
-    const inquiry = await Inquiry.findById(req.params.inquiryId);
-    
-    if (!inquiry) {
-      return res.status(404).json({ error: 'Inquiry not found' });
-    }
-    
-    // Find attachment index
-    const attachmentIndex = inquiry.attachments.findIndex(
-      attachment => attachment._id.toString() === req.params.attachmentId
-    );
-    
-    if (attachmentIndex === -1) {
-      return res.status(404).json({ error: 'Attachment not found' });
-    }
-    
-    // Get the attachment path for deletion
-    const attachmentPath = inquiry.attachments[attachmentIndex].path;
-    
-    // Remove attachment from inquiry
-    inquiry.attachments.splice(attachmentIndex, 1);
-    await inquiry.save();
-    
-    // Delete file from server (use fs.unlink)
-    const fs = require('fs');
-    fs.unlink(attachmentPath, (err) => {
-      if (err) {
-        console.error('Error deleting file:', err);
-      }
-    });
-    
-    res.json({ 
-      success: true, 
-      message: 'Attachment deleted successfully' 
-    });
-    
-  } catch (err) {
-    console.error('Error deleting attachment:', err);
-    res.status(500).json({ error: 'Server error while deleting attachment' });
+  
+  // Date range filtering is more complex and might require custom filtering logic
+  // This is a simplified example that doesn't actually filter by date
+  if (dateFrom && dateTo) {
+    console.log(`Filtering dates from ${dateFrom} to ${dateTo}`);
+    // In a real implementation, you would create a custom filtering function
   }
-});
+  
+  showToast('Filters applied', 'success');
+}
 
-// Get statistics for dashboard
-router.get('/api/inquiries/stats/dashboard', authenticateToken, async (req, res) => {
-  try {
-    const stats = {};
+/**
+ * Reset all filters to default values
+ */
+function resetFilters() {
+  // Reset dropdown filters
+  $('#filter-status, #filter-service, #filter-source, #filter-assigned').val('');
+  
+  // Reset date filters to defaults
+  const today = new Date();
+  const formattedDate = today.toISOString().split('T')[0];
+  $('#date-to').val(formattedDate);
+  
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(today.getDate() - 30);
+  const formattedThirtyDaysAgo = thirtyDaysAgo.toISOString().split('T')[0];
+  $('#date-from').val(formattedThirtyDaysAgo);
+  
+  // Clear DataTable filters
+  const table = $('#clients-table').DataTable();
+  table.search('').columns().search('').draw();
+  
+  // Reset search box
+  $('#search-clients').val('');
+  
+  showToast('Filters reset', 'info');
+}
+
+/**
+ * Validate client form
+ */
+function validateClientForm() {
+  const name = $('#client-name').val().trim();
+  const email = $('#client-email').val().trim();
+  const phone = $('#client-phone').val().trim();
+  const service = $('#client-service').val();
+  
+  // Simple validation
+  if (!name) {
+    showToast('Client name is required', 'warning');
+    return false;
+  }
+  
+  if (!email && !phone) {
+    showToast('Either email or phone is required', 'warning');
+    return false;
+  }
+  
+  if (email && !isValidEmail(email)) {
+    showToast('Please enter a valid email', 'warning');
+    return false;
+  }
+  
+  if (!service) {
+    showToast('Please select a service', 'warning');
+    return false;
+  }
+  
+  return true;
+}
+
+/**
+ * Simple email validation
+ */
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+/**
+ * Submit client form (add or edit)
+ */
+function submitClientForm() {
+  const clientId = $('#client-id').val();
+  const isNewClient = !clientId;
+  
+  // In a real implementation, this would make an API call
+  showToast(isNewClient ? 'Adding client...' : 'Updating client...', 'info');
+  
+  setTimeout(() => {
+    const name = $('#client-name').val();
+    const service = $('#client-service').val();
+    const status = $('#client-status').val();
+    const assigned = $('#client-assigned').val();
     
-    // Total inquiries
-    stats.total = await Inquiry.countDocuments();
-    
-    // New inquiries (last 30 days)
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    stats.newLast30Days = await Inquiry.countDocuments({
-      createdAt: { $gte: thirtyDaysAgo }
-    });
-    
-    // Status breakdown
-    const statusCounts = await Inquiry.aggregate([
-      { $group: { _id: '$status', count: { $sum: 1 } } }
-    ]);
-    
-    stats.statusBreakdown = statusCounts.reduce((acc, item) => {
-      acc[item._id] = item.count;
-      return acc;
-    }, {});
-    
-    // Service breakdown
-    const serviceCounts = await Inquiry.aggregate([
-      { $group: { _id: '$service', count: { $sum: 1 } } }
-    ]);
-    
-    stats.serviceBreakdown = serviceCounts.reduce((acc, item) => {
-      acc[item._id] = item.count;
-      return acc;
-    }, {});
-    
-    // Inquiries by month (last 6 months)
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    sixMonthsAgo.setDate(1);
-    sixMonthsAgo.setHours(0, 0, 0, 0);
-    
-    const monthlyInquiries = await Inquiry.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: sixMonthsAgo }
-        }
-      },
-      {
-        $group: {
-          _id: {
-            year: { $year: '$createdAt' },
-            month: { $month: '$createdAt' }
-          },
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $sort: {
-          '_id.year': 1,
-          '_id.month': 1
-        }
-      }
-    ]);
-    
-    // Format monthly data for chart
-    stats.monthlyTrend = monthlyInquiries.map(item => {
-      const date = new Date(item._id.year, item._id.month - 1, 1);
-      return {
-        month: date.toLocaleString('default', { month: 'short' }),
-        year: item._id.year,
-        count: item.count
-      };
-    });
-    
-    // Get assignments for current user (if not admin)
-    if (req.user.role !== 'admin') {
-      stats.assigned = await Inquiry.countDocuments({
-        assignedTo: req.user.id
-      });
+    // If editing an existing client
+    if (!isNewClient) {
+      const row = $(`tr[data-id="${clientId}"]`);
       
-      stats.assignedPending = await Inquiry.countDocuments({
-        assignedTo: req.user.id,
-        status: { $nin: ['Closed', 'Unqualified'] }
-      });
+      // Update row data
+      row.find('.client-name').text(name);
+      row.find('td:eq(4)').text(getServiceName(service));
+      row.find('td:eq(6)').html(`<span class="status-badge ${status}">${getStatusName(status)}</span>`);
+      row.find('td:eq(7)').text(getAssignedName(assigned));
+      
+      showToast('Client updated successfully', 'success');
+    } else {
+      // Add new client - in a real implementation, the server would return the new ID
+      const newId = Math.max(...Array.from($('#clients-table tbody tr')).map(row => parseInt($(row).data('id') || 0))) + 1;
+      
+      // Add to DataTable
+      const table = $('#clients-table').DataTable();
+      const email = $('#client-email').val();
+      const phone = $('#client-phone').val();
+      
+      const newRow = [
+        `<div class="checkbox-wrapper">
+          <input type="checkbox" id="select-${newId}" class="row-checkbox">
+          <label for="select-${newId}"></label>
+        </div>`,
+        `<span class="client-name">${name}</span>`,
+        email,
+        phone,
+        getServiceName(service),
+        formatDate(new Date()),
+        `<span class="status-badge ${status}">${getStatusName(status)}</span>`,
+        getAssignedName(assigned),
+        `<div class="action-buttons">
+          <button class="action-btn view" title="View Details" data-id="${newId}">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button class="action-btn contact" title="Contact" data-id="${newId}">
+            <i class="fas fa-envelope"></i>
+          </button>
+          <button class="action-btn edit" title="Edit" data-id="${newId}">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="action-btn delete" title="Delete" data-id="${newId}">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>`
+      ];
+      
+      table.row.add(newRow).draw();
+      const newRowNode = table.row(':last').node();
+      $(newRowNode).attr('data-id', newId);
+      
+      showToast('Client added successfully', 'success');
     }
     
-    res.json(stats);
-    
-  } catch (err) {
-    console.error('Error fetching statistics:', err);
-    res.status(500).json({ error: 'Server error while fetching statistics' });
-  }
-});
+    // Close the modal
+    $('#client-form-modal').hide();
+  }, 1000);
+}
 
-// Send follow-up email to client
-router.post('/api/inquiries/:id/follow-up', authenticateToken, [
-  check('subject').notEmpty().withMessage('Email subject is required'),
-  check('message').notEmpty().withMessage('Email message is required')
-], async (req, res) => {
-  // Validate request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
+/**
+ * Format date for display
+ */
+function formatDate(date) {
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+}
+
+/**
+ * Get service name from value
+ */
+function getServiceName(value) {
+  const services = {
+    'finance-accounting': 'Finance & Accounting',
+    'hr-admin': 'HR & Admin',
+    'dedicated-teams': 'Dedicated Teams',
+    'insurance': 'Insurance',
+    'business-care': 'Business Care Plans',
+    'other': 'Other'
+  };
+  
+  return services[value] || value;
+}
+
+/**
+ * Get status name from value
+ */
+function getStatusName(value) {
+  const statusNames = {
+    'new': 'New',
+    'contacted': 'Contacted',
+    'followup': 'Follow-up',
+    'converted': 'Converted',
+    'closed': 'Closed'
+  };
+  
+  return statusNames[value] || value;
+}
+
+/**
+ * Get assigned user name from ID
+ */
+function getAssignedName(id) {
+  if (!id) return 'Unassigned';
+  
+  const users = {
+    '1': 'John Smith',
+    '2': 'Sarah Johnson',
+    '3': 'Michael Chen'
+  };
+  
+  return users[id] || 'Unknown';
+}
+
+/**
+ * View client details
+ */
+function viewClientDetails(clientId) {
+  // In a real implementation, this would fetch client details from the API
+  console.log(`Viewing client ID: ${clientId}`);
+  
+  // For demo purposes, we'll just show the modal with static data
+  const clientName = $(`tr[data-id="${clientId}"] .client-name`).text();
+  const clientEmail = $(`tr[data-id="${clientId}"] td:eq(2)`).text();
+  
+  // Set client info in the modal
+  $('#client-detail-name').text(clientName);
+  $('#client-detail-id').text(`ID: ${clientId}`);
+  
+  // Set data attributes for action buttons
+  $('#send-email-btn, #add-note-btn, #schedule-client-followup-btn, #edit-client-btn').data('client-id', clientId);
+  
+  // Reset active tab
+  $('.client-modal-tab:first').click();
+  
+  // Show the modal
+  $('#client-detail-modal').show();
+  
+  // In a real implementation, you would load notes, emails, and activities here
+  loadClientNotes(clientId);
+  loadClientEmails(clientId);
+  loadClientActivities(clientId);
+  loadClientFollowups(clientId);
+}
+
+/**
+ * Edit client
+ */
+function editClient(clientId) {
+  // In a real implementation, this would fetch client data from the API
+  console.log(`Editing client ID: ${clientId}`);
+  
+  // For demo purposes, we'll prefill the form with data from the table
+  const clientRow = $(`tr[data-id="${clientId}"]`);
+  
+  // Set client ID in hidden field
+  $('#client-id').val(clientId);
+  
+  // Set form title
+  $('#client-form-title').text('Edit Client');
+  
+  // Set form fields
+  $('#client-name').val(clientRow.find('.client-name').text());
+  $('#client-email').val(clientRow.find('td:eq(2)').text());
+  $('#client-phone').val(clientRow.find('td:eq(3)').text());
+  
+  // Set service (this is a simplified mapping for demo)
+  const serviceText = clientRow.find('td:eq(4)').text();
+  let serviceValue = '';
+  
+  if (serviceText.includes('Finance')) {
+    serviceValue = 'finance-accounting';
+  } else if (serviceText.includes('HR')) {
+    serviceValue = 'hr-admin';
+  } else if (serviceText.includes('Dedicated')) {
+    serviceValue = 'dedicated-teams';
+  } else if (serviceText.includes('Insurance')) {
+    serviceValue = 'insurance';
+  } else if (serviceText.includes('Business Care')) {
+    serviceValue = 'business-care';
+  } else {
+    serviceValue = 'other';
   }
   
-  try {
-    const inquiry = await Inquiry.findById(req.params.id);
-    
-    if (!inquiry) {
-      return res.status(404).json({ error: 'Inquiry not found' });
+  $('#client-service').val(serviceValue);
+  
+  // Set status
+  const statusBadge = clientRow.find('.status-badge');
+  let statusValue = '';
+  
+  if (statusBadge.hasClass('new')) {
+    statusValue = 'new';
+  } else if (statusBadge.hasClass('contacted')) {
+    statusValue = 'contacted';
+  } else if (statusBadge.hasClass('followup')) {
+    statusValue = 'followup';
+  } else if (statusBadge.hasClass('converted')) {
+    statusValue = 'converted';
+  } else if (statusBadge.hasClass('closed')) {
+    statusValue = 'closed';
+  }
+  
+  $('#client-status').val(statusValue);
+  
+  // Set assigned user (simplified for demo)
+  const assignedText = clientRow.find('td:eq(7)').text();
+  let assignedValue = '';
+  
+  if (assignedText.includes('John')) {
+    assignedValue = '1';
+  } else if (assignedText.includes('Sarah')) {
+    assignedValue = '2';
+  } else if (assignedText.includes('Michael')) {
+    assignedValue = '3';
+  }
+  
+  $('#client-assigned').val(assignedValue);
+  
+  // Show the modal
+  $('#client-form-modal').show();
+}
+
+/**
+ * Contact client
+ */
+function contactClient(clientId) {
+  // In a real implementation, this would open an email/SMS modal
+  // For now, we'll just open the client details modal on the communication tab
+  viewClientDetails(clientId);
+  
+  // Switch to communication tab
+  $('.client-modal-tab[data-tab="client-communication"]').click();
+}
+
+/**
+ * Delete a single client
+ */
+function deleteClient(clientId) {
+  // In a real implementation, this would make an API call
+  console.log(`Deleting client ID:`, clientId);
+  
+  // Simulate API call with timeout
+  showToast('Deleting client...', 'info');
+  
+  setTimeout(() => {
+    // Remove the row with animation
+    $(`tr[data-id="${clientId}"]`).fadeOut(300, function() {
+      // Update DataTable
+      const table = $('#clients-table').DataTable();
+      table.row($(this)).remove().draw(false);
+      
+      showToast('Client deleted successfully', 'success');
+    });
+  }, 1000);
+}
+
+/**
+ * Perform bulk action on selected clients
+ */
+function performBulkAction(action, clientIds) {
+  // In a real implementation, this would make an API call
+  console.log(`Performing bulk action: ${action} on clients:`, clientIds);
+  
+  // Simulate API call with timeout
+  showToast('Processing...', 'info');
+  
+  setTimeout(() => {
+    // Update UI based on action
+    switch (action) {
+      case 'contact':
+        // Update status badges
+        clientIds.forEach(id => {
+          const statusCell = $(`tr[data-id="${id}"] td:nth-child(7)`);
+          statusCell.html('<span class="status-badge contacted">Contacted</span>');
+        });
+        showToast('Selected clients have been marked as contacted', 'success');
+        break;
+      case 'delete':
+        clientIds.forEach(id => {
+          $(`tr[data-id="${id}"]`).fadeOut(300, function() {
+            // Update DataTable
+            const table = $('#clients-table').DataTable();
+            table.row($(this)).remove().draw(false);
+          });
+        });
+        showToast('Selected clients have been deleted', 'success');
+        break;
     }
     
-    // Check if user has permission
-    if (req.user.role !== 'admin' && 
-        inquiry.assignedTo && 
-        inquiry.assignedTo.toString() !== req.user.id) {
-      return res.status(403).json({ error: 'You do not have permission to send follow-up for this inquiry' });
+    // Reset checkboxes after bulk action
+    $('#select-all').prop('checked', false);
+    $('.row-checkbox').prop('checked', false);
+    updateBulkActionCounter();
+    
+    // Hide bulk actions panel
+    $('#bulk-actions-panel').slideUp(200);
+  }, 1000);
+}
+
+/**
+ * Schedule followup for clients
+ */
+function scheduleFollowup(clientIds, followupDate, followupNote) {
+  // In a real implementation, this would make an API call
+  console.log(`Scheduling followup for clients:`, clientIds);
+  console.log(`Followup date:`, followupDate);
+  console.log(`Followup note:`, followupNote);
+  
+  // Simulate API call with timeout
+  showToast('Scheduling followup...', 'info');
+  
+  setTimeout(() => {
+    // Update UI
+    clientIds.forEach(id => {
+      const statusCell = $(`tr[data-id="${id}"] td:nth-child(7)`);
+      if (statusCell.find('.status-badge').hasClass('new')) {
+        statusCell.html('<span class="status-badge followup">Follow-up</span>');
+      }
+    });
+    
+    // Reset form
+    $('#followup-date').val('');
+    $('#followup-note').val('');
+    $('#client-followup-date').val('');
+    $('#client-followup-note').val('');
+    
+    showToast('Followup scheduled successfully', 'success');
+    
+    // If this was triggered from the/**
+ * Backsure Global Support
+ * Client Management JavaScript
+ * Version: 1.0
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize DataTables
+  initClientsTable();
+  
+  // Initialize event listeners
+  initBulkActions();
+  initModals();
+  initFilters();
+  initRowActions();
+  initFormValidation();
+  initFlatpickr();
+  
+  // Initialize any notifications
+  checkForNotifications();
+});
+
+/**
+ * Initialize the clients DataTable
+ */
+function initClientsTable() {
+  const clientsTable = $('#clients-table').DataTable({
+    responsive: true,
+    language: {
+      search: "",
+      searchPlaceholder: "Search clients...",
+      lengthMenu: "Show _MENU_ clients per page",
+      info: "Showing _START_ to _END_ of _TOTAL_ clients",
+      infoEmpty: "No clients available",
+      infoFiltered: "(filtered from _MAX_ total clients)",
+      paginate: {
+        first: '<i class="fas fa-angle-double-left"></i>',
+        previous: '<i class="fas fa-angle-left"></i>',
+        next: '<i class="fas fa-angle-right"></i>',
+        last: '<i class="fas fa-angle-double-right"></i>'
+      }
+    },
+    columnDefs: [
+      {
+        targets: 0, // Checkbox column
+        orderable: false,
+        className: 'select-checkbox',
+        width: '30px'
+      },
+      {
+        targets: 8, // Actions column
+        orderable: false,
+        width: '120px'
+      }
+    ],
+    order: [[5, 'desc']], // Sort by inquiry date by default
+    pageLength: 10,
+    lengthMenu: [
+      [10, 25, 50, 100, -1],
+      [10, 25, 50, 100, "All"]
+    ],
+    dom: 'Bfrtip',
+    buttons: [
+      'copy', 'csv', 'excel', 'pdf', 'print'
+    ]
+  });
+  
+  // Add the DataTable search box functionality to our custom search box
+  $('#search-clients').on('keyup', function() {
+    clientsTable.search(this.value).draw();
+  });
+  
+  // Make select-all checkbox work with DataTables
+  $('#select-all').on('click', function() {
+    $('.row-checkbox').prop('checked', this.checked);
+    updateBulkActionCounter();
+  });
+  
+  // Update select-all when individual checkboxes change
+  $('#clients-table tbody').on('change', '.row-checkbox', function() {
+    if (!this.checked) {
+      $('#select-all').prop('checked', false);
+    } else {
+      const allChecked = $('.row-checkbox:checked').length === $('.row-checkbox').length;
+      $('#select-all').prop('checked', allChecked);
+    }
+    updateBulkActionCounter();
+  });
+  
+  // Update select-all state when table is redrawn
+  clientsTable.on('draw', function() {
+    const allChecked = $('.row-checkbox:checked').length === $('.row-checkbox').length;
+    $('#select-all').prop('checked', allChecked && $('.row-checkbox').length > 0);
+    updateBulkActionCounter();
+  });
+}
+
+/**
+ * Initialize date picker
+ */
+function initFlatpickr() {
+  if (typeof flatpickr !== 'undefined') {
+    // Date picker for follow-up scheduling
+    flatpickr("#followup-date", {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      minDate: "today",
+      time_24hr: false
+    });
+    
+    // Date picker for client detail follow-up
+    flatpickr("#client-followup-date", {
+      enableTime: true,
+      dateFormat: "Y-m-d H:i",
+      minDate: "today",
+      time_24hr: false
+    });
+  }
+}
+
+/**
+ * Initialize bulk actions functionality
+ */
+function initBulkActions() {
+  // Show/hide bulk actions panel
+  $('#bulk-actions-btn').on('click', function() {
+    $('#bulk-actions-panel').slideToggle(200);
+  });
+  
+  // Close bulk actions panel
+  $('.bulk-close').on('click', function() {
+    $('#bulk-actions-panel').slideUp(200);
+  });
+  
+  // Export button
+  $('#export-clients-btn').on('click', function() {
+    const selectedIds = getSelectedClientIds();
+    if (selectedIds.length > 0) {
+      exportClients(selectedIds);
+    } else {
+      // If none selected, export all visible
+      exportClients('all');
+    }
+  });
+  
+  // Bulk action buttons
+  $('.bulk-btn').on('click', function() {
+    const action = $(this).data('action');
+    const selectedIds = getSelectedClientIds();
+    
+    if (selectedIds.length === 0) {
+      showToast('Please select at least one client', 'warning');
+      return;
     }
     
-    // Get user information
-    const user = await User.findById(req.user.id);
+    switch (action) {
+      case 'contact':
+        showConfirmModal('Are you sure you want to mark the selected clients as contacted?', function() {
+          performBulkAction('contact', selectedIds);
+        });
+        break;
+      case 'followup':
+        $('#followup-modal').show();
+        break;
+      case 'assign':
+        $('#assign-modal').show();
+        break;
+      case 'export':
+        exportClients(selectedIds);
+        break;
+      case 'delete':
+        showConfirmModal('Are you sure you want to delete the selected clients? This action cannot be undone.', function() {
+          performBulkAction('delete', selectedIds);
+        });
+        break;
+    }
+  });
+  
+  // Schedule followup button in modal
+  $('#schedule-followup-btn').on('click', function() {
+    const selectedIds = getSelectedClientIds();
+    const followupDate = $('#followup-date').val();
+    const followupNote = $('#followup-note').val();
     
-    // Create email signature
-    const signature = `
-      <p style="margin-top: 20px; padding-top: 10px; border-top: 1px solid #eee;">
-        ${user.fullName}<br>
-        ${user.department}<br>
-        Backsure Global Support<br>
-        Email: ${user.email}<br>
-        Website: <a href="https://www.backsure.com">www.backsure.com</a>
-      </p>
-    `;
+    if (!followupDate) {
+      showToast('Please select a followup date', 'warning');
+      return;
+    }
     
-    // Prepare email HTML
-    const emailHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        ${req.body.message}
-        ${signature}
+    scheduleFollowup(selectedIds, followupDate, followupNote);
+    $('#followup-modal').hide();
+  });
+  
+  // Assign to user button in modal
+  $('#assign-to-btn').on('click', function() {
+    const selectedIds = getSelectedClientIds();
+    const assignedUser = $('#assigned-user').val();
+    const assignedNote = $('#assign-note').val();
+    
+    if (!assignedUser) {
+      showToast('Please select a user to assign', 'warning');
+      return;
+    }
+    
+    assignToUser(selectedIds, assignedUser, assignedNote);
+    $('#assign-modal').hide();
+  });
+}
+
+/**
+ * Initialize modal dialogs
+ */
+function initModals() {
+  // Close modal when clicking the X or Cancel button
+  $('.modal-close, .modal-cancel').on('click', function() {
+    $(this).closest('.modal').hide();
+  });
+  
+  // Close modal when clicking outside the modal content
+  $('.modal').on('click', function(e) {
+    if (e.target === this) {
+      $(this).hide();
+    }
+  });
+  
+  // Add Client button
+  $('#add-client-btn').on('click', function() {
+    // Reset form
+    $('#add-client-form')[0].reset();
+    $('#client-id').val('');
+    $('#client-form-title').text('Add New Client');
+    
+    // Show modal
+    $('#client-form-modal').show();
+  });
+  
+  // Save Client button
+  $('#save-client-btn').on('click', function() {
+    const isValid = validateClientForm();
+    if (isValid) {
+      submitClientForm();
+    }
+  });
+  
+  // Client details modal tabs
+  $('.client-modal-tab').on('click', function() {
+    const tabId = $(this).data('tab');
+    
+    // Hide all tab contents
+    $('.client-tab-content').hide();
+    
+    // Show the selected tab content
+    $(`#${tabId}`).show();
+    
+    // Update active tab
+    $('.client-modal-tab').removeClass('active');
+    $(this).addClass('active');
+  });
+}
+
+/**
+ * Initialize filter functionality
+ */
+function initFilters() {
+  // Apply filters button
+  $('#apply-filters').on('click', function() {
+    applyFilters();
+  });
+  
+  // Reset filters button
+  $('#reset-filters').on('click', function() {
+    resetFilters();
+  });
+  
+  // Set today's date as default for date-to filter
+  const today = new Date();
+  const formattedDate = today.toISOString().split('T')[0];
+  $('#date-to').val(formattedDate);
+  
+  // Set date 30 days ago as default for date-from filter
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(today.getDate() - 30);
+  const formattedThirtyDaysAgo = thirtyDaysAgo.toISOString().split('T')[0];
+  $('#date-from').val(formattedThirtyDaysAgo);
+}
+
+/**
+ * Initialize row action buttons (view, contact, edit, delete)
+ */
+function initRowActions() {
+  // View client details
+  $('#clients-table').on('click', '.action-btn.view', function(e) {
+    e.preventDefault();
+    const clientId = $(this).data('id');
+    viewClientDetails(clientId);
+  });
+  
+  // Edit client
+  $('#clients-table').on('click', '.action-btn.edit', function(e) {
+    e.preventDefault();
+    const clientId = $(this).data('id');
+    editClient(clientId);
+  });
+  
+  // Contact client
+  $('#clients-table').on('click', '.action-btn.contact', function(e) {
+    e.preventDefault();
+    const clientId = $(this).data('id');
+    contactClient(clientId);
+  });
+  
+  // Delete client
+  $('#clients-table').on('click', '.action-btn.delete', function() {
+    const clientId = $(this).data('id');
+    const clientName = $(this).closest('tr').find('.client-name').text();
+    
+    showConfirmModal(`Are you sure you want to delete "${clientName}"? This action cannot be undone.`, function() {
+      deleteClient(clientId);
+    });
+  });
+  
+  // Edit button in client details modal
+  $('#edit-client-btn').on('click', function() {
+    const clientId = $(this).data('client-id');
+    $('#client-detail-modal').hide();
+    editClient(clientId);
+  });
+  
+  // Send email button in client details modal
+  $('#send-email-btn').on('click', function() {
+    const clientId = $(this).data('client-id');
+    const emailSubject = $('#email-subject').val();
+    const emailBody = $('#email-body').val();
+    
+    if (!emailSubject || !emailBody) {
+      showToast('Please fill in both subject and message', 'warning');
+      return;
+    }
+    
+    sendEmail(clientId, emailSubject, emailBody);
+  });
+  
+  // Add note button in client details modal
+  $('#add-note-btn').on('click', function() {
+    const clientId = $(this).data('client-id');
+    const noteContent = $('#note-content').val();
+    
+    if (!noteContent) {
+      showToast('Please enter a note', 'warning');
+      return;
+    }
+    
+    addClientNote(clientId, noteContent);
+  });
+  
+  // Schedule followup in client details modal
+  $('#schedule-client-followup-btn').on('click', function() {
+    const clientId = $(this).data('client-id');
+    const followupDate = $('#client-followup-date').val();
+    const followupNote = $('#client-followup-note').val();
+    
+    if (!followupDate) {
+      showToast('Please select a followup date', 'warning');
+      return;
+    }
+    
+    scheduleFollowup([clientId], followupDate, followupNote);
+  });
+}
+
+/**
+ * Initialize form validation
+ */
+function initFormValidation() {
+  // Source field should be required when adding a new client
+  $('#client-source').on('change', function() {
+    if ($(this).val() === 'referral') {
+      // If referral is selected, show referral source field
+      if ($('#referral-source-group').length === 0) {
+        const referralField = `
+          <div class="form-group" id="referral-source-group">
+            <label for="referral-source">Referral Source</label>
+            <input type="text" id="referral-source" class="form-control" placeholder="Who referred this client?">
+          </div>
+        `;
+        $(this).closest('.form-row').after(referralField);
+      }
+    } else {
+      // Hide referral source field if not needed
+      $('#referral-source-group').remove();
+    }
+  });
+}
+
+/**
+ * Check for notifications and upcoming followups
+ */
+function checkForNotifications() {
+  // In a real implementation, this would make an API call
+  // For now, we'll just simulate with a timeout
+  
+  setTimeout(() => {
+    // Check for today's followups
+    const todaysFollowups = 3; // This would come from API
+    
+    if (todaysFollowups > 0) {
+      showToast(`You have ${todaysFollowups} client followups scheduled for today`, 'info', 8000);
+    }
+    
+    // Check for overdue followups
+    const overdueFollowups = 2; // This would come from API
+    
+    if (overdueFollowups > 0) {
+      showToast(`You have ${overdueFollowups} overdue client followups`, 'warning', 8000);
+    }
+  }, 2000);
+}
+
+/**
+ * Get array of selected client IDs
+ */
+function getSelectedClientIds() {
+  const selectedIds = [];
+  $('.row-checkbox:checked').each(function() {
+    const clientId = $(this).closest('tr').data('id');
+    selectedIds.push(clientId);
+  });
+  return selectedIds;
+}
+
+/**
+ * Update the bulk action counter with the number of selected clients
+ */
+function updateBulkActionCounter() {
+  const count = $('.row-checkbox:checked').length;
+  $('.selected-count').text(`${count} item${count !== 1 ? 's' : ''} selected`);
+}
+
+/**
+ * Apply filters to the clients table
+ */
+function applyFilters() {
+  const statusFilter = $('#filter-status').val();
+  const serviceFilter = $('#filter-service').val();
+  const sourceFilter = $('#filter-source').val();
+  const assignedFilter = $('#filter-assigned').val();
+  const dateFrom = $('#date-from').val();
+  const dateTo = $('#date-to').val();
+  
+  // Apply filters to DataTable
+  const table = $('#clients-table').DataTable();
+  
+  // Clear existing filters
+  table.search('').columns().search('').draw();
+  
+  // Apply each filter if set
+  if (statusFilter) {
+    table.column(6).search(statusFilter, true, false).draw();
+  }
+  
+  if (serviceFilter) {
+    table.column(4).search(serviceFilter).draw();
+  }
+  
+  if (sourceFilter) {
+    // Source filter would be applied to a hidden column in a real implementation
+    console.log(`Source filter: ${sourceFilter}`);
+  }
+  
+  if (assignedFilter) {
+    table.column(7).search(assignedFilter).draw();
+  }
+  
+  // Date range filtering is more complex and might require custom filtering logic
+  // This is a simplified example that doesn't actually filter by date
+  if (dateFrom && dateTo) {
+    console.log(`Filtering dates from ${dateFrom} to ${dateTo}`);
+    // In a real implementation, you would create a custom filtering function
+  }
+  
+  showToast('Filters applied', 'success');
+}
+
+/**
+ * Reset all filters to default values
+ */
+function resetFilters() {
+  // Reset dropdown filters
+  $('#filter-status, #filter-service, #filter-source, #filter-assigned').val('');
+  
+  // Reset date filters to defaults
+  const today = new Date();
+  const formattedDate = today.toISOString().split('T')[0];
+  $('#date-to').val(formattedDate);
+  
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(today.getDate() - 30);
+  const formattedThirtyDaysAgo = thirtyDaysAgo.toISOString().split('T')[0];
+  $('#date-from').val(formattedThirtyDaysAgo);
+  
+  // Clear DataTable filters
+  const table = $('#clients-table').DataTable();
+  table.search('').columns().search('').draw();
+  
+  // Reset search box
+  $('#search-clients').val('');
+  
+  showToast('Filters reset', 'info');
+}
+
+/**
+ * Validate client form
+ */
+function validateClientForm() {
+  const name = $('#client-name').val().trim();
+  const email = $('#client-email').val().trim();
+  const phone = $('#client-phone').val().trim();
+  const service = $('#client-service').val();
+  
+  // Simple validation
+  if (!name) {
+    showToast('Client name is required', 'warning');
+    return false;
+  }
+  
+  if (!email && !phone) {
+    showToast('Either email or phone is required', 'warning');
+    return false;
+  }
+  
+  if (email && !isValidEmail(email)) {
+    showToast('Please enter a valid email', 'warning');
+    return false;
+  }
+  
+  if (!service) {
+    showToast('Please select a service', 'warning');
+    return false;
+  }
+  
+  return true;
+}
+
+/**
+ * Simple email validation
+ */
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+/**
+ * Submit client form (add or edit)
+ */
+function submitClientForm() {
+  const clientId = $('#client-id').val();
+  const isNewClient = !clientId;
+  
+  // In a real implementation, this would make an API call
+  showToast(isNewClient ? 'Adding client...' : 'Updating client...', 'info');
+  
+  setTimeout(() => {
+    const name = $('#client-name').val();
+    const service = $('#client-service').val();
+    const status = $('#client-status').val();
+    const assigned = $('#client-assigned').val();
+    
+    // If editing an existing client
+    if (!isNewClient) {
+      const row = $(`tr[data-id="${clientId}"]`);
+      
+      // Update row data
+      row.find('.client-name').text(name);
+      row.find('td:eq(4)').text(getServiceName(service));
+      row.find('td:eq(6)').html(`<span class="status-badge ${status}">${getStatusName(status)}</span>`);
+      row.find('td:eq(7)').text(getAssignedName(assigned));
+      
+      showToast('Client updated successfully', 'success');
+    } else {
+      // Add new client - in a real implementation, the server would return the new ID
+      const newId = Math.max(...Array.from($('#clients-table tbody tr')).map(row => parseInt($(row).data('id') || 0))) + 1;
+      
+      // Add to DataTable
+      const table = $('#clients-table').DataTable();
+      const email = $('#client-email').val();
+      const phone = $('#client-phone').val();
+      
+      const newRow = [
+        `<div class="checkbox-wrapper">
+          <input type="checkbox" id="select-${newId}" class="row-checkbox">
+          <label for="select-${newId}"></label>
+        </div>`,
+        `<span class="client-name">${name}</span>`,
+        email,
+        phone,
+        getServiceName(service),
+        formatDate(new Date()),
+        `<span class="status-badge ${status}">${getStatusName(status)}</span>`,
+        getAssignedName(assigned),
+        `<div class="action-buttons">
+          <button class="action-btn view" title="View Details" data-id="${newId}">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button class="action-btn contact" title="Contact" data-id="${newId}">
+            <i class="fas fa-envelope"></i>
+          </button>
+          <button class="action-btn edit" title="Edit" data-id="${newId}">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="action-btn delete" title="Delete" data-id="${newId}">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>`
+      ];
+      
+      table.row.add(newRow).draw();
+      const newRowNode = table.row(':last').node();
+      $(newRowNode).attr('data-id', newId);
+      
+      showToast('Client added successfully', 'success');
+    }
+    
+    // Close the modal
+    $('#client-form-modal').hide();
+  }, 1000);
+}
+
+/**
+ * Format date for display
+ */
+function formatDate(date) {
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+}
+
+/**
+ * Get service name from value
+ */
+function getServiceName(value) {
+  const services = {
+    'finance-accounting': 'Finance & Accounting',
+    'hr-admin': 'HR & Admin',
+    'dedicated-teams': 'Dedicated Teams',
+    'insurance': 'Insurance',
+    'business-care': 'Business Care Plans',
+    'other': 'Other'
+  };
+  
+  return services[value] || value;
+}
+
+/**
+ * Get status name from value
+ */
+function getStatusName(value) {
+  const statusNames = {
+    'new': 'New',
+    'contacted': 'Contacted',
+    'followup': 'Follow-up',
+    'converted': 'Converted',
+    'closed': 'Closed'
+  };
+  
+  return statusNames[value] || value;
+}
+
+/**
+ * Get assigned user name from ID
+ */
+function getAssignedName(id) {
+  if (!id) return 'Unassigned';
+  
+  const users = {
+    '1': 'John Smith',
+    '2': 'Sarah Johnson',
+    '3': 'Michael Chen'
+  };
+  
+  return users[id] || 'Unknown';
+}
+
+/**
+ * View client details
+ */
+function viewClientDetails(clientId) {
+  // In a real implementation, this would fetch client details from the API
+  console.log(`Viewing client ID: ${clientId}`);
+  
+  // For demo purposes, we'll just show the modal with static data
+  const clientName = $(`tr[data-id="${clientId}"] .client-name`).text();
+  const clientEmail = $(`tr[data-id="${clientId}"] td:eq(2)`).text();
+  
+  // Set client info in the modal
+  $('#client-detail-name').text(clientName);
+  $('#client-detail-id').text(`ID: ${clientId}`);
+  
+  // Set data attributes for action buttons
+  $('#send-email-btn, #add-note-btn, #schedule-client-followup-btn, #edit-client-btn').data('client-id', clientId);
+  
+  // Reset active tab
+  $('.client-modal-tab:first').click();
+  
+  // Show the modal
+  $('#client-detail-modal').show();
+  
+  // In a real implementation, you would load notes, emails, and activities here
+  loadClientNotes(clientId);
+  loadClientEmails(clientId);
+  loadClientActivities(clientId);
+  loadClientFollowups(clientId);
+}
+
+/**
+ * Edit client
+ */
+function editClient(clientId) {
+  // In a real implementation, this would fetch client data from the API
+  console.log(`Editing client ID: ${clientId}`);
+  
+  // For demo purposes, we'll prefill the form with data from the table
+  const clientRow = $(`tr[data-id="${clientId}"]`);
+  
+  // Set client ID in hidden field
+  $('#client-id').val(clientId);
+  
+  // Set form title
+  $('#client-form-title').text('Edit Client');
+  
+  // Set form fields
+  $('#client-name').val(clientRow.find('.client-name').text());
+  $('#client-email').val(clientRow.find('td:eq(2)').text());
+  $('#client-phone').val(clientRow.find('td:eq(3)').text());
+  
+  // Set service (this is a simplified mapping for demo)
+  const serviceText = clientRow.find('td:eq(4)').text();
+  let serviceValue = '';
+  
+  if (serviceText.includes('Finance')) {
+    serviceValue = 'finance-accounting';
+  } else if (serviceText.includes('HR')) {
+    serviceValue = 'hr-admin';
+  } else if (serviceText.includes('Dedicated')) {
+    serviceValue = 'dedicated-teams';
+  } else if (serviceText.includes('Insurance')) {
+    serviceValue = 'insurance';
+  } else if (serviceText.includes('Business Care')) {
+    serviceValue = 'business-care';
+  } else {
+    serviceValue = 'other';
+  }
+  
+  $('#client-service').val(serviceValue);
+  
+  // Set status
+  const statusBadge = clientRow.find('.status-badge');
+  let statusValue = '';
+  
+  if (statusBadge.hasClass('new')) {
+    statusValue = 'new';
+  } else if (statusBadge.hasClass('contacted')) {
+    statusValue = 'contacted';
+  } else if (statusBadge.hasClass('followup')) {
+    statusValue = 'followup';
+  } else if (statusBadge.hasClass('converted')) {
+    statusValue = 'converted';
+  } else if (statusBadge.hasClass('closed')) {
+    statusValue = 'closed';
+  }
+  
+  $('#client-status').val(statusValue);
+  
+  // Set assigned user (simplified for demo)
+  const assignedText = clientRow.find('td:eq(7)').text();
+  let assignedValue = '';
+  
+  if (assignedText.includes('John')) {
+    assignedValue = '1';
+  } else if (assignedText.includes('Sarah')) {
+    assignedValue = '2';
+  } else if (assignedText.includes('Michael')) {
+    assignedValue = '3';
+  }
+  
+  $('#client-assigned').val(assignedValue);
+  
+  // Show the modal
+  $('#client-form-modal').show();
+}
+
+/**
+ * Contact client
+ */
+function contactClient(clientId) {
+  // In a real implementation, this would open an email/SMS modal
+  // For now, we'll just open the client details modal on the communication tab
+  viewClientDetails(clientId);
+  
+  // Switch to communication tab
+  $('.client-modal-tab[data-tab="client-communication"]').click();
+}
+
+/**
+ * Delete a single client
+ */
+function deleteClient(clientId) {
+  // In a real implementation, this would make an API call
+  console.log(`Deleting client ID:`, clientId);
+  
+  // Simulate API call with timeout
+  showToast('Deleting client...', 'info');
+  
+  setTimeout(() => {
+    // Remove the row with animation
+    $(`tr[data-id="${clientId}"]`).fadeOut(300, function() {
+      // Update DataTable
+      const table = $('#clients-table').DataTable();
+      table.row($(this)).remove().draw(false);
+      
+      showToast('Client deleted successfully', 'success');
+    });
+  }, 1000);
+}
+
+/**
+ * Perform bulk action on selected clients
+ */
+function performBulkAction(action, clientIds) {
+  // In a real implementation, this would make an API call
+  console.log(`Performing bulk action: ${action} on clients:`, clientIds);
+  
+  // Simulate API call with timeout
+  showToast('Processing...', 'info');
+  
+  setTimeout(() => {
+    // Update UI based on action
+    switch (action) {
+      case 'contact':
+        // Update status badges
+        clientIds.forEach(id => {
+          const statusCell = $(`tr[data-id="${id}"] td:nth-child(7)`);
+          statusCell.html('<span class="status-badge contacted">Contacted</span>');
+        });
+        showToast('Selected clients have been marked as contacted', 'success');
+        break;
+      case 'delete':
+        clientIds.forEach(id => {
+          $(`tr[data-id="${id}"]`).fadeOut(300, function() {
+            // Update DataTable
+            const table = $('#clients-table').DataTable();
+            table.row($(this)).remove().draw(false);
+          });
+        });
+        showToast('Selected clients have been deleted', 'success');
+        break;
+    }
+    
+    // Reset checkboxes after bulk action
+    $('#select-all').prop('checked', false);
+    $('.row-checkbox').prop('checked', false);
+    updateBulkActionCounter();
+    
+    // Hide bulk actions panel
+    $('#bulk-actions-panel').slideUp(200);
+  }, 1000);
+}
+
+/**
+ * Schedule followup for clients
+ */
+function scheduleFollowup(clientIds, followupDate, followupNote) {
+  // In a real implementation, this would make an API call
+  console.log(`Scheduling followup for clients:`, clientIds);
+  console.log(`Followup date:`, followupDate);
+  console.log(`Followup note:`, followupNote);
+  
+  // Simulate API call with timeout
+  showToast('Scheduling followup...', 'info');
+  
+  setTimeout(() => {
+    // Update UI
+    clientIds.forEach(id => {
+      const statusCell = $(`tr[data-id="${id}"] td:nth-child(7)`);
+      if (statusCell.find('.status-badge').hasClass('new')) {
+        statusCell.html('<span class="status-badge followup">Follow-up</span>');
+      }
+    });
+    
+    // Reset form
+    $('#followup-date').val('');
+    $('#followup-note').val('');
+    $('#client-followup-date').val('');
+    $('#client-followup-note').val('');
+    
+    showToast('Followup scheduled successfully', 'success');
+    
+    // If this was triggered from the client details modal, update the followups tab
+    if ($('#client-detail-modal').is(':visible')) {
+      const currentClientId = $('#send-email-btn').data('client-id');
+      if (clientIds.includes(currentClientId)) {
+        loadClientFollowups(currentClientId);
+      }
+    }
+  }, 1000);
+}
+
+/**
+ * Assign clients to a user
+ */
+function assignToUser(clientIds, userId, note) {
+  // In a real implementation, this would make an API call
+  console.log(`Assigning clients to user ID ${userId}:`, clientIds);
+  console.log(`Assignment note:`, note);
+  
+  // Get user name for display
+  const userName = $(`#assigned-user option[value="${userId}"]`).text();
+  
+  // Simulate API call with timeout
+  showToast('Assigning clients...', 'info');
+  
+  setTimeout(() => {
+    // Update UI
+    clientIds.forEach(id => {
+      const assignedCell = $(`tr[data-id="${id}"] td:nth-child(8)`);
+      assignedCell.text(userName);
+    });
+    
+    // Reset form
+    $('#assigned-user').val('');
+    $('#assign-note').val('');
+    
+    showToast('Clients assigned successfully', 'success');
+  }, 1000);
+}
+
+/**
+ * Export selected clients
+ */
+function exportClients(clientIds) {
+  // In a real implementation, this would generate a CSV/Excel file for download
+  console.log(`Exporting clients:`, clientIds);
+  
+  showToast('Generating export...', 'info');
+  
+  setTimeout(() => {
+    // Simulate file download (in a real implementation, we would trigger a download)
+    showToast('Export complete. Your download should begin shortly.', 'success');
+    
+    // Reset checkboxes after export
+    $('#select-all').prop('checked', false);
+    $('.row-checkbox').prop('checked', false);
+    updateBulkActionCounter();
+    
+    // Hide bulk actions panel
+    $('#bulk-actions-panel').slideUp(200);
+  }, 1500);
+}
+
+/**
+ * Send email to client
+ */
+function sendEmail(clientId, subject, body) {
+  // In a real implementation, this would make an API call
+  console.log(`Sending email to client ID ${clientId}`);
+  console.log(`Subject: ${subject}`);
+  console.log(`Body: ${body}`);
+  
+  // Simulate API call with timeout
+  showToast('Sending email...', 'info');
+  
+  setTimeout(() => {
+    // Reset form
+    $('#email-subject').val('');
+    $('#email-body').val('');
+    
+    // Update email history in the modal
+    const emailList = $('#client-emails-list');
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+    
+    const newEmail = $(`
+      <div class="email-item">
+        <div class="email-header">
+          <span class="email-subject">${subject}</span>
+          <span class="email-time">${formattedDate}</span>
+        </div>
+        <div class="email-body">${body}</div>
+      </div>
+    `);
+    
+    emailList.prepend(newEmail);
+    
+    // Update status if it was "New"
+    const statusCell = $(`tr[data-id="${clientId}"] td:nth-child(7)`);
+    if (statusCell.find('.status-badge').hasClass('new')) {
+      statusCell.html('<span class="status-badge contacted">Contacted</span>');
+    }
+    
+    showToast('Email sent successfully', 'success');
+  }, 1500);
+}
+
+/**
+ * Add note to client
+ */
+function addClientNote(clientId, noteContent) {
+  // In a real implementation, this would make an API call
+  console.log(`Adding note to client ID ${clientId}`);
+  console.log(`Note: ${noteContent}`);
+  
+  // Simulate API call with timeout
+  showToast('Adding note...', 'info');
+  
+  setTimeout(() => {
+    // Reset form
+    $('#note-content').val('');
+    
+    // Update notes in the modal
+    const notesList = $('#client-notes-list');
+    const now = new Date();
+    const formattedDate = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+    
+    const newNote = $(`
+      <div class="note-item">
+        <div class="note-header">
+          <span class="note-author">You</span>
+          <span class="note-time">${formattedDate}</span>
+        </div>
+        <div class="note-content">${noteContent}</div>
+      </div>
+    `);
+    
+    notesList.prepend(newNote);
+    
+    showToast('Note added successfully', 'success');
+  }, 1000);
+}
+
+/**
+ * Load client notes (would fetch from API in real implementation)
+ */
+function loadClientNotes(clientId) {
+  // Simulate API call
+  console.log(`Loading notes for client ID ${clientId}`);
+  
+  // For demo purposes, let's just show some sample notes
+  const notesList = $('#client-notes-list');
+  notesList.empty();
+  
+  const sampleNotes = [
+    {
+      author: 'Sarah Johnson',
+      time: '2 days ago',
+      content: 'Client requested information about finance and accounting services.'
+    },
+    {
+      author: 'John Smith',
+      time: '1 week ago',
+      content: 'Initial inquiry call completed. Client is interested in outsourcing HR functions.'
+    }
+  ];
+  
+  if (sampleNotes.length === 0) {
+    notesList.html('<p class="no-data">No notes available for this client.</p>');
+  } else {
+    sampleNotes.forEach(note => {
+      const noteItem = $(`
+        <div class="note-item">
+          <div class="note-header">
+            <span class="note-author">${note.author}</span>
+            <span class="note-time">${note.time}</span>
+          </div>
+          <div class="note-content">${note.content}</div>
+        </div>
+      `);
+      
+      notesList.append(noteItem);
+    });
+  }
+}
+
+/**
+ * Load client emails (would fetch from API in real implementation)
+ */
+function loadClientEmails(clientId) {
+  // Simulate API call
+  console.log(`Loading emails for client ID ${clientId}`);
+  
+  // For demo purposes, let's just show some sample emails
+  const emailsList = $('#client-emails-list');
+  emailsList.empty();
+  
+  const sampleEmails = [
+    {
+      subject: 'Follow-up on our discussion',
+      time: '3 days ago',
+      body: 'Thank you for your interest in our services. As discussed, I\'m attaching our service brochure for your review.'
+    },
+    {
+      subject: 'Welcome to Backsure Global Support',
+      time: '1 week ago',
+      body: 'Thank you for reaching out to us. We\'re excited to learn more about your business needs and how we can support you.'
+    }
+  ];
+  
+  if (sampleEmails.length === 0) {
+    emailsList.html('<p class="no-data">No email history available for this client.</p>');
+  } else {
+    sampleEmails.forEach(email => {
+      const emailItem = $(`
+        <div class="email-item">
+          <div class="email-header">
+            <span class="email-subject">${email.subject}</span>
+            <span class="email-time">${email.time}</span>
+          </div>
+          <div class="email-body">${email.body}</div>
+        </div>
+      `);
+      
+      emailsList.append(emailItem);
+    });
+  }
+}
+
+/**
+ * Load client activities (would fetch from API in real implementation)
+ */
+function loadClientActivities(clientId) {
+  // Simulate API call
+  console.log(`Loading activities for client ID ${clientId}`);
+  
+  // For demo purposes, let's just show some sample activities
+  const activitiesList = $('#client-activities-list');
+  activitiesList.empty();
+  
+  const sampleActivities = [
+    {
+      type: 'email',
+      user: 'System',
+      time: '3 days ago',
+      description: 'Automatic welcome email sent'
+    },
+    {
+      type: 'note',
+      user: 'Sarah Johnson',
+      time: '2 days ago',
+      description: 'Added a new note'
+    },
+    {
+      type: 'status',
+      user: 'John Smith',
+      time: '1 day ago',
+      description: 'Changed status to "Contacted"'
+    }
+  ];
+  
+  if (sampleActivities.length === 0) {
+    activitiesList.html('<p class="no-data">No activity history available for this client.</p>');
+  } else {
+    sampleActivities.forEach(activity => {
+      let iconClass = '';
+      
+      switch (activity.type) {
+        case 'email':
+          iconClass = 'fa-envelope';
+          break;
+        case 'note':
+          iconClass = 'fa-sticky-note';
+          break;
+        case 'status':
+          iconClass = 'fa-exchange-alt';
+          break;
+        default:
+          iconClass = 'fa-clock';
+      }
+      
+      const activityItem = $(`
+        <div class="activity-item">
+          <div class="activity-icon">
+            <i class="fas ${iconClass}"></i>
+          </div>
+          <div class="activity-content">
+            <div class="activity-header">
+              <span class="activity-user">${activity.user}</span>
+              <span class="activity-time">${activity.time}</span>
+            </div>
+            <div class="activity-description">${activity.description}</div>
+          </div>
+        </div>
+      `);
+      
+      activitiesList.append(activityItem);
+    });
+  }
+}
+
+/**
+ * Load client followups (would fetch from API in real implementation)
+ */
+function loadClientFollowups(clientId) {
+  // Simulate API call
+  console.log(`Loading followups for client ID ${clientId}`);
+  
+  // For demo purposes, let's just show some sample followups
+  const followupsList = $('#client-followups-list');
+  followupsList.empty();
+  
+  const sampleFollowups = [
+    {
+      date: 'Apr 25, 2025 10:00 AM',
+      note: 'Schedule demo of HR services',
+      status: 'pending'
+    },
+    {
+      date: 'Apr 15, 2025 2:30 PM',
+      note: 'Follow up on initial proposal',
+      status: 'completed'
+    },
+    {
+      date: 'Apr 5, 2025 11:00 AM',
+      note: 'Initial consultation call',
+      status: 'completed'
+    }
+  ];
+  
+  if (sampleFollowups.length === 0) {
+    followupsList.html('<p class="no-data">No followups scheduled for this client.</p>');
+  } else {
+    sampleFollowups.forEach(followup => {
+      const followupItem = $(`
+        <div class="followup-item">
+          <div class="followup-date">${followup.date}</div>
+          <div class="followup-note">${followup.note}</div>
+          <div class="followup-status ${followup.status}">${followup.status}</div>
+        </div>
+      `);
+      
+      followupsList.append(followupItem);
+    });
+  }
+}
+
+/**
+ * Show toast notification
+ */
+function showToast(message, type = 'info', duration = 3000) {
+  // Remove existing toasts
+  const existingToasts = document.querySelectorAll('.toast');
+  existingToasts.forEach(toast => {
+    if (toast.classList.contains('hiding')) return;
+    
+    toast.classList.add('hiding');
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  });
+  
+  // Create toast element
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  
+  // Create icon based on type
+  let icon = '';
+  switch (type) {
+    case 'success':
+      icon = '<i class="fas fa-check-circle"></i>';
+      break;
+    case 'warning':
+      icon = '<i class="fas fa-exclamation-triangle"></i>';
+      break;
+    case 'error':
+      icon = '<i class="fas fa-times-circle"></i>';
+      break;
+    default:
+      icon = '<i class="fas fa-info-circle"></i>';
+  }
+  
+  // Set content
+  toast.innerHTML = `
+    <div class="toast-icon">${icon}</div>
+    <div class="toast-content">${message}</div>
+    <button class="toast-close"><i class="fas fa-times"></i></button>
+  `;
+  
+  // Add to document
+  document.body.appendChild(toast);
+  
+  // Show toast with animation
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 10);
+  
+  // Add close button functionality
+  const closeBtn = toast.querySelector('.toast-close');
+  closeBtn.addEventListener('click', () => {
+    toast.classList.remove('show');
+    toast.classList.add('hiding');
+    setTimeout(() => {
+      toast.remove();
+    }, 300);
+  });
+  
+  // Auto-close after duration
+  setTimeout(() => {
+    if (document.body.contains(toast)) {
+      toast.classList.remove('show');
+      toast.classList.add('hiding');
+      setTimeout(() => {
+        if (document.body.contains(toast)) {
+          toast.remove();
+        }
+      }, 300);
+    }
+  }, duration);
+  
+  return toast;
+}
+
+/**
+ * Show confirmation modal
+ */
+function showConfirmModal(message, callback) {
+  // Create modal if it doesn't exist
+  let confirmModal = document.getElementById('confirm-modal');
+  
+  if (!confirmModal) {
+    confirmModal = document.createElement('div');
+    confirmModal.id = 'confirm-modal';
+    confirmModal.className = 'modal confirm-modal';
+    confirmModal.innerHTML = `
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Confirm Action</h3>
+          <button class="modal-close">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p id="confirm-message"></p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="confirm-cancel">Cancel</button>
+          <button class="btn-primary" id="confirm-ok">Confirm</button>
+        </div>
       </div>
     `;
     
-    // Send email
-    await sendEmail(
-      inquiry.email,
-      req.body.subject,
-      emailHtml
-    );
+    document.body.appendChild(confirmModal);
     
-    // Update inquiry with follow-up information
-    inquiry.lastContactDate = Date.now();
+    // Close modal when clicking the X or Cancel button
+    const closeBtn = confirmModal.querySelector('.modal-close');
+    const cancelBtn = confirmModal.querySelector('#confirm-cancel');
     
-    // Add note about follow-up
-    inquiry.notes.push({
-      content: `Follow-up email sent. Subject: ${req.body.subject}`,
-      createdBy: req.user.id,
-      createdAt: Date.now()
+    closeBtn.addEventListener('click', () => {
+      confirmModal.style.display = 'none';
     });
     
-    await inquiry.save();
-    
-    res.json({ 
-      success: true, 
-      message: 'Follow-up email sent successfully' 
+    cancelBtn.addEventListener('click', () => {
+      confirmModal.style.display = 'none';
     });
     
-  } catch (err) {
-    console.error('Error sending follow-up email:', err);
-    res.status(500).json({ error: 'Server error while sending follow-up email' });
-  }
-});
-
-// Get user list (admin only)
-router.get('/api/users', authenticateToken, authorize(['admin']), async (req, res) => {
-  try {
-    const users = await User.find({}, '-password');
-    res.json(users);
-  } catch (err) {
-    console.error('Error fetching users:', err);
-    res.status(500).json({ error: 'Server error while fetching users' });
-  }
-});
-
-// Create new user (admin only)
-router.post('/api/users', authenticateToken, authorize(['admin']), [
-  check('username').notEmpty().withMessage('Username is required'),
-  check('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  check('email').isEmail().withMessage('Valid email is required'),
-  check('fullName').notEmpty().withMessage('Full name is required'),
-  check('role').isIn(['admin', 'sales', 'support', 'marketing']).withMessage('Invalid role')
-], async (req, res) => {
-  // Validate request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  
-  try {
-    // Check if username already exists
-    const existingUsername = await User.findOne({ username: req.body.username });
-    if (existingUsername) {
-      return res.status(400).json({ error: 'Username already exists' });
-    }
-    
-    // Check if email already exists
-    const existingEmail = await User.findOne({ email: req.body.email });
-    if (existingEmail) {
-      return res.status(400).json({ error: 'Email already exists' });
-    }
-    
-    // Create new user
-    const user = new User({
-      username: req.body.username,
-      password: req.body.password,
-      email: req.body.email,
-      fullName: req.body.fullName,
-      role: req.body.role,
-      department: req.body.department || 'General'
-    });
-    
-    await user.save();
-    
-    // Remove password from response
-    const userResponse = user.toObject();
-    delete userResponse.password;
-    
-    res.status(201).json({
-      success: true,
-      message: 'User created successfully',
-      user: userResponse
-    });
-    
-  } catch (err) {
-    console.error('Error creating user:', err);
-    res.status(500).json({ error: 'Server error while creating user' });
-  }
-});
-
-// Update user (admin or self)
-router.put('/api/users/:id', authenticateToken, [
-  check('email').optional().isEmail().withMessage('Valid email is required'),
-  check('fullName').optional().notEmpty().withMessage('Full name is required'),
-  check('role').optional().isIn(['admin', 'sales', 'support', 'marketing']).withMessage('Invalid role')
-], async (req, res) => {
-  // Validate request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  
-  try {
-    // Check if user has permission (admin or self)
-    if (req.user.role !== 'admin' && req.user.id !== req.params.id) {
-      return res.status(403).json({ error: 'You do not have permission to update this user' });
-    }
-    
-    const user = await User.findById(req.params.id);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    // Fields that can be updated
-    const updatableFields = [
-      'email', 'fullName', 'department', 'active'
-    ];
-    
-    // Role can only be updated by admin
-    if (req.user.role === 'admin') {
-      updatableFields.push('role');
-    }
-    
-    // Update fields if provided in request
-    updatableFields.forEach(field => {
-      if (req.body[field] !== undefined) {
-        user[field] = req.body[field];
+    // Close modal when clicking outside the modal content
+    confirmModal.addEventListener('click', function(e) {
+      if (e.target === this) {
+        confirmModal.style.display = 'none';
       }
     });
-    
-    // Update password if provided
-    if (req.body.password) {
-      user.password = req.body.password;
-    }
-    
-    await user.save();
-    
-    // Remove password from response
-    const userResponse = user.toObject();
-    delete userResponse.password;
-    
-    res.json({
-      success: true,
-      message: 'User updated successfully',
-      user: userResponse
-    });
-    
-  } catch (err) {
-    console.error('Error updating user:', err);
-    res.status(500).json({ error: 'Server error while updating user' });
-  }
-});
-
-// Delete user (admin only)
-router.delete('/api/users/:id', authenticateToken, authorize(['admin']), async (req, res) => {
-  try {
-    // Prevent deleting your own account
-    if (req.user.id === req.params.id) {
-      return res.status(400).json({ error: 'Cannot delete your own account' });
-    }
-    
-    const result = await User.findByIdAndDelete(req.params.id);
-    
-    if (!result) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    res.json({
-      success: true,
-      message: 'User deleted successfully'
-    });
-    
-  } catch (err) {
-    console.error('Error deleting user:', err);
-    res.status(500).json({ error: 'Server error while deleting user' });
-  }
-});
-
-// Get current user profile
-router.get('/api/profile', authenticateToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.id, '-password');
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    res.json(user);
-    
-  } catch (err) {
-    console.error('Error fetching profile:', err);
-    res.status(500).json({ error: 'Server error while fetching profile' });
-  }
-});
-
-// Change password
-router.post('/api/change-password', authenticateToken, [
-  check('currentPassword').notEmpty().withMessage('Current password is required'),
-  check('newPassword').isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
-], async (req, res) => {
-  // Validate request
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
   }
   
-  try {
-    const user = await User.findById(req.user.id);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    // Verify current password
-    const isMatch = await user.comparePassword(req.body.currentPassword);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Current password is incorrect' });
-    }
-    
-    // Update password
-    user.password = req.body.newPassword;
-    await user.save();
-    
-    res.json({
-      success: true,
-      message: 'Password changed successfully'
-    });
-    
-  } catch (err) {
-    console.error('Error changing password:', err);
-    res.status(500).json({ error: 'Server error while changing password' });
-  }
-});
-
-// Register routes
-app.use('/', router);
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
+  // Update message
+  const messageEl = confirmModal.querySelector('#confirm-message');
+  messageEl.textContent = message;
   
-  if (err instanceof multer.MulterError) {
-    if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ error: 'File too large. Maximum size is 10MB.' });
-    }
-    return res.status(400).json({ error: `File upload error: ${err.message}` });
-  }
+  // Show modal
+  confirmModal.style.display = 'flex';
   
-  res.status(500).json({ error: 'Internal server error' });
-});
+  // Handle confirm button
+  const confirmBtn = confirmModal.querySelector('#confirm-ok');
+  
+  // Remove existing event listeners
+  const newConfirmBtn = confirmBtn.cloneNode(true);
+  confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+  
+  // Add new event listener
+  newConfirmBtn.addEventListener('click', () => {
+    confirmModal.style.display = 'none';
+    if (typeof callback === 'function') {
+      callback();
+    }
+  });
+}
 
-// Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-module.exports = app;
+// Add CSS for toast and confirmation modal if not already in stylesheet
+if (!document.getElementById('client-management-styles')) {
+  const styles = document.createElement('style');
+  styles.id = 'client-management-styles';
+  styles.textContent = `
+    /* Toast Notifications */
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      min-width: 300px;
+      max-width: 400px;
+      background-color: white;
+      color: #333;
+      padding: 15px;
+      border-radius: 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      z-index: 10000;
+      transform: translateY(-20px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .toast.hiding {
+      transform: translateY(-20px);
+      opacity: 0;
+    }
+    
+    .toast-icon {
+      margin-right: 15px;
+      font-size: 1.2rem;
+    }
+    
+    .toast-content {
+      flex: 1;
+    }
+    
+    .toast-close {
+      background: none;
+      border: none;
+      color: #999;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    
+    .toast-success {
+      border-left: 4px solid #1cc88a;
+    }
+    
+    .toast-success .toast-icon {
+      color: #1cc88a;
+    }
+    
+    .toast-info {
+      border-left: 4px solid #36b9cc;
+    }
+    
+    .toast-info .toast-icon {
+      color: #36b9cc;
+    }
+    
+    .toast-warning {
+      border-left: 4px solid #f6c23e;
+    }
+    
+    .toast-warning .toast-icon {
+      color: #f6c23e;
+    }
+    
+    .toast-error {
+      border-left: 4px solid #e74a3b;
+    }
+    
+    .toast-error .toast-icon {
+      color: #e74a3b;
+    }
+    
+    /* Confirmation Modal */
+    .confirm-modal .modal-content {
+      max-width: 400px;
+    }
+    
+    .confirm-modal .modal-body {
+      padding: 20px;
+    }
+    
+    .confirm-modal .modal-footer {
+      justify-content: flex-end;
+      gap: 10px;
+    }
+  `;
+  
+  document.head.appendChild(styles);
+}
