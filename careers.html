@@ -126,7 +126,7 @@
         <p class="section-subtitle">If you're ready to join a team that values your contribution and supports your growth, fill out the form below and tell us why you're excited to work with BSG Support.</p>
         
         <div class="application-form-container">
-          <form class="application-form">
+          <form id="application-form" class="application-form" action="submit-cv.php" method="post" enctype="multipart/form-data">
             <div class="form-row">
               <div class="form-group">
                 <label for="firstName">First Name <span class="required">*</span></label>
@@ -533,5 +533,7 @@
       }
     }
   </style>
+<!-- Add this before </body> -->
+<script src="career-form.js"></script>
 </body>
 </html>
