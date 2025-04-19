@@ -1,461 +1,752 @@
 /**
- * blog.js
- * Backsure Global Support - Blog Management JavaScript
- * Handles functionality for blog listing and management
+ * Backsure Global Support - Blog Module
+ * This script handles fetching and displaying blog posts from the backend
  */
 
+// Global state for blog posts
+let blogState = {
+  currentPage: 1,
+  totalPages: 1,
+  activeCategory: 'all',
+  searchTerm: '',
+  postsPerPage: 6,
+  isLoading: false
+};
+
 document.addEventListener('DOMContentLoaded', function() {
-  // Initialize blog view toggles
-  initializeBlogViewToggles();
-  
-  // Initialize blog filters
-  initializeBlogFilters();
-  
-  // Initialize bulk actions
-  initializeBulkActions();
-  
-  // Initialize post actions (edit, view, delete)
-  initializePostActions();
-  
-  // Initialize search functionality
-  initializeSearchFilter();
+  // Initialize the blog functionality after the DOM is fully loaded
+  initBlog();
 });
 
 /**
- * Initialize blog view toggles (grid vs list view)
+ * Initialize the blog functionality
  */
-function initializeBlogViewToggles() {
-  const viewButtons = document.querySelectorAll('.view-btn');
-  const gridView = document.querySelector('.grid-view');
-  const listView = document.querySelector('.list-view');
+function initBlog() {
+  // Load posts from API when page loads
+  fetchBlogPosts();
   
-  if (!viewButtons.length || !gridView || !listView) return;
+  // Setup event listeners
+  setupCategoryFilters();
+  setupSearch();
+  setupPagination();
   
-  viewButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      // Remove active class from all buttons
-      viewButtons.forEach(btn => btn.classList.remove('active'));
+  // Setup scroll to top for pagination clicks
+  document.querySelector('.blog-pagination').addEventListener('click', function(e) {
+    if (e.target.classList.contains('page-link') || e.target.parentElement.classList.contains('page-link')) {
+      // Smooth scroll to the top of the blog container
+      document.querySelector('.blog-container').scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+}
+
+/**
+ * Set up category filter buttons
+ */
+function setupCategoryFilters() {
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      // Don't do anything if this category is already active
+      if (this.classList.contains('active')) return;
       
-      // Add active class to clicked button
+      // Update active button styles
+      filterBtns.forEach(btn => btn.classList.remove('active'));
       this.classList.add('active');
       
-      // Get view type from button
-      const viewType = this.getAttribute('data-view');
+      // Update state
+      blogState.activeCategory = this.getAttribute('data-category');
+      blogState.currentPage = 1; // Reset to first page when changing filters
       
-      // Toggle view based on selected type
-      if (viewType === 'grid') {
-        gridView.classList.add('active');
-        listView.classList.remove('active');
-        
-        // Save preference to localStorage
-        localStorage.setItem('blog-view-preference', 'grid');
+      // Show loading state
+      showLoadingState();
+      
+      // Fetch posts with the new filter
+      fetchBlogPosts();
+    });
+  });
+}
+
+/**
+ * Set up search functionality
+ */
+function setupSearch() {
+  const searchInput = document.getElementById('blog-search-input');
+  const searchBtn = document.getElementById('blog-search-btn');
+  
+  // Search button click
+  searchBtn.addEventListener('click', function() {
+    performSearch();
+  });
+  
+  // Enter key in search input
+  searchInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      performSearch();
+    }
+  });
+  
+  function performSearch() {
+    const newSearchTerm = searchInput.value.trim();
+    
+    // Only search if term has changed
+    if (newSearchTerm !== blogState.searchTerm) {
+      blogState.searchTerm = newSearchTerm;
+      blogState.currentPage = 1; // Reset to first page when searching
+      
+      // Show loading state
+      showLoadingState();
+      
+      // Fetch posts with search term
+      fetchBlogPosts();
+    }
+  }
+}
+
+/**
+ * Set up pagination event handlers
+ * (The actual pagination links are created dynamically)
+ */
+function setupPagination() {
+  // This is a delegation approach since pagination links are created dynamically
+  document.querySelector('.blog-pagination').addEventListener('click', function(e) {
+    e.preventDefault();
+    
+    // Find the clicked link (could be the i tag inside)
+    let target = e.target;
+    if (!target.classList.contains('page-link')) {
+      target = target.closest('.page-link');
+    }
+    
+    if (!target) return; // No pagination link clicked
+    
+    // Don't do anything for the current active page or ellipsis
+    if (target.classList.contains('active') || target.textContent === '...') return;
+    
+    // Determine the page to navigate to
+    let newPage = blogState.currentPage;
+    
+    if (target.classList.contains('prev')) {
+      newPage--;
+    } else if (target.classList.contains('next')) {
+      newPage++;
+    } else {
+      // It's a numbered link
+      newPage = parseInt(target.textContent);
+    }
+    
+    // Don't proceed if the page is invalid
+    if (newPage < 1 || newPage > blogState.totalPages) return;
+    
+    // Update state and fetch
+    blogState.currentPage = newPage;
+    
+    // Show loading state
+    showLoadingState();
+    
+    // Fetch posts for the new page
+    fetchBlogPosts();
+  });
+}
+
+/**
+ * Show loading state while fetching posts
+ */
+function showLoadingState() {
+  if (blogState.isLoading) return; // Already loading
+  
+  blogState.isLoading = true;
+  
+  const blogGrid = document.getElementById('blog-grid');
+  
+  // Reduce opacity of existing content
+  blogGrid.style.opacity = '0.5';
+  blogGrid.style.pointerEvents = 'none';
+  
+  // Add a loading spinner
+  const loadingSpinner = document.createElement('div');
+  loadingSpinner.className = 'loading-spinner';
+  loadingSpinner.innerHTML = `
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <p>Loading posts...</p>
+    </div>
+  `;
+  
+  // Add spinner to DOM
+  document.querySelector('.blog-container .container').appendChild(loadingSpinner);
+  
+  // Add loading spinner styles if not already in the document
+  if (!document.getElementById('loading-spinner-styles')) {
+    const style = document.createElement('style');
+    style.id = 'loading-spinner-styles';
+    style.textContent = `
+      .loading-spinner {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        text-align: center;
+      }
+      
+      .spinner-container {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      
+      .spinner {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto 10px;
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-radius: 50%;
+        border-top: 4px solid var(--primary-color);
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+/**
+ * Hide loading state after posts are fetched
+ */
+function hideLoadingState() {
+  blogState.isLoading = false;
+  
+  const blogGrid = document.getElementById('blog-grid');
+  blogGrid.style.opacity = '1';
+  blogGrid.style.pointerEvents = 'auto';
+  
+  // Remove loading spinner
+  const loadingSpinner = document.querySelector('.loading-spinner');
+  if (loadingSpinner) {
+    loadingSpinner.remove();
+  }
+}
+
+/**
+ * Fetch blog posts from the API
+ */
+function fetchBlogPosts() {
+  // Create URL with query parameters
+  const apiUrl = new URL('/api/blog-posts', window.location.origin);
+  apiUrl.searchParams.append('page', blogState.currentPage);
+  apiUrl.searchParams.append('limit', blogState.postsPerPage);
+  
+  if (blogState.activeCategory !== 'all') {
+    apiUrl.searchParams.append('category', blogState.activeCategory);
+  }
+  
+  if (blogState.searchTerm) {
+    apiUrl.searchParams.append('search', blogState.searchTerm);
+  }
+  
+  // AJAX request to the API
+  fetch(apiUrl)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Hide loading state
+      hideLoadingState();
+      
+      // Update state
+      blogState.totalPages = data.meta.totalPages || 1;
+      
+      // Render the posts and pagination
+      renderPosts(data.posts);
+      renderPagination();
+      
+      // Display no results message if needed
+      if (data.posts.length === 0) {
+        showNoResultsMessage();
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching blog posts:', error);
+      hideLoadingState();
+      
+      // For demo/development, use dummy data when API fails
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        console.log('Using dummy data for development');
+        const dummyData = getDummyPosts();
+        renderPosts(dummyData.posts);
+        blogState.totalPages = dummyData.meta.totalPages;
+        renderPagination();
       } else {
-        gridView.classList.remove('active');
-        listView.classList.add('active');
-        
-        // Save preference to localStorage
-        localStorage.setItem('blog-view-preference', 'list');
+        // Show error message in production
+        showErrorMessage();
       }
     });
+}
+
+/**
+ * Render blog posts to the DOM
+ */
+function renderPosts(posts) {
+  const blogGrid = document.getElementById('blog-grid');
+  
+  // Clear existing posts
+  blogGrid.innerHTML = '';
+  
+  // Add posts to the grid
+  posts.forEach((post, index) => {
+    const postElement = createPostElement(post, index === 0 && blogState.currentPage === 1);
+    blogGrid.appendChild(postElement);
   });
   
-  // Check for saved preference
-  const savedPreference = localStorage.getItem('blog-view-preference');
+  // Add animation classes with delay for each post
+  const postElements = blogGrid.querySelectorAll('.blog-card');
+  postElements.forEach((post, index) => {
+    setTimeout(() => {
+      post.classList.add('fadeIn');
+    }, index * 100);
+  });
   
-  if (savedPreference) {
-    // Find button with matching data-view
-    const matchingButton = document.querySelector(`.view-btn[data-view="${savedPreference}"]`);
+  // Add fadeIn animation styles if not already in the document
+  if (!document.getElementById('post-animation-styles')) {
+    const style = document.createElement('style');
+    style.id = 'post-animation-styles';
+    style.textContent = `
+      .blog-card {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+      }
+      
+      .blog-card.fadeIn {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+/**
+ * Create a blog post element
+ */
+function createPostElement(post, isFeatured = false) {
+  const article = document.createElement('article');
+  article.className = 'blog-card';
+  article.setAttribute('data-category', post.category.slug);
+  
+  // Add featured class if needed
+  if (isFeatured && post.featured) {
+    article.classList.add('featured-post');
     
-    if (matchingButton) {
-      // Trigger click event to set the view
-      matchingButton.click();
+    // Add featured tag
+    const featuredTag = document.createElement('span');
+    featuredTag.className = 'featured-tag';
+    featuredTag.textContent = 'Featured';
+    article.appendChild(featuredTag);
+  }
+  
+  // Structure the post
+  article.innerHTML = `
+    <div class="blog-card-image">
+      <img src="${post.image}" alt="${post.title}">
+    </div>
+    <div class="blog-card-content">
+      <h3 class="blog-card-title"><a href="/blog/${post.slug}">${post.title}</a></h3>
+      <div class="blog-meta">
+        <span class="category">${post.category.name}</span>
+        <span class="date"><i class="far fa-calendar-alt"></i> ${formatDate(post.publishedAt)}</span>
+      </div>
+      <p class="blog-card-excerpt">${post.excerpt}</p>
+      <a href="/blog/${post.slug}" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+    </div>
+  `;
+  
+  return article;
+}
+
+/**
+ * Render pagination links
+ */
+function renderPagination() {
+  const paginationContainer = document.querySelector('.blog-pagination');
+  paginationContainer.innerHTML = '';
+  
+  // Don't show pagination if there's only one page
+  if (blogState.totalPages <= 1) return;
+  
+  // Add previous button if not on first page
+  if (blogState.currentPage > 1) {
+    const prevLink = document.createElement('a');
+    prevLink.href = '#';
+    prevLink.className = 'page-link prev';
+    prevLink.innerHTML = '<i class="fas fa-chevron-left"></i> Previous';
+    paginationContainer.appendChild(prevLink);
+  }
+  
+  // Determine which page links to show
+  let startPage = Math.max(1, blogState.currentPage - 1);
+  let endPage = Math.min(blogState.totalPages, blogState.currentPage + 1);
+  
+  // Ensure we show at least 3 pages if available
+  if (endPage - startPage < 2) {
+    if (startPage === 1) {
+      endPage = Math.min(3, blogState.totalPages);
+    } else {
+      startPage = Math.max(1, blogState.totalPages - 2);
     }
   }
-}
-
-/**
- * Initialize blog filters (category, status, date)
- */
-function initializeBlogFilters() {
-  const filterSelects = document.querySelectorAll('#category-filter, #status-filter, #date-filter');
   
-  if (!filterSelects.length) return;
-  
-  filterSelects.forEach(select => {
-    select.addEventListener('change', function() {
-      // Apply filters to posts
-      applyFilters();
-    });
-  });
-}
-
-/**
- * Apply filters to posts
- * In a real app, this might involve an API call or client-side filtering
- */
-function applyFilters() {
-  const categoryFilter = document.getElementById('category-filter');
-  const statusFilter = document.getElementById('status-filter');
-  const dateFilter = document.getElementById('date-filter');
-  const searchInput = document.getElementById('post-search');
-  
-  // Get filter values
-  const categoryValue = categoryFilter ? categoryFilter.value : 'all';
-  const statusValue = statusFilter ? statusFilter.value : 'all';
-  const dateValue = dateFilter ? dateFilter.value : 'all';
-  const searchValue = searchInput ? searchInput.value.trim().toLowerCase() : '';
-  
-  // Get all post items in both grid and list view
-  const gridPosts = document.querySelectorAll('.post-card');
-  const listRows = document.querySelectorAll('.posts-table tbody tr');
-  
-  // Show all posts initially
-  gridPosts.forEach(post => post.style.display = 'block');
-  listRows.forEach(row => row.style.display = 'table-row');
-  
-  // Filter by category
-  if (categoryValue !== 'all') {
-    gridPosts.forEach(post => {
-      const postCategory = post.querySelector('.post-category').textContent.toLowerCase();
-      if (!postCategory.includes(categoryValue)) {
-        post.style.display = 'none';
-      }
-    });
+  // Always show first page
+  if (startPage > 1) {
+    const firstPageLink = document.createElement('a');
+    firstPageLink.href = '#';
+    firstPageLink.className = 'page-link';
+    firstPageLink.textContent = '1';
+    paginationContainer.appendChild(firstPageLink);
     
-    listRows.forEach(row => {
-      const postCategory = row.cells[3].textContent.toLowerCase();
-      if (!postCategory.includes(categoryValue)) {
-        row.style.display = 'none';
-      }
-    });
-  }
-  
-  // Filter by status
-  if (statusValue !== 'all') {
-    gridPosts.forEach(post => {
-      const postStatus = post.querySelector('.post-status').classList.contains(statusValue);
-      if (!postStatus) {
-        post.style.display = 'none';
-      }
-    });
-    
-    listRows.forEach(row => {
-      const postStatus = row.querySelector('.status-badge').classList.contains(statusValue);
-      if (!postStatus) {
-        row.style.display = 'none';
-      }
-    });
-  }
-  
-  // Filter by date (in a real app, this would be more sophisticated)
-  if (dateValue !== 'all') {
-    // For demo purposes, just show a message
-    console.log('Date filtering would be implemented in a production app');
-  }
-  
-  // Filter by search term
-  if (searchValue !== '') {
-    gridPosts.forEach(post => {
-      const postTitle = post.querySelector('.post-title').textContent.toLowerCase();
-      const postExcerpt = post.querySelector('.post-excerpt').textContent.toLowerCase();
-      
-      if (!postTitle.includes(searchValue) && !postExcerpt.includes(searchValue)) {
-        post.style.display = 'none';
-      }
-    });
-    
-    listRows.forEach(row => {
-      const postTitle = row.querySelector('.post-title-link').textContent.toLowerCase();
-      const postExcerpt = row.querySelector('.post-excerpt').textContent.toLowerCase();
-      
-      if (!postTitle.includes(searchValue) && !postExcerpt.includes(searchValue)) {
-        row.style.display = 'none';
-      }
-    });
-  }
-  
-  // Update UI to show filter results
-  updateFilterResults();
-}
-
-/**
- * Update UI to show filter results
- */
-function updateFilterResults() {
-  const gridPosts = document.querySelectorAll('.post-card[style="display: block"]');
-  const listRows = document.querySelectorAll('.posts-table tbody tr[style="display: table-row"]');
-  
-  // Count visible posts
-  const visibleCount = gridPosts.length || listRows.length;
-  const totalCount = document.querySelectorAll('.post-card').length;
-  
-  // Update pagination info
-  const paginationInfo = document.querySelector('.pagination-info');
-  
-  if (paginationInfo) {
-    paginationInfo.textContent = `Showing ${visibleCount} of ${totalCount} posts`;
-  }
-  
-  // Show "no results" message if no posts are visible
-  if (visibleCount === 0) {
-    // Check if message already exists
-    let noResultsMsg = document.querySelector('.no-results-message');
-    
-    if (!noResultsMsg) {
-      // Create message
-      noResultsMsg = document.createElement('div');
-      noResultsMsg.className = 'no-results-message';
-      noResultsMsg.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-search"></i>
-          <h3>No posts found</h3>
-          <p>Try adjusting your filters or search term</p>
-          <button id="reset-filters" class="btn-secondary">Reset Filters</button>
-        </div>
-      `;
-      
-      // Insert before pagination
-      const pagination = document.querySelector('.pagination');
-      
-      if (pagination && pagination.parentNode) {
-        pagination.parentNode.insertBefore(noResultsMsg, pagination);
-      }
-      
-      // Add event listener to reset button
-      const resetBtn = noResultsMsg.querySelector('#reset-filters');
-      
-      if (resetBtn) {
-        resetBtn.addEventListener('click', resetFilters);
-      }
-    }
-  } else {
-    // Remove "no results" message if it exists
-    const noResultsMsg = document.querySelector('.no-results-message');
-    
-    if (noResultsMsg) {
-      noResultsMsg.parentNode.removeChild(noResultsMsg);
+    // Add ellipsis if needed
+    if (startPage > 2) {
+      const ellipsis = document.createElement('span');
+      ellipsis.className = 'page-link';
+      ellipsis.textContent = '...';
+      paginationContainer.appendChild(ellipsis);
     }
   }
-}
-
-/**
- * Reset all filters to default values
- */
-function resetFilters() {
-  const filterSelects = document.querySelectorAll('#category-filter, #status-filter, #date-filter');
-  const searchInput = document.getElementById('post-search');
   
-  // Reset select elements to first option
-  filterSelects.forEach(select => {
-    select.selectedIndex = 0;
-  });
-  
-  // Clear search input
-  if (searchInput) {
-    searchInput.value = '';
+  // Add page links
+  for (let i = startPage; i <= endPage; i++) {
+    const pageLink = document.createElement('a');
+    pageLink.href = '#';
+    pageLink.className = 'page-link';
+    if (i === blogState.currentPage) {
+      pageLink.classList.add('active');
+    }
+    pageLink.textContent = i;
+    paginationContainer.appendChild(pageLink);
   }
   
-  // Apply filters (will show all posts with default values)
-  applyFilters();
-}
-
-/**
- * Initialize bulk actions
- */
-function initializeBulkActions() {
-  const bulkActionSelect = document.getElementById('bulk-action');
-  const applyBtn = document.querySelector('.apply-btn');
-  const selectAllCheckbox = document.getElementById('select-all');
-  const postCheckboxes = document.querySelectorAll('.post-select');
-  
-  if (selectAllCheckbox) {
-    selectAllCheckbox.addEventListener('change', function() {
-      postCheckboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
-      });
-    });
-  }
-  
-  if (bulkActionSelect && applyBtn) {
-    applyBtn.addEventListener('click', function() {
-      const selectedAction = bulkActionSelect.value;
-      
-      if (!selectedAction) {
-        alert('Please select an action');
-        return;
-      }
-      
-      // Get selected posts
-      const selectedPosts = Array.from(postCheckboxes)
-        .filter(checkbox => checkbox.checked)
-        .map(checkbox => {
-          // Get post ID or other identifier
-          // In a real app, this would come from a data attribute
-          const row = checkbox.closest('tr');
-          const postTitle = row ? row.querySelector('.post-title-link').textContent : 'Unknown';
-          
-          return postTitle;
-        });
-      
-      if (selectedPosts.length === 0) {
-        alert('Please select at least one post');
-        return;
-      }
-      
-      // Confirm action
-      const confirmMessage = `Are you sure you want to ${getActionVerb(selectedAction)} ${selectedPosts.length} post(s)?`;
-      
-      if (confirm(confirmMessage)) {
-        // In a real app, this would send a request to the server
-        // For demo purposes, just show a message
-        alert(`Action "${selectedAction}" would be applied to ${selectedPosts.length} posts in a production environment`);
-      }
-    });
-  }
-}
-
-/**
- * Get appropriate verb for action
- */
-function getActionVerb(action) {
-  switch (action) {
-    case 'publish':
-      return 'publish';
-    case 'draft':
-      return 'move to draft';
-    case 'delete':
-      return 'delete';
-    default:
-      return 'apply action to';
-  }
-}
-
-/**
- * Initialize post actions (edit, view, delete)
- */
-function initializePostActions() {
-  // Edit buttons
-  const editButtons = document.querySelectorAll('.edit-btn');
-  
-  editButtons.forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      // In a real app, get post ID from data attribute
-      const postId = this.getAttribute('data-id') || '1';
-      
-      // Redirect to edit page
-      window.location.href = `admin-blog-edit.html?id=${postId}`;
-    });
-  });
-  
-  // View buttons
-  const viewButtons = document.querySelectorAll('.view-btn:not(.table-actions .view-btn)');
-  
-  viewButtons.forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      // In a real app, get post slug from data attribute
-      const postSlug = this.getAttribute('data-slug') || 'sample-post';
-      
-      // Open in new tab
-      window.open(`../blog/${postSlug}.html`, '_blank');
-    });
-  });
-  
-  // Delete buttons
-  const deleteButtons = document.querySelectorAll('.delete-btn');
-  
-  deleteButtons.forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      // In a real app, get post title from closest element
-      let postTitle = 'this post';
-      
-      // Try to get title from grid view
-      const card = this.closest('.post-card');
-      if (card) {
-        postTitle = card.querySelector('.post-title').textContent;
-      }
-      
-      // Try to get title from list view
-      const row = this.closest('tr');
-      if (row) {
-        postTitle = row.querySelector('.post-title-link').textContent;
-      }
-      
-      // Confirm deletion
-      if (confirm(`Are you sure you want to delete "${postTitle}"?`)) {
-        // In a real app, this would send a delete request to the server
-        // For demo purposes, just show a message
-        alert(`The post would be deleted in a production environment`);
-      }
-    });
-  });
-}
-
-/**
- * Initialize search filter
- */
-function initializeSearchFilter() {
-  const searchInput = document.getElementById('post-search');
-  const searchBtn = document.querySelector('.search-btn');
-  
-  if (searchInput && searchBtn) {
-    // Search on button click
-    searchBtn.addEventListener('click', function() {
-      applyFilters();
-    });
+  // Always show last page
+  if (endPage < blogState.totalPages) {
+    // Add ellipsis if needed
+    if (endPage < blogState.totalPages - 1) {
+      const ellipsis = document.createElement('span');
+      ellipsis.className = 'page-link';
+      ellipsis.textContent = '...';
+      paginationContainer.appendChild(ellipsis);
+    }
     
-    // Search on enter key
-    searchInput.addEventListener('keyup', function(e) {
-      if (e.key === 'Enter') {
-        applyFilters();
+    const lastPageLink = document.createElement('a');
+    lastPageLink.href = '#';
+    lastPageLink.className = 'page-link';
+    lastPageLink.textContent = blogState.totalPages;
+    paginationContainer.appendChild(lastPageLink);
+  }
+  
+  // Add next button if not on last page
+  if (blogState.currentPage < blogState.totalPages) {
+    const nextLink = document.createElement('a');
+    nextLink.href = '#';
+    nextLink.className = 'page-link next';
+    nextLink.innerHTML = 'Next <i class="fas fa-chevron-right"></i>';
+    paginationContainer.appendChild(nextLink);
+  }
+}
+
+/**
+ * Show a message when no posts are found
+ */
+function showNoResultsMessage() {
+  const blogGrid = document.getElementById('blog-grid');
+  
+  const noResults = document.createElement('div');
+  noResults.className = 'no-results';
+  noResults.innerHTML = `
+    <div class="no-results-content">
+      <i class="fas fa-search"></i>
+      <h3>No blog posts found</h3>
+      <p>We couldn't find any posts matching your criteria. Try adjusting your search or filter.</p>
+      <button class="reset-filters-btn">Reset Filters</button>
+    </div>
+  `;
+  
+  blogGrid.appendChild(noResults);
+  
+  // Add event listener to reset button
+  const resetBtn = noResults.querySelector('.reset-filters-btn');
+  resetBtn.addEventListener('click', function() {
+    // Reset all filters
+    blogState.activeCategory = 'all';
+    blogState.searchTerm = '';
+    blogState.currentPage = 1;
+    
+    // Update UI
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.remove('active');
+      if (btn.getAttribute('data-category') === 'all') {
+        btn.classList.add('active');
       }
     });
     
-    // Search after typing delay (for better performance)
-    let typingTimer;
-    const doneTypingInterval = 500; // ms
+    document.getElementById('blog-search-input').value = '';
     
-    searchInput.addEventListener('keyup', function() {
-      clearTimeout(typingTimer);
-      
-      if (this.value) {
-        typingTimer = setTimeout(applyFilters, doneTypingInterval);
+    // Fetch posts again
+    showLoadingState();
+    fetchBlogPosts();
+  });
+  
+  // Add no results styles if not already in the document
+  if (!document.getElementById('no-results-styles')) {
+    const style = document.createElement('style');
+    style.id = 'no-results-styles';
+    style.textContent = `
+      .no-results {
+        grid-column: 1 / -1;
+        padding: 40px 0;
+        text-align: center;
       }
-    });
+      
+      .no-results-content {
+        background-color: white;
+        border-radius: 8px;
+        padding: 40px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+      
+      .no-results i {
+        font-size: 3rem;
+        color: var(--accent-color);
+        margin-bottom: 15px;
+      }
+      
+      .no-results h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: var(--primary-color);
+      }
+      
+      .no-results p {
+        color: #666;
+        margin-bottom: 20px;
+      }
+      
+      .reset-filters-btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.3s;
+      }
+      
+      .reset-filters-btn:hover {
+        background-color: var(--primary-dark);
+      }
+    `;
+    document.head.appendChild(style);
   }
 }
 
 /**
- * Initialize pagination
- * In a real app, this would handle server-side pagination
+ * Show an error message when API request fails
  */
-function initializePagination() {
-  const paginationLinks = document.querySelectorAll('.pagination-link');
+function showErrorMessage() {
+  const blogGrid = document.getElementById('blog-grid');
   
-  if (!paginationLinks.length) return;
+  const errorMessage = document.createElement('div');
+  errorMessage.className = 'api-error';
+  errorMessage.innerHTML = `
+    <div class="error-content">
+      <i class="fas fa-exclamation-circle"></i>
+      <h3>Something went wrong</h3>
+      <p>We're having trouble loading blog posts right now. Please try again later.</p>
+      <button class="retry-btn">Try Again</button>
+    </div>
+  `;
   
-  paginationLinks.forEach(link => {
-    if (link.classList.contains('disabled')) return;
-    
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      // Remove active class from all links
-      paginationLinks.forEach(l => l.classList.remove('active'));
-      
-      // Add active class to clicked link
-      this.classList.add('active');
-      
-      // In a real app, this would fetch the next page of results
-      // For demo purposes, just show a message
-      const page = this.textContent;
-      
-      alert(`In a production app, this would navigate to page ${page}`);
-    });
+  blogGrid.innerHTML = '';
+  blogGrid.appendChild(errorMessage);
+  
+  // Add event listener to retry button
+  const retryBtn = errorMessage.querySelector('.retry-btn');
+  retryBtn.addEventListener('click', function() {
+    showLoadingState();
+    fetchBlogPosts();
   });
+  
+  // Add error styles if not already in the document
+  if (!document.getElementById('error-styles')) {
+    const style = document.createElement('style');
+    style.id = 'error-styles';
+    style.textContent = `
+      .api-error {
+        grid-column: 1 / -1;
+        padding: 40px 0;
+        text-align: center;
+      }
+      
+      .error-content {
+        background-color: white;
+        border-radius: 8px;
+        padding: 40px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+      }
+      
+      .api-error i {
+        font-size: 3rem;
+        color: var(--danger-color, #e74a3b);
+        margin-bottom: 15px;
+      }
+      
+      .api-error h3 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+        color: var(--primary-color);
+      }
+      
+      .api-error p {
+        color: #666;
+        margin-bottom: 20px;
+      }
+      
+      .retry-btn {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.3s;
+      }
+      
+      .retry-btn:hover {
+        background-color: var(--primary-dark);
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+/**
+ * Format a date string
+ */
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+}
+
+/**
+ * Get dummy posts for development/demo
+ */
+function getDummyPosts() {
+  const posts = [
+    {
+      id: 1,
+      title: '5 Ways Outsourcing Can Accelerate Your Business Growth',
+      slug: '5-ways-outsourcing-can-accelerate-business-growth',
+      excerpt: 'Learn how strategic outsourcing can help you scale faster, reduce costs, and focus on your core business strengths in today\'s competitive landscape.',
+      image: 'images/blog/blog-featured.jpg',
+      featured: true,
+      publishedAt: '2025-04-15T12:00:00Z',
+      category: { name: 'Outsourcing Tips', slug: 'outsourcing' }
+    },
+    {
+      id: 2,
+      title: 'Building Effective Remote Teams: Best Practices',
+      slug: 'building-effective-remote-teams',
+      excerpt: 'Discover proven strategies for managing remote teams effectively and maintaining strong team culture across borders.',
+      image: 'images/blog/blog-1.jpg',
+      featured: false,
+      publishedAt: '2025-04-12T10:30:00Z',
+      category: { name: 'HR Management', slug: 'hr-management' }
+    },
+    {
+      id: 3,
+      title: 'Streamlining Financial Operations: Key Strategies for SMEs',
+      slug: 'streamlining-financial-operations',
+      excerpt: 'Learn practical approaches to optimize your financial processes, reduce costs, and improve financial visibility for better decision-making.',
+      image: 'images/blog/blog-2.jpg',
+      featured: false,
+      publishedAt: '2025-04-08T09:15:00Z',
+      category: { name: 'Finance & Accounting', slug: 'finance' }
+    },
+    {
+      id: 4,
+      title: 'Understanding UAE Corporate Tax: A Guide for Businesses',
+      slug: 'understanding-uae-corporate-tax',
+      excerpt: 'Navigate the complexities of UAE\'s corporate tax system with this comprehensive guide for business owners and finance teams.',
+      image: 'images/blog/blog-3.jpg',
+      featured: false,
+      publishedAt: '2025-04-05T14:45:00Z',
+      category: { name: 'Compliance & Admin', slug: 'compliance' }
+    },
+    {
+      id: 5,
+      title: 'Digital Transformation: Adapting Your Business for Future Success',
+      slug: 'digital-transformation-business-success',
+      excerpt: 'Explore the essential steps to successfully implement digital transformation in your business and stay ahead of the competition.',
+      image: 'images/blog/blog-4.jpg',
+      featured: false,
+      publishedAt: '2025-03-30T11:20:00Z',
+      category: { name: 'Business Growth', slug: 'business-growth' }
+    },
+    {
+      id: 6,
+      title: 'How to Choose the Right Outsourcing Partner for Your Business',
+      slug: 'choose-right-outsourcing-partner',
+      excerpt: 'Understand the key factors to consider when selecting an outsourcing partner that aligns with your business goals and values.',
+      image: 'images/blog/blog-5.jpg',
+      featured: false,
+      publishedAt: '2025-03-25T13:10:00Z',
+      category: { name: 'Outsourcing Tips', slug: 'outsourcing' }
+    }
+  ];
+  
+  // Filter posts based on current filters
+  let filteredPosts = [...posts];
+  
+  // Apply category filter
+  if (blogState.activeCategory !== 'all') {
+    filteredPosts = filteredPosts.filter(post => post.category.slug === blogState.activeCategory);
+  }
+  
+  // Apply search filter
+  if (blogState.searchTerm) {
+    const term = blogState.searchTerm.toLowerCase();
+    filteredPosts = filteredPosts.filter(post => 
+      post.title.toLowerCase().includes(term) || 
+      post.excerpt.toLowerCase().includes(term) || 
+      post.category.name.toLowerCase().includes(term)
+    );
+  }
+  
+  // Calculate pagination
+  const totalPosts = filteredPosts.length;
+  const totalPages = Math.ceil(totalPosts / blogState.postsPerPage);
+  
+  // Get posts for current page
+  const startIndex = (blogState.currentPage - 1) * blogState.postsPerPage;
+  const endIndex = startIndex + blogState.postsPerPage;
+  const paginatedPosts = filteredPosts.slice(startIndex, endIndex);
+  
+  return {
+    posts: paginatedPosts,
+    meta: {
+      currentPage: blogState.currentPage,
+      totalPages: totalPages,
+      totalPosts: totalPosts
+    }
+  };
 }
