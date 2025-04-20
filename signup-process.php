@@ -1,7 +1,7 @@
 <?php
 /**
  * signup-process.php
- * Processes user registration requests
+ * Processes user registration requests with enhanced security
  */
 
 // Start session
@@ -27,6 +27,9 @@ $username = isset($_POST['username']) ? trim($_POST['username']) : '';
 $password = isset($_POST['password']) ? $_POST['password'] : '';
 $confirmPassword = isset($_POST['confirm-password']) ? $_POST['confirm-password'] : '';
 $termsAccepted = isset($_POST['terms']) ? (bool)$_POST['terms'] : false;
+$companyName = isset($_POST['company']) ? trim($_POST['company']) : '';
+$companySize = isset($_POST['company_size']) ? trim($_POST['company_size']) : '';
+$phoneNumber = isset($_POST['phone']) ? trim($_POST['phone']) : '';
 
 // Validate inputs
 $errors = [];
@@ -39,6 +42,14 @@ if (empty($email)) {
     $errors[] = 'Email address is required.';
 } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     $errors[] = 'Please enter a valid email address.';
+} else {
+    // Check if it's a valid company email (not free email provider)
+    $freeDomains = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com', 'icloud.com', 'mail.com', 'protonmail.com'];
+    $emailDomain = substr(strrchr($email, "@"), 1);
+    
+    if (in_array(strtolower($emailDomain), $freeDomains)) {
+        $errors[] = 'Please use your company email address.';
+    }
 }
 
 if (empty($username)) {
@@ -57,14 +68,18 @@ if ($password !== $confirmPassword) {
     $errors[] = 'Passwords do not match.';
 }
 
+if (empty($companyName)) {
+    $errors[] = 'Company name is required.';
+}
+
 if (!$termsAccepted) {
     $errors[] = 'You must agree to the Terms & Conditions.';
 }
 
 // Check password strength
 $passwordStrength = checkPasswordStrength($password);
-if ($passwordStrength < 2) { // Require at least medium strength
-    $errors[] = 'Please choose a stronger password.';
+if ($passwordStrength < 3) { // Require at least strong strength
+    $errors[] = 'Please choose a stronger password with a mix of uppercase, lowercase, numbers, and special characters.';
 }
 
 // If there are validation errors, return them
@@ -108,24 +123,24 @@ try {
     $passwordHash = password_hash($password, PASSWORD_DEFAULT);
     
     // Generate email verification token
-    $verificationToken = bin2hex(random_bytes(32));
+    $verificationToken = generateToken(64);
+    $tokenExpiry = date('Y-m-d H:i:s', time() + (VERIFY_TOKEN_HOURS * 3600)); // Convert hours to seconds
     
-    // Set default role as 'user'
-    // Note: For admin dashboard access, roles would typically be assigned manually
-    // by a super admin, but for demonstration we're showing the signup process
-    $role = 'pending'; // Pending approval
+    // Set default role as 'client'
+    $role = 'client';
     
     // Start transaction
     $pdo->beginTransaction();
     
     // Insert user into database
-    $stmt = $pdo->prepare('INSERT INTO users (name, email, username, password, role, verification_token, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())');
+    $stmt = $pdo->prepare('INSERT INTO users (name, email, username, password, role, status, verification_token, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())');
     $stmt->execute([
         $fullname,
         $email,
         $username,
         $passwordHash,
         $role,
+        STATUS_PENDING,
         $verificationToken
     ]);
     
@@ -148,22 +163,63 @@ try {
         $_SERVER['HTTP_USER_AGENT']
     ]);
     
+    // Store company name
+    if (!empty($companyName)) {
+        $stmt->execute([
+            $userId,
+            'company_name',
+            $companyName
+        ]);
+    }
+    
+    // Store company size
+    if (!empty($companySize)) {
+        $stmt->execute([
+            $userId,
+            'company_size',
+            $companySize
+        ]);
+    }
+    
+    // Store phone number
+    if (!empty($phoneNumber)) {
+        $stmt->execute([
+            $userId,
+            'phone_number',
+            $phoneNumber
+        ]);
+    }
+    
+    // Log the activity
+    $stmt = $pdo->prepare('INSERT INTO activity_logs (user_id, action, ip_address, user_agent, details) VALUES (?, ?, ?, ?, ?)');
+    $stmt->execute([
+        $userId,
+        'user_registered',
+        $_SERVER['REMOTE_ADDR'],
+        $_SERVER['HTTP_USER_AGENT'],
+        'User registered and verification email sent'
+    ]);
+    
     // Commit transaction
     $pdo->commit();
     
-    // Send verification email
-    $verificationLink = 'https://' . $_SERVER['HTTP_HOST'] . '/admin-login.html?verify=' . urlencode($email) . '&token=' . $verificationToken;
+    // Generate the verification link 
+    $baseUrl = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+    $baseUrl .= $_SERVER['HTTP_HOST'];
+    $verificationLink = $baseUrl . '/verify-client.php?email=' . urlencode($email) . '&token=' . $verificationToken;
     
+    // Prepare verification email
     $emailSubject = 'Verify Your Email - Backsure Global Support';
     $emailBody = "
     <html>
     <body>
         <h2>Welcome to Backsure Global Support!</h2>
+        <p>Hello {$fullname},</p>
         <p>Thank you for signing up. Please verify your email address to complete your registration.</p>
-        <p><a href='$verificationLink' style='background-color:#062767;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;'>Verify Email</a></p>
+        <p><a href='{$verificationLink}' style='background-color:#062767;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;'>Verify Email</a></p>
         <p>Or copy and paste this link into your browser:</p>
-        <p>$verificationLink</p>
-        <p>This link will expire in 24 hours.</p>
+        <p>{$verificationLink}</p>
+        <p>This link will expire in " . VERIFY_TOKEN_HOURS . " hours.</p>
         <p>If you did not sign up for an account, please ignore this email.</p>
         <p>Thanks,<br>
         Backsure Global Support Team</p>
@@ -171,7 +227,9 @@ try {
     </html>
     ";
     
-    // In a real application, you would send this email
+    // Send the verification email using our function
+    $emailSent = sendEmail($email, $emailSubject, $emailBody);
+    
     // For demonstration, we'll just log it
     error_log('Verification email would be sent to: ' . $email);
     error_log('Verification link: ' . $verificationLink);
@@ -187,7 +245,7 @@ try {
     
 } catch (PDOException $e) {
     // Rollback transaction on error
-    if ($pdo->inTransaction()) {
+    if (isset($pdo) && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
     
@@ -195,25 +253,4 @@ try {
     error_log('Signup error: ' . $e->getMessage());
     
     echo json_encode(['success' => false, 'message' => 'A database error occurred. Please try again later.']);
-}
-
-/**
- * Check password strength
- * Returns a score from 0-4
- * 0: Too weak, 1: Weak, 2: Medium, 3: Strong, 4: Very strong
- */
-function checkPasswordStrength($password) {
-    $score = 0;
-    
-    // Length check
-    if (strlen($password) >= 8) $score++;
-    if (strlen($password) >= 12) $score++;
-    
-    // Complexity checks
-    if (preg_match('/[0-9]/', $password)) $score++;
-    if (preg_match('/[a-z]/', $password) && preg_match('/[A-Z]/', $password)) $score++;
-    if (preg_match('/[^a-zA-Z0-9]/', $password)) $score++;
-    
-    // Cap score at 4
-    return min(4, $score);
 }

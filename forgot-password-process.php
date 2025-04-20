@@ -1,14 +1,12 @@
 <?php
 /**
- * forgot-password-process.php
- * Processes password reset requests
+ * Forgot Password Process
+ * Handles password reset requests
  */
-
-// Start session
-session_start();
 
 // Include database configuration
 require_once 'config.php';
+require_once 'functions.php';
 
 // Set content type to JSON for API responses
 header('Content-Type: application/json');
@@ -19,16 +17,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// Get email address
+// Get form data
 $email = isset($_POST['email']) ? trim(strtolower($_POST['email'])) : '';
+$isClient = isset($_POST['is_client']) ? (bool)$_POST['is_client'] : true;
 
 // Validate email
 if (empty($email)) {
     echo json_encode(['success' => false, 'message' => 'Email address is required.']);
     exit;
-}
-
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+} elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     echo json_encode(['success' => false, 'message' => 'Please enter a valid email address.']);
     exit;
 }
@@ -46,49 +43,65 @@ try {
         ]
     );
     
-    // Check if the email exists
-    $stmt = $pdo->prepare('SELECT id, name, username FROM users WHERE email = ? AND active = 1');
+    // Determine which table to query based on user type
+    $table = $isClient ? 'users' : 'admin_users';
+    
+    // Find user by email
+    $stmt = $pdo->prepare("SELECT id, email, name, status FROM {$table} WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
     
-    // Even if the email doesn't exist, don't reveal that to prevent email enumeration
+    // If user not found, still return success for security reasons
+    // This prevents email enumeration attacks
     if (!$user) {
-        // Log the attempt for security purposes
-        logResetAttempt($pdo, $email, false, 'Email not found or user inactive');
-        
-        // Still return success to avoid email enumeration
-        echo json_encode(['success' => true, 'message' => 'If your email address exists in our database, you will receive a password reset link shortly.']);
+        echo json_encode([
+            'success' => true,
+            'message' => 'If your email exists in our system, you will receive password reset instructions shortly.'
+        ]);
         exit;
     }
     
-    // Generate password reset token
+    // Check if account is blocked
+    if ($user['status'] === 'blocked') {
+        echo json_encode([
+            'success' => true,
+            'message' => 'If your email exists in our system, you will receive password reset instructions shortly.'
+        ]);
+        exit;
+    }
+    
+    // Check for any existing token and delete it
+    $stmt = $pdo->prepare('DELETE FROM password_resets WHERE email = ?');
+    $stmt->execute([$email]);
+    
+    // Generate token
     $token = bin2hex(random_bytes(32));
-    $expires = date('Y-m-d H:i:s', strtotime('+1 hour')); // Token expires in 1 hour
+    $expires = date('Y-m-d H:i:s', time() + 3600); // 1 hour expiry
     
     // Store token in database
-    $stmt = $pdo->prepare('INSERT INTO password_resets (user_id, token, expires_at, created_at) VALUES (?, ?, ?, NOW())');
-    $stmt->execute([
-        $user['id'],
-        $token,
-        $expires
-    ]);
+    $stmt = $pdo->prepare('INSERT INTO password_resets (email, token, expires, created_at) VALUES (?, ?, ?, NOW())');
+    $stmt->execute([$email, $token, $expires]);
     
     // Create reset link
-    $resetLink = 'https://' . $_SERVER['HTTP_HOST'] . '/admin-login.html?reset=' . urlencode($email) . '&token=' . $token;
+    $baseUrl = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+    $baseUrl .= $_SERVER['HTTP_HOST'];
+    $resetUrl = $baseUrl . '/reset-password.php?email=' . urlencode($email) . '&token=' . $token;
     
-    // Send password reset email
-    $emailSubject = 'Password Reset - Backsure Global Support';
-    $emailBody = "
+    // Prepare email
+    $userName = $user['name'];
+    $subject = 'Reset Your Password - Backsure Global Support';
+    $message = "
     <html>
     <body>
-        <h2>Password Reset Request</h2>
-        <p>Hello " . htmlspecialchars($user['name']) . ",</p>
-        <p>You are receiving this email because we received a password reset request for your account.</p>
-        <p><a href='$resetLink' style='background-color:#062767;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;'>Reset Password</a></p>
+        <h2>Reset Your Password</h2>
+        <p>Hello {$userName},</p>
+        <p>We received a request to reset your password for your Backsure Global Support account.</p>
+        <p>To reset your password, click the button below:</p>
+        <p><a href='{$resetUrl}' style='background-color:#062767;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;'>Reset Password</a></p>
         <p>Or copy and paste this link into your browser:</p>
-        <p>$resetLink</p>
-        <p>This password reset link will expire in 60 minutes.</p>
-        <p>If you did not request a password reset, no further action is required.</p>
+        <p>{$resetUrl}</p>
+        <p>This link will expire in 1 hour.</p>
+        <p>If you did not request a password reset, please ignore this email or contact support if you have concerns.</p>
         <p>Thanks,<br>
         Backsure Global Support Team</p>
     </body>
@@ -98,17 +111,21 @@ try {
     // In a real application, you would send this email
     // For demonstration, we'll just log it
     error_log('Password reset email would be sent to: ' . $email);
-    error_log('Reset link: ' . $resetLink);
+    error_log('Reset link: ' . $resetUrl);
     
-    // Log the reset attempt
-    logResetAttempt($pdo, $email, true, 'Reset email sent');
+    // Log the request
+    $ipAddress = $_SERVER['REMOTE_ADDR'];
+    $userAgent = $_SERVER['HTTP_USER_AGENT'];
     
-    // Return success response
+    $stmt = $pdo->prepare('INSERT INTO activity_logs (user_id, action, ip_address, user_agent, details) VALUES (?, "password_reset_request", ?, ?, ?)');
+    $stmt->execute([$user['id'], $ipAddress, $userAgent, 'Reset token generated']);
+    
+    // Return success
     echo json_encode([
         'success' => true,
-        'message' => 'If your email address exists in our database, you will receive a password reset link shortly.',
+        'message' => 'If your email exists in our system, you will receive password reset instructions shortly.',
         'debug' => [
-            'reset_link' => $resetLink // Only for demonstration
+            'reset_link' => $resetUrl // Only for demonstration
         ]
     ]);
     
@@ -117,22 +134,4 @@ try {
     error_log('Password reset error: ' . $e->getMessage());
     
     echo json_encode(['success' => false, 'message' => 'A database error occurred. Please try again later.']);
-}
-
-/**
- * Log password reset attempt
- */
-function logResetAttempt($pdo, $email, $success, $notes = '') {
-    try {
-        $stmt = $pdo->prepare('INSERT INTO password_reset_logs (email, ip_address, user_agent, success, notes, created_at) VALUES (?, ?, ?, ?, ?, NOW())');
-        $stmt->execute([
-            $email,
-            $_SERVER['REMOTE_ADDR'],
-            $_SERVER['HTTP_USER_AGENT'],
-            $success ? 1 : 0,
-            $notes
-        ]);
-    } catch (Exception $e) {
-        error_log('Error logging password reset attempt: ' . $e->getMessage());
-    }
 }

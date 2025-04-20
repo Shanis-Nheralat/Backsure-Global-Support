@@ -1,7 +1,7 @@
 <?php
 /**
- * Admin Login Process
- * Handles admin authentication with enhanced security
+ * Client Login Process
+ * Handles login authentication for clients
  */
 
 // Start session
@@ -57,87 +57,62 @@ try {
         ]
     );
     
-    // Find admin by email
-    $stmt = $pdo->prepare('SELECT id, name, email, password, role, status, login_attempts, last_attempt_time FROM admin_users WHERE email = ?');
+    // Find user by email
+    $stmt = $pdo->prepare('SELECT id, name, email, username, password, role, status, login_attempts, last_attempt_time FROM users WHERE email = ?');
     $stmt->execute([$email]);
-    $admin = $stmt->fetch();
+    $user = $stmt->fetch();
     
-    // If admin not found or is blocked
-    if (!$admin) {
+    // If user not found or is blocked
+    if (!$user) {
         // For security, use the same message for non-existent accounts to prevent user enumeration
         echo json_encode(['success' => false, 'message' => 'Invalid email or password.']);
-        
-        // Log failed login attempt for non-existent account
-        $ipAddress = $_SERVER['REMOTE_ADDR'];
-        $userAgent = $_SERVER['HTTP_USER_AGENT'];
-        
-        $stmt = $pdo->prepare('INSERT INTO login_logs (email, ip_address, user_agent, action, success) VALUES (?, ?, ?, "login", 0)');
-        $stmt->execute([$email, $ipAddress, $userAgent]);
-        
         exit;
     }
     
     // Check if account is blocked
-    if ($admin['status'] === 'blocked') {
+    if ($user['status'] === 'blocked') {
         echo json_encode(['success' => false, 'message' => 'Your account has been blocked. Please contact support.']);
-        
-        // Log blocked account attempt
-        $ipAddress = $_SERVER['REMOTE_ADDR'];
-        $userAgent = $_SERVER['HTTP_USER_AGENT'];
-        
-        $stmt = $pdo->prepare('INSERT INTO login_logs (user_id, email, ip_address, user_agent, action, success) VALUES (?, ?, ?, ?, "login_blocked", 0)');
-        $stmt->execute([$admin['id'], $admin['email'], $ipAddress, $userAgent]);
-        
+        exit;
+    }
+    
+    // Check if account is pending verification
+    if ($user['status'] === 'pending') {
+        echo json_encode(['success' => false, 'message' => 'Your account is pending verification. Please check your email to verify your account.']);
         exit;
     }
     
     // Check for too many login attempts
-    $maxAttempts = MAX_LOGIN_ATTEMPTS; // From config
-    $lockoutTime = LOCKOUT_MINUTES * 60; // Convert to seconds
+    $maxAttempts = 5; // Maximum failed login attempts
+    $lockoutTime = 15 * 60; // 15 minutes lockout in seconds
     
     $currentTime = time();
-    $lastAttemptTime = strtotime($admin['last_attempt_time'] ?? '0');
+    $lastAttemptTime = strtotime($user['last_attempt_time'] ?? '0');
     $timeSinceLastAttempt = $currentTime - $lastAttemptTime;
     
     // If account was locked but the lockout time has passed, reset the attempts
-    if ($timeSinceLastAttempt > $lockoutTime && $admin['login_attempts'] >= $maxAttempts) {
-        $stmt = $pdo->prepare('UPDATE admin_users SET login_attempts = 0 WHERE id = ?');
-        $stmt->execute([$admin['id']]);
-        $admin['login_attempts'] = 0;
+    if ($timeSinceLastAttempt > $lockoutTime && $user['login_attempts'] >= $maxAttempts) {
+        $stmt = $pdo->prepare('UPDATE users SET login_attempts = 0 WHERE id = ?');
+        $stmt->execute([$user['id']]);
+        $user['login_attempts'] = 0;
     }
     
     // Check if account is temporarily locked
-    if ($admin['login_attempts'] >= $maxAttempts && $timeSinceLastAttempt <= $lockoutTime) {
+    if ($user['login_attempts'] >= $maxAttempts && $timeSinceLastAttempt <= $lockoutTime) {
         $remainingTime = ceil(($lockoutTime - $timeSinceLastAttempt) / 60);
         echo json_encode([
             'success' => false, 
             'message' => "Too many failed login attempts. Your account is temporarily locked. Please try again in {$remainingTime} minutes."
         ]);
-        
-        // Log lockout attempt
-        $ipAddress = $_SERVER['REMOTE_ADDR'];
-        $userAgent = $_SERVER['HTTP_USER_AGENT'];
-        
-        $stmt = $pdo->prepare('INSERT INTO login_logs (user_id, email, ip_address, user_agent, action, success) VALUES (?, ?, ?, ?, "login_locked", 0)');
-        $stmt->execute([$admin['id'], $admin['email'], $ipAddress, $userAgent]);
-        
         exit;
     }
     
     // Verify password
-    if (!password_verify($password, $admin['password'])) {
+    if (!password_verify($password, $user['password'])) {
         // Increment login attempts and update last attempt time
-        $stmt = $pdo->prepare('UPDATE admin_users SET login_attempts = login_attempts + 1, last_attempt_time = NOW() WHERE id = ?');
-        $stmt->execute([$admin['id']]);
+        $stmt = $pdo->prepare('UPDATE users SET login_attempts = login_attempts + 1, last_attempt_time = NOW() WHERE id = ?');
+        $stmt->execute([$user['id']]);
         
-        $attemptsLeft = $maxAttempts - ($admin['login_attempts'] + 1);
-        
-        // Log failed login
-        $ipAddress = $_SERVER['REMOTE_ADDR'];
-        $userAgent = $_SERVER['HTTP_USER_AGENT'];
-        
-        $stmt = $pdo->prepare('INSERT INTO login_logs (user_id, email, ip_address, user_agent, action, success) VALUES (?, ?, ?, ?, "login", 0)');
-        $stmt->execute([$admin['id'], $admin['email'], $ipAddress, $userAgent]);
+        $attemptsLeft = $maxAttempts - ($user['login_attempts'] + 1);
         
         if ($attemptsLeft <= 0) {
             echo json_encode([
@@ -154,25 +129,19 @@ try {
     }
     
     // Reset login attempts on successful login
-    $stmt = $pdo->prepare('UPDATE admin_users SET login_attempts = 0, last_login = NOW() WHERE id = ?');
-    $stmt->execute([$admin['id']]);
+    $stmt = $pdo->prepare('UPDATE users SET login_attempts = 0, last_login = NOW() WHERE id = ?');
+    $stmt->execute([$user['id']]);
     
     // Set session variables
-    $_SESSION['user_id'] = $admin['id'];
-    $_SESSION['user_name'] = $admin['name'];
-    $_SESSION['user_email'] = $admin['email'];
-    $_SESSION['user_role'] = $admin['role'];
-    $_SESSION['is_admin'] = true;
+    $_SESSION['user_id'] = $user['id'];
+    $_SESSION['user_name'] = $user['name'];
+    $_SESSION['user_email'] = $user['email'];
+    $_SESSION['user_role'] = $user['role'];
+    $_SESSION['is_client'] = true;
     $_SESSION['logged_in'] = true;
-    
-    // Set current IP for session security
-    $_SESSION['ip_address'] = $_SERVER['REMOTE_ADDR'];
     
     // Generate session token for CSRF protection
     $_SESSION['token'] = bin2hex(random_bytes(32));
-    
-    // Record last regeneration time
-    $_SESSION['last_regeneration'] = time();
     
     // Set remember me cookie if requested
     if ($remember) {
@@ -183,10 +152,10 @@ try {
         setcookie(
             'remember_me',
             $selector . ':' . $authenticator,
-            time() + 60 * 60 * 24 * REMEMBER_ME_DAYS,
+            time() + 60 * 60 * 24 * 30,
             '/',
             '',
-            SECURE_COOKIES, // Only transmit over HTTPS
+            true, // Only transmit over HTTPS
             true  // HTTP only (not accessible via JavaScript)
         );
         
@@ -195,40 +164,31 @@ try {
         
         // Delete any existing tokens for this user
         $stmt = $pdo->prepare('DELETE FROM remember_tokens WHERE user_id = ?');
-        $stmt->execute([$admin['id']]);
+        $stmt->execute([$user['id']]);
         
         // Store the token
-        $expiry = date('Y-m-d H:i:s', time() + 60 * 60 * 24 * REMEMBER_ME_DAYS);
+        $expiry = date('Y-m-d H:i:s', time() + 60 * 60 * 24 * 30);
         $stmt = $pdo->prepare('INSERT INTO remember_tokens (user_id, selector, token, expires) VALUES (?, ?, ?, ?)');
-        $stmt->execute([$admin['id'], $selector, $hashedAuthenticator, $expiry]);
+        $stmt->execute([$user['id'], $selector, $hashedAuthenticator, $expiry]);
     }
     
     // Log successful login
     $ipAddress = $_SERVER['REMOTE_ADDR'];
     $userAgent = $_SERVER['HTTP_USER_AGENT'];
     
-    $stmt = $pdo->prepare('INSERT INTO login_logs (user_id, email, ip_address, user_agent, action, success) VALUES (?, ?, ?, ?, "login", 1)');
-    $stmt->execute([$admin['id'], $admin['email'], $ipAddress, $userAgent]);
-    
-    // Determine redirect based on role
-    $redirectUrl = 'admin-dashboard.html';
-    
-    if ($admin['role'] === 'super_admin') {
-        $redirectUrl = 'admin-dashboard.html';
-    } elseif ($admin['role'] === 'hr_manager') {
-        $redirectUrl = 'admin-hr.html';
-    }
+    $stmt = $pdo->prepare('INSERT INTO login_logs (user_id, ip_address, user_agent, success) VALUES (?, ?, ?, 1)');
+    $stmt->execute([$user['id'], $ipAddress, $userAgent]);
     
     // Return success response
     echo json_encode([
         'success' => true,
         'message' => 'Login successful. Redirecting to dashboard...',
-        'redirect' => $redirectUrl
+        'redirect' => 'client-dashboard.html'
     ]);
     
 } catch (PDOException $e) {
     // Log error
-    error_log('Admin login error: ' . $e->getMessage());
+    error_log('Login error: ' . $e->getMessage());
     
     echo json_encode(['success' => false, 'message' => 'A database error occurred. Please try again later.']);
 }
