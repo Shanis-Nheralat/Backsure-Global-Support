@@ -8,9 +8,9 @@
 
 // Database credentials
 define('DB_HOST', 'localhost');     // Database host
-define('DB_NAME', 'bsg_support');   // Database name
-define('DB_USER', 'bsg_user');      // Database username
-define('DB_PASS', 'password');      // Database password - CHANGE THIS TO A SECURE PASSWORD!
+define('DB_NAME', 'backzvsg_playground');   // Database name
+define('DB_USER', 'backzvsg_site');      // Database username
+define('DB_PASS', 'bk1zv@S$SUcVRhwRn27W');      // Database password - CHANGE THIS TO A SECURE PASSWORD!
 
 /**
  * Get database connection
