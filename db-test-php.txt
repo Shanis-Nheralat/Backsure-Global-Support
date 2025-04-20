@@ -1,0 +1,189 @@
+<?php
+/**
+ * Database Connection Test Script
+ * 
+ * Upload this file to your server and access it via a browser to diagnose database issues.
+ * This script will:
+ * 1. Test database connection
+ * 2. Check if required tables exist
+ * 3. Verify if a test user can be found
+ * 
+ * IMPORTANT: Delete this file after testing as it may expose sensitive database information.
+ */
+
+// Enable error display for testing only
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Function to output test results
+function output($title, $status, $message = '') {
+    echo "<div style='margin: 10px 0; padding: 10px; border: 1px solid " . 
+        ($status ? "#4CAF50" : "#F44336") . 
+        "; border-radius: 4px; background-color: " . 
+        ($status ? "#E8F5E9" : "#FFEBEE") . 
+        ";'>";
+    echo "<h3 style='margin-top: 0; color: " . ($status ? "#2E7D32" : "#C62828") . ";'>" . 
+        ($status ? "✓ " : "✗ ") . 
+        htmlspecialchars($title) . "</h3>";
+    if (!empty($message)) {
+        echo "<p style='margin-bottom: 0;'>" . htmlspecialchars($message) . "</p>";
+    }
+    echo "</div>";
+}
+
+// Start HTML output
+echo "<!DOCTYPE html>
+<html>
+<head>
+    <title>Database Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #333; }
+        .summary { margin-top: 20px; padding: 15px; background-color: #f5f5f5; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>Database Connection Test</h1>";
+
+// Step 1: Test if db_config.php exists
+echo "<h2>Configuration Files</h2>";
+if (file_exists('db_config.php')) {
+    output("db_config.php exists", true);
+    
+    // Include the file
+    try {
+        require_once 'db_config.php';
+        output("db_config.php included successfully", true);
+        
+        // Show database configuration (without password)
+        echo "<pre>";
+        echo "DB_HOST: " . DB_HOST . "\n";
+        echo "DB_NAME: " . DB_NAME . "\n";
+        echo "DB_USER: " . DB_USER . "\n";
+        echo "DB_PASS: [HIDDEN]\n";
+        echo "</pre>";
+    } catch (Exception $e) {
+        output("Error including db_config.php", false, $e->getMessage());
+        exit;
+    }
+} else {
+    output("db_config.php not found", false, "The database configuration file is missing.");
+    exit;
+}
+
+// Step 2: Test database connection
+echo "<h2>Database Connection</h2>";
+try {
+    $db = get_db_connection();
+    output("Database connection successful", true, "Connected to " . DB_NAME . " on " . DB_HOST);
+} catch (Exception $e) {
+    output("Database connection failed", false, $e->getMessage());
+    echo "</body></html>";
+    exit;
+}
+
+// Step 3: Check if required tables exist
+echo "<h2>Table Structure</h2>";
+$required_tables = ['admins', 'admin_users'];
+$found_tables = [];
+
+try {
+    foreach ($required_tables as $table) {
+        $stmt = $db->query("SHOW TABLES LIKE '" . $table . "'");
+        if ($stmt->rowCount() > 0) {
+            $found_tables[] = $table;
+            output("Table '$table' exists", true);
+            
+            // Check table structure
+            $columns = $db->query("DESCRIBE $table")->fetchAll(PDO::FETCH_COLUMN);
+            echo "<p><strong>Columns in $table:</strong> " . implode(", ", $columns) . "</p>";
+            
+            // Count records
+            $count = $db->query("SELECT COUNT(*) FROM $table")->fetchColumn();
+            echo "<p><strong>Number of records:</strong> $count</p>";
+        } else {
+            output("Table '$table' does not exist", false);
+        }
+    }
+    
+    if (empty($found_tables)) {
+        output("No required tables found", false, "Neither 'admins' nor 'admin_users' table exists in the database.");
+    }
+} catch (PDOException $e) {
+    output("Error checking tables", false, $e->getMessage());
+}
+
+// Step 4: Try to find a admin user
+echo "<h2>User Test</h2>";
+if (!empty($found_tables)) {
+    $table = $found_tables[0]; // Use the first found table
+    
+    try {
+        // Try to find any user
+        $stmt = $db->query("SELECT id, username, email FROM $table LIMIT 1");
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($user) {
+            output("Found a user in the $table table", true);
+            echo "<p><strong>User details:</strong></p>";
+            echo "<pre>";
+            // Show limited user info for security
+            echo "ID: " . $user['id'] . "\n";
+            echo "Username: " . $user['username'] . "\n";
+            echo "Email: " . (isset($user['email']) ? substr($user['email'], 0, 3) . '***@***' . substr(strrchr($user['email'], '.'), 0) : 'N/A') . "\n";
+            echo "</pre>";
+        } else {
+            output("No users found in the $table table", false, "The table exists but contains no user records.");
+        }
+    } catch (PDOException $e) {
+        output("Error querying users", false, $e->getMessage());
+    }
+}
+
+// Check if admin-login.php exists
+echo "<h2>Login Form Check</h2>";
+if (file_exists('admin-login.php')) {
+    output("admin-login.php exists", true);
+    
+    // Check the form action
+    $content = file_get_contents('admin-login.php');
+    if (strpos($content, 'action=""') !== false) {
+        output("Form submission", false, "The form in admin-login.php submits to itself, not to admin-login-process.php. The form has action=\"\".");
+    } elseif (strpos($content, 'action="admin-login-process.php"') !== false) {
+        output("Form submission", true, "The form in admin-login.php correctly submits to admin-login-process.php.");
+    } else {
+        output("Form action unknown", false, "Could not determine the form action in admin-login.php.");
+    }
+} else {
+    output("admin-login.php not found", false);
+}
+
+// Check if admin-login-process.php exists
+if (file_exists('admin-login-process.php')) {
+    output("admin-login-process.php exists", true);
+} else {
+    output("admin-login-process.php not found", false, "The login processing script is missing.");
+}
+
+// Summary
+echo "<div class='summary'>";
+echo "<h2>Summary</h2>";
+echo "<p>This report helps diagnose issues with your admin login system. Here are recommended next steps:</p>";
+echo "<ol>";
+
+if (!empty($found_tables)) {
+    echo "<li>Verify that the password in the database is stored using PHP's password_hash() function.</li>";
+    echo "<li>Make sure your login form is submitting to the correct processing script.</li>";
+    echo "<li>Check for any PHP errors in your server's error log.</li>";
+} else {
+    echo "<li>Create the missing admin tables in your database.</li>";
+    echo "<li>Add at least one admin user to the table.</li>";
+}
+
+echo "</ol>";
+echo "<p><strong>IMPORTANT: Delete this test script after use for security reasons.</strong></p>";
+echo "</div>";
+
+echo "</body></html>";
+?>
