@@ -21,17 +21,15 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Get login data
-$email = isset($_POST['email']) ? trim(strtolower($_POST['email'])) : '';
+$username = isset($_POST['username']) ? trim($_POST['username']) : '';
 $password = isset($_POST['password']) ? $_POST['password'] : '';
 $remember = isset($_POST['remember']) ? (bool)$_POST['remember'] : false;
 
 // Validate inputs
 $errors = [];
 
-if (empty($email)) {
-    $errors[] = 'Email address is required.';
-} elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $errors[] = 'Please enter a valid email address.';
+if (empty($username)) {
+    $errors[] = 'Username is required.';
 }
 
 if (empty($password)) {
@@ -57,22 +55,30 @@ try {
         ]
     );
     
-    // Find admin by email
-    $stmt = $pdo->prepare('SELECT id, name, email, password, role, status, login_attempts, last_attempt_time FROM admin_users WHERE email = ?');
-    $stmt->execute([$email]);
+    // Check if username is an email
+    $isEmail = filter_var($username, FILTER_VALIDATE_EMAIL);
+    
+    // Find admin by username or email
+    if ($isEmail) {
+        $stmt = $pdo->prepare('SELECT id, name, email, username, password, role, status, login_attempts, last_attempt_time FROM admin_users WHERE email = ?');
+    } else {
+        $stmt = $pdo->prepare('SELECT id, name, email, username, password, role, status, login_attempts, last_attempt_time FROM admin_users WHERE username = ?');
+    }
+    
+    $stmt->execute([$username]);
     $admin = $stmt->fetch();
     
     // If admin not found or is blocked
     if (!$admin) {
         // For security, use the same message for non-existent accounts to prevent user enumeration
-        echo json_encode(['success' => false, 'message' => 'Invalid email or password.']);
+        echo json_encode(['success' => false, 'message' => 'Invalid username or password.']);
         
         // Log failed login attempt for non-existent account
         $ipAddress = $_SERVER['REMOTE_ADDR'];
         $userAgent = $_SERVER['HTTP_USER_AGENT'];
         
         $stmt = $pdo->prepare('INSERT INTO login_logs (email, ip_address, user_agent, action, success) VALUES (?, ?, ?, "login", 0)');
-        $stmt->execute([$email, $ipAddress, $userAgent]);
+        $stmt->execute([$isEmail ? $username : 'unknown', $ipAddress, $userAgent]);
         
         exit;
     }
@@ -142,12 +148,12 @@ try {
         if ($attemptsLeft <= 0) {
             echo json_encode([
                 'success' => false, 
-                'message' => 'Invalid email or password. Your account has been temporarily locked due to too many failed attempts.'
+                'message' => 'Invalid username or password. Your account has been temporarily locked due to too many failed attempts.'
             ]);
         } else {
             echo json_encode([
                 'success' => false, 
-                'message' => "Invalid email or password. You have {$attemptsLeft} attempts left before your account is temporarily locked."
+                'message' => "Invalid username or password. You have {$attemptsLeft} attempts left before your account is temporarily locked."
             ]);
         }
         exit;
@@ -211,12 +217,12 @@ try {
     $stmt->execute([$admin['id'], $admin['email'], $ipAddress, $userAgent]);
     
     // Determine redirect based on role
-    $redirectUrl = 'admin-dashboard.html';
+    $redirectUrl = 'admin-dashboard.php';
     
     if ($admin['role'] === 'super_admin') {
-        $redirectUrl = 'admin-dashboard.html';
+        $redirectUrl = 'admin-dashboard.php';
     } elseif ($admin['role'] === 'hr_manager') {
-        $redirectUrl = 'admin-hr.html';
+        $redirectUrl = 'admin-hr.php';
     }
     
     // Return success response
