@@ -1,14 +1,14 @@
 <?php
 session_start();
 
-// ✅ Block unauthorized users
-if (!isset($_SESSION['user_id']) || empty($_SESSION['user_role'])) {
-    header("Location: admin-login.html");
+// ✅ Block unauthorized users - Fixed to check for admin_logged_in instead of user_id
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header("Location: admin-login.php");
     exit();
 }
 
-// ✅ Optional: Redirect based on role
-// if (!in_array($_SESSION['user_role'], ['superadmin', 'hr', 'content'])) {
+// ✅ Optional: Redirect based on role - Updated to use admin_role instead of user_role
+// if (!in_array($_SESSION['admin_role'], ['superadmin', 'hr', 'content'])) {
 //     header("Location: unauthorized.html");
 //     exit();
 // }
@@ -271,8 +271,8 @@ if (!isset($_SESSION['user_id']) || empty($_SESSION['user_role'])) {
           <img src="avatar.webp" alt="Admin User">
         </div>
         <div class="user-info">
-          <h3>Admin Name</h3>
-          <span class="user-role">Super Admin</span>
+          <h3><?php echo isset($_SESSION['admin_username']) ? htmlspecialchars($_SESSION['admin_username']) : 'Admin User'; ?></h3>
+          <span class="user-role"><?php echo isset($_SESSION['admin_role']) ? htmlspecialchars($_SESSION['admin_role']) : 'Administrator'; ?></span>
         </div>
         <button id="user-dropdown-toggle" class="dropdown-toggle">
           <i class="fas fa-chevron-down"></i>
@@ -280,14 +280,14 @@ if (!isset($_SESSION['user_id']) || empty($_SESSION['user_role'])) {
         <ul id="user-dropdown" class="dropdown-menu">
           <li><a href="admin-profile.html"><i class="fas fa-user"></i> My Profile</a></li>
           <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
-          <li><a href="index.html"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+          <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
       
       <nav class="sidebar-nav">
         <ul>
           <li class="active">
-            <a href="admin-dashboard.html">
+            <a href="admin-dashboard.php">
               <i class="fas fa-tachometer-alt"></i>
               <span>Dashboard</span>
             </a>
@@ -385,7 +385,7 @@ if (!isset($_SESSION['user_id']) || empty($_SESSION['user_role'])) {
             <i class="fas fa-bars"></i>
           </button>
           <div class="breadcrumbs">
-            <a href="admin-dashboard.html">Dashboard</a>
+            <a href="admin-dashboard.php">Dashboard</a>
           </div>
         </div>
         
@@ -882,3 +882,7 @@ if (!isset($_SESSION['user_id']) || empty($_SESSION['user_role'])) {
           }
         });
       });
+    });
+  </script>
+</body>
+</html>
