@@ -4,7 +4,11 @@
  * Handles admin authentication with enhanced security
  */
 
-// Enable error logging
+// IMPORTANT: No whitespace, comments, or output before this point!
+// Start session first thing
+session_start();
+
+// Enable error logging - but don't display errors
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 error_reporting(E_ALL);
@@ -18,9 +22,6 @@ function debug_log($message) {
 debug_log("Login process started");
 debug_log("POST data: " . print_r($_POST, true));
 
-// Start session
-session_start();
-
 // Include database configuration
 debug_log("Including config files");
 try {
@@ -28,17 +29,14 @@ try {
     debug_log("db_config.php included successfully");
 } catch (Exception $e) {
     debug_log("Error including db_config.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Configuration error: ' . $e->getMessage()]);
+    header("Location: admin-login.php?error=" . urlencode("Configuration error: " . $e->getMessage()));
     exit;
 }
-
-// Set content type to JSON for API responses
-header('Content-Type: application/json');
 
 // Check if the request is POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     debug_log("Invalid request method: " . $_SERVER['REQUEST_METHOD']);
-    echo json_encode(['success' => false, 'message' => 'Invalid request method.']);
+    header("Location: admin-login.php?error=" . urlencode("Invalid request method."));
     exit;
 }
 
@@ -63,7 +61,7 @@ if (empty($password)) {
 // If there are validation errors, return them
 if (!empty($errors)) {
     debug_log("Validation errors: " . implode(', ', $errors));
-    echo json_encode(['success' => false, 'message' => implode(' ', $errors)]);
+    header("Location: admin-login.php?error=" . urlencode(implode(' ', $errors)));
     exit;
 }
 
@@ -85,7 +83,7 @@ try {
         
         if (!$admin_users_exists) {
             debug_log("Neither 'admins' nor 'admin_users' table exists!");
-            echo json_encode(['success' => false, 'message' => 'Admin system not set up properly. Tables do not exist.']);
+            header("Location: admin-login.php?error=" . urlencode("Admin system not set up properly. Tables do not exist."));
             exit;
         } else {
             debug_log("Using 'admin_users' table instead.");
@@ -116,7 +114,7 @@ try {
     if (!$admin) {
         debug_log("Admin not found");
         // For security, use the same message for non-existent accounts to prevent user enumeration
-        echo json_encode(['success' => false, 'message' => 'Invalid username or password.']);
+        header("Location: admin-login.php?error=" . urlencode("Invalid username or password."));
         exit;
     }
     
@@ -125,7 +123,7 @@ try {
     // Check if account is blocked
     if (isset($admin['status']) && $admin['status'] === 'blocked') {
         debug_log("Admin account is blocked");
-        echo json_encode(['success' => false, 'message' => 'Your account has been blocked. Please contact support.']);
+        header("Location: admin-login.php?error=" . urlencode("Your account has been blocked. Please contact support."));
         exit;
     }
     
@@ -141,7 +139,7 @@ try {
             $stmt->execute([$admin['id']]);
         }
         
-        echo json_encode(['success' => false, 'message' => 'Invalid username or password.']);
+        header("Location: admin-login.php?error=" . urlencode("Invalid username or password."));
         exit;
     }
     
@@ -172,22 +170,21 @@ try {
     
     debug_log("Login successful, redirecting to $redirectUrl");
     
-    // Return success response
-    echo json_encode([
-        'success' => true,
-        'message' => 'Login successful. Redirecting to dashboard...',
-        'redirect' => $redirectUrl
-    ]);
+    // Direct redirect instead of JSON response
+    header("Location: $redirectUrl");
+    exit;
     
 } catch (PDOException $e) {
     // Log detailed error
     debug_log("Database error: " . $e->getMessage());
     error_log('Admin login error: ' . $e->getMessage());
     
-    echo json_encode(['success' => false, 'message' => 'A database error occurred. Please try again later.']);
+    header("Location: admin-login.php?error=" . urlencode("A database error occurred. Please try again later."));
+    exit;
 } catch (Exception $e) {
     debug_log("General error: " . $e->getMessage());
     error_log('Admin login general error: ' . $e->getMessage());
     
-    echo json_encode(['success' => false, 'message' => 'An error occurred. Please try again later.']);
+    header("Location: admin-login.php?error=" . urlencode("An error occurred. Please try again later."));
+    exit;
 }
