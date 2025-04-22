@@ -8,72 +8,11 @@
 // Start session
 session_start();
 
-// Include database configuration
-require_once 'db_config.php';
-
-// Initialize error message
-$error = '';
-
 // Check if user is already logged in
 if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
     // Redirect to admin dashboard
     header('Location: admin-dashboard.php');
     exit;
-}
-
-// Process login form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
-    
-    // Basic validation
-    if (empty($username) || empty($password)) {
-        $error = 'Please enter both username and password.';
-    } else {
-        try {
-            // Connect to database
-            $db = get_db_connection();
-            
-            // Check if admin table exists
-            $table_exists = false;
-            try {
-                $stmt = $db->query("SHOW TABLES LIKE 'admins'");
-                $table_exists = $stmt->rowCount() > 0;
-            } catch (PDOException $e) {
-                // Table doesn't exist
-            }
-            
-            if (!$table_exists) {
-                $error = 'Admin system not set up. Please run the installation script first.';
-            } else {
-                // Check user credentials
-                $stmt = $db->prepare("SELECT id, username, password, role FROM admins WHERE username = ?");
-                $stmt->execute([$username]);
-                $user = $stmt->fetch(PDO::FETCH_ASSOC);
-                
-                if ($user && password_verify($password, $user['password'])) {
-                    // Login successful
-                    $_SESSION['admin_logged_in'] = true;
-                    $_SESSION['admin_id'] = $user['id'];
-                    $_SESSION['admin_username'] = $user['username'];
-                    $_SESSION['admin_role'] = $user['role'];
-                    
-                    // Update last login timestamp
-                    $update_stmt = $db->prepare("UPDATE admins SET last_login = NOW() WHERE id = ?");
-                    $update_stmt->execute([$user['id']]);
-                    
-                    // Redirect to admin dashboard
-                    header('Location: admin-dashboard.php');
-                    exit;
-                } else {
-                    $error = 'Invalid username or password.';
-                }
-            }
-        } catch (PDOException $e) {
-            $error = 'Database error. Please try again later.';
-            error_log('Login error: ' . $e->getMessage());
-        }
-    }
 }
 ?>
 <!DOCTYPE html>
@@ -187,6 +126,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-icon input {
             padding-left: 35px;
         }
+        #login-message {
+            display: none;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
     </style>
 </head>
 <body>
@@ -195,13 +148,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h1>BSG Support Admin</h1>
         </div>
         <div class="login-body">
-            <?php if (!empty($error)): ?>
-            <div class="error-message">
-                <?php echo htmlspecialchars($error); ?>
-            </div>
-            <?php endif; ?>
+            <div id="login-message"></div>
             
-            <form method="post" action="">
+            <form id="login-form" method="post" action="admin-login-process.php">
                 <div class="form-group">
                     <label for="username">Username</label>
                     <div class="form-icon">
@@ -226,5 +175,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
     </div>
+
+    <script>
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const messageDiv = document.getElementById('login-message');
+        
+        // Create form data
+        const formData = new FormData();
+        formData.append('username', username);
+        formData.append('password', password);
+        
+        // Send AJAX request
+        fetch('admin-login-process.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            messageDiv.style.display = 'block';
+            
+            if (data.success) {
+                messageDiv.className = 'success-message';
+                messageDiv.textContent = data.message;
+                
+                // Redirect after successful login
+                setTimeout(function() {
+                    window.location.href = data.redirect || 'admin-dashboard.php';
+                }, 1000);
+            } else {
+                messageDiv.className = 'error-message';
+                messageDiv.textContent = data.message || 'Login failed. Please try again.';
+            }
+        })
+        .catch(error => {
+            messageDiv.style.display = 'block';
+            messageDiv.className = 'error-message';
+            messageDiv.textContent = 'An error occurred. Please try again later.';
+            console.error('Error:', error);
+        });
+    });
+    </script>
 </body>
 </html>
