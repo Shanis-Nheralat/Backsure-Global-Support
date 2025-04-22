@@ -5,6 +5,13 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Fix the HTML-encoded comment
+  const backButton = document.querySelector('.back-blog-button');
+  if (backButton && backButton.nextSibling && backButton.nextSibling.nodeType === Node.TEXT_NODE) {
+    // Remove the encoded HTML comment from the DOM
+    backButton.nextSibling.textContent = '';
+  }
+
   // Initialize Quill Editor
   initQuillEditor();
   
@@ -28,9 +35,15 @@ document.addEventListener('DOMContentLoaded', function() {
  * Initialize Quill rich text editor
  */
 function initQuillEditor() {
-  // Check if Quill is loaded
+  // Check if Quill is loaded and if editor container exists
   if (typeof Quill === 'undefined') {
     console.error('Quill editor not loaded');
+    return;
+  }
+  
+  const editorContainer = document.getElementById('editor-content');
+  if (!editorContainer) {
+    console.error('Editor container not found');
     return;
   }
   
@@ -50,9 +63,12 @@ function initQuillEditor() {
   const toolbar = quill.getModule('toolbar');
   toolbar.addHandler('image', function() {
     // Show media modal when image button is clicked
-    document.getElementById('media-modal').style.display = 'block';
-    // Activate media library tab
-    activateTab('media-library');
+    const mediaModal = document.getElementById('media-modal');
+    if (mediaModal) {
+      mediaModal.style.display = 'block';
+      // Activate media library tab
+      activateTab('media-library');
+    }
   });
 }
 
@@ -63,6 +79,12 @@ function initFlatpickr() {
   // Check if Flatpickr is loaded
   if (typeof flatpickr === 'undefined') {
     console.error('Flatpickr not loaded');
+    return;
+  }
+  
+  const dateField = document.getElementById('publish-date');
+  if (!dateField) {
+    console.error('Date field not found');
     return;
   }
   
@@ -111,6 +133,12 @@ function initEventListeners() {
 function initTitleSlugHandling() {
   const titleInput = document.getElementById('post-title');
   const slugField = document.getElementById('post-slug');
+  
+  if (!titleInput || !slugField) {
+    console.error('Title or slug field not found');
+    return;
+  }
+  
   const editSlugBtn = document.querySelector('.post-url-preview .edit-btn');
   
   // Generate slug from title
@@ -126,9 +154,11 @@ function initTitleSlugHandling() {
   });
   
   // Make slug editable
-  editSlugBtn.addEventListener('click', function() {
-    slugField.focus();
-  });
+  if (editSlugBtn) {
+    editSlugBtn.addEventListener('click', function() {
+      slugField.focus();
+    });
+  }
   
   // Mark slug as manually edited
   slugField.addEventListener('input', function() {
@@ -161,6 +191,11 @@ function initExcerptCounter() {
   const excerptField = document.getElementById('post-excerpt');
   const counter = document.getElementById('excerpt-characters');
   
+  if (!excerptField || !counter) {
+    console.error('Excerpt field or counter not found');
+    return;
+  }
+  
   function updateCount() {
     const count = excerptField.value.length;
     counter.textContent = count;
@@ -184,6 +219,11 @@ function initMetaCounters() {
   const titleCounter = document.getElementById('title-characters');
   const metaDescription = document.getElementById('meta-description');
   const descriptionCounter = document.getElementById('description-characters');
+  
+  if (!metaTitle || !titleCounter || !metaDescription || !descriptionCounter) {
+    console.error('Meta fields or counters not found');
+    return;
+  }
   
   function updateTitleCount() {
     const count = metaTitle.value.length;
@@ -223,6 +263,11 @@ function initPublishOptions() {
   const visibilitySelect = document.getElementById('post-visibility');
   const passwordField = document.querySelector('.password-field');
   
+  if (!statusSelect || !scheduledOptions || !visibilitySelect || !passwordField) {
+    console.error('Publish options elements not found');
+    return;
+  }
+  
   // Status change handler
   statusSelect.addEventListener('change', function() {
     if (this.value === 'scheduled') {
@@ -248,6 +293,11 @@ function initPublishOptions() {
 function initTagSuggestions() {
   const tagInput = document.getElementById('post-tags');
   const tagSuggestions = document.querySelectorAll('.tag-suggestion');
+  
+  if (!tagInput) {
+    console.error('Tag input not found');
+    return;
+  }
   
   tagSuggestions.forEach(tag => {
     tag.addEventListener('click', function() {
@@ -275,6 +325,11 @@ function initCategoryHandlers() {
   const cancelCategoryBtn = document.getElementById('cancel-category');
   const addCategorySubmitBtn = document.getElementById('add-category');
   
+  if (!addCategoryBtn || !categoryModal || !cancelCategoryBtn || !addCategorySubmitBtn) {
+    console.error('Category modal elements not found');
+    return;
+  }
+  
   // Show category modal
   addCategoryBtn.addEventListener('click', function() {
     categoryModal.style.display = 'block';
@@ -283,6 +338,14 @@ function initCategoryHandlers() {
   // Hide category modal
   cancelCategoryBtn.addEventListener('click', function() {
     categoryModal.style.display = 'none';
+  });
+  
+  // Handle closing modal with X button
+  const closeButtons = categoryModal.querySelectorAll('.close-modal');
+  closeButtons.forEach(btn => {
+    btn.addEventListener('click', function() {
+      categoryModal.style.display = 'none';
+    });
   });
   
   // Handle category submission
@@ -300,17 +363,19 @@ function initCategoryHandlers() {
     
     // Add new category to the list
     const categoryList = document.querySelector('.category-list');
-    const newId = 'cat-' + (categorySlug || createSlug(categoryName));
-    const newValue = categorySlug || createSlug(categoryName);
-    
-    const newCategory = document.createElement('div');
-    newCategory.className = 'checkbox-group';
-    newCategory.innerHTML = `
-      <input id="${newId}" name="category[]" type="checkbox" value="${newValue}" checked>
-      <label for="${newId}">${categoryName}</label>
-    `;
-    
-    categoryList.appendChild(newCategory);
+    if (categoryList) {
+      const newId = 'cat-' + (categorySlug || createSlug(categoryName));
+      const newValue = categorySlug || createSlug(categoryName);
+      
+      const newCategory = document.createElement('div');
+      newCategory.className = 'checkbox-group';
+      newCategory.innerHTML = `
+        <input id="${newId}" name="category[]" type="checkbox" value="${newValue}" checked>
+        <label for="${newId}">${categoryName}</label>
+      `;
+      
+      categoryList.appendChild(newCategory);
+    }
     
     // Reset and close modal
     document.getElementById('category-name').value = '';
@@ -322,11 +387,13 @@ function initCategoryHandlers() {
   const categoryNameInput = document.getElementById('category-name');
   const categorySlugInput = document.getElementById('category-slug');
   
-  categoryNameInput.addEventListener('blur', function() {
-    if (!categorySlugInput.value.trim()) {
-      categorySlugInput.value = createSlug(categoryNameInput.value);
-    }
-  });
+  if (categoryNameInput && categorySlugInput) {
+    categoryNameInput.addEventListener('blur', function() {
+      if (!categorySlugInput.value.trim()) {
+        categorySlugInput.value = createSlug(categoryNameInput.value);
+      }
+    });
+  }
 }
 
 /**
@@ -337,34 +404,44 @@ function initButtonActions() {
   const saveDraftBtn = document.getElementById('save-draft');
   const saveDraftSidebarBtn = document.getElementById('save-draft-sidebar');
   
-  saveDraftBtn.addEventListener('click', function() {
-    savePost('draft');
-  });
+  if (saveDraftBtn) {
+    saveDraftBtn.addEventListener('click', function() {
+      savePost('draft');
+    });
+  }
   
-  saveDraftSidebarBtn.addEventListener('click', function() {
-    savePost('draft');
-  });
+  if (saveDraftSidebarBtn) {
+    saveDraftSidebarBtn.addEventListener('click', function() {
+      savePost('draft');
+    });
+  }
   
   // Preview button
   const previewBtn = document.getElementById('preview-post');
   
-  previewBtn.addEventListener('click', function() {
-    previewPost();
-  });
+  if (previewBtn) {
+    previewBtn.addEventListener('click', function() {
+      previewPost();
+    });
+  }
   
   // Publish button
   const publishBtn = document.getElementById('publish-post');
   const publishSidebarBtn = document.getElementById('publish-post-sidebar');
   
-  publishBtn.addEventListener('click', function() {
-    const status = document.getElementById('post-status').value;
-    savePost(status);
-  });
+  if (publishBtn) {
+    publishBtn.addEventListener('click', function() {
+      const status = document.getElementById('post-status').value;
+      savePost(status);
+    });
+  }
   
-  publishSidebarBtn.addEventListener('click', function() {
-    const status = document.getElementById('post-status').value;
-    savePost(status);
-  });
+  if (publishSidebarBtn) {
+    publishSidebarBtn.addEventListener('click', function() {
+      const status = document.getElementById('post-status').value;
+      savePost(status);
+    });
+  }
   
   // Featured image buttons
   const uploadImageBtn = document.getElementById('upload-image-btn');
@@ -372,23 +449,30 @@ function initButtonActions() {
   const imagePlaceholder = document.getElementById('image-placeholder');
   const imagePreview = document.getElementById('featured-image-preview');
   
-  uploadImageBtn.addEventListener('click', function() {
-    document.getElementById('media-modal').style.display = 'block';
-    activateTab('media-library');
-  });
+  if (uploadImageBtn && imagePreview && imagePlaceholder) {
+    uploadImageBtn.addEventListener('click', function() {
+      const mediaModal = document.getElementById('media-modal');
+      if (mediaModal) {
+        mediaModal.style.display = 'block';
+        activateTab('media-library');
+      }
+    });
+  }
   
-  removeImageBtn.addEventListener('click', function() {
-    // Clear featured image
-    imagePreview.style.display = 'none';
-    imagePlaceholder.style.display = 'flex';
-    removeImageBtn.style.display = 'none';
-    
-    // Clear hidden input for featured image if there is one
-    const featuredImageInput = document.getElementById('featured-image-id');
-    if (featuredImageInput) {
-      featuredImageInput.value = '';
-    }
-  });
+  if (removeImageBtn && imagePreview && imagePlaceholder) {
+    removeImageBtn.addEventListener('click', function() {
+      // Clear featured image
+      imagePreview.style.display = 'none';
+      imagePlaceholder.style.display = 'flex';
+      removeImageBtn.style.display = 'none';
+      
+      // Clear hidden input for featured image if there is one
+      const featuredImageInput = document.getElementById('featured-image-id');
+      if (featuredImageInput) {
+        featuredImageInput.value = '';
+      }
+    });
+  }
 }
 
 /**
@@ -434,9 +518,15 @@ function activateTab(tabId) {
  * Initialize Media Library
  */
 function initMediaLibrary() {
-  const mediaItems = document.querySelectorAll('.media-item');
-  const selectMediaBtn = document.getElementById('select-media');
   const mediaModal = document.getElementById('media-modal');
+  
+  if (!mediaModal) {
+    console.error('Media modal not found');
+    return;
+  }
+  
+  const mediaItems = mediaModal.querySelectorAll('.media-item');
+  const selectMediaBtn = document.getElementById('select-media');
   const closeModalBtns = mediaModal.querySelectorAll('.close-modal');
   
   // Close modal
@@ -463,32 +553,39 @@ function initMediaLibrary() {
   });
   
   // Set selected media as featured image
-  selectMediaBtn.addEventListener('click', function() {
-    const selectedItem = document.querySelector('.media-item.selected');
-    
-    if (selectedItem) {
-      const imageUrl = selectedItem.querySelector('img').src;
-      const imagePreview = document.getElementById('featured-image-preview');
-      const imagePlaceholder = document.getElementById('image-placeholder');
-      const removeImageBtn = document.getElementById('remove-image-btn');
+  if (selectMediaBtn) {
+    selectMediaBtn.addEventListener('click', function() {
+      const selectedItem = mediaModal.querySelector('.media-item.selected');
       
-      // Update featured image
-      imagePreview.src = imageUrl;
-      imagePreview.style.display = 'block';
-      imagePlaceholder.style.display = 'none';
-      removeImageBtn.style.display = 'inline-block';
-      
-      // Store media ID if there's a hidden input
-      const mediaId = selectedItem.getAttribute('data-id');
-      const featuredImageInput = document.getElementById('featured-image-id');
-      if (featuredImageInput && mediaId) {
-        featuredImageInput.value = mediaId;
+      if (selectedItem) {
+        const imgElement = selectedItem.querySelector('img');
+        if (imgElement) {
+          const imageUrl = imgElement.src;
+          const imagePreview = document.getElementById('featured-image-preview');
+          const imagePlaceholder = document.getElementById('image-placeholder');
+          const removeImageBtn = document.getElementById('remove-image-btn');
+          
+          if (imagePreview && imagePlaceholder && removeImageBtn) {
+            // Update featured image
+            imagePreview.src = imageUrl;
+            imagePreview.style.display = 'block';
+            imagePlaceholder.style.display = 'none';
+            removeImageBtn.style.display = 'inline-block';
+            
+            // Store media ID if there's a hidden input
+            const mediaId = selectedItem.getAttribute('data-id');
+            const featuredImageInput = document.getElementById('featured-image-id');
+            if (featuredImageInput && mediaId) {
+              featuredImageInput.value = mediaId;
+            }
+          }
+          
+          // Close modal
+          mediaModal.style.display = 'none';
+        }
       }
-      
-      // Close modal
-      mediaModal.style.display = 'none';
-    }
-  });
+    });
+  }
   
   // Initialize file upload
   initFileUpload();
@@ -498,12 +595,23 @@ function initMediaLibrary() {
  * Initialize file upload functionality
  */
 function initFileUpload() {
+  const mediaModal = document.getElementById('media-modal');
+  
+  if (!mediaModal) {
+    return;
+  }
+  
   const dropzone = document.getElementById('upload-dropzone');
   const fileInput = document.getElementById('file-input');
   const uploadBtn = document.getElementById('select-files');
   const filesList = document.getElementById('upload-files-list');
   const uploadAllBtn = document.getElementById('upload-all');
-  const uploadProgress = document.querySelector('.upload-progress');
+  const uploadProgress = mediaModal.querySelector('.upload-progress');
+  
+  if (!dropzone || !fileInput || !uploadBtn || !filesList || !uploadProgress) {
+    console.error('File upload elements not found');
+    return;
+  }
   
   // Trigger file input when button is clicked
   uploadBtn.addEventListener('click', function() {
@@ -537,11 +645,13 @@ function initFileUpload() {
   });
   
   // Upload all files button
-  uploadAllBtn.addEventListener('click', function() {
-    // In a real implementation, this would upload the files
-    // For demo, just simulate upload
-    simulateFileUpload();
-  });
+  if (uploadAllBtn) {
+    uploadAllBtn.addEventListener('click', function() {
+      // In a real implementation, this would upload the files
+      // For demo, just simulate upload
+      simulateFileUpload();
+    });
+  }
   
   /**
    * Display selected files in the list
@@ -661,13 +771,19 @@ function loadPostData() {
     
     // Set page title to indicate editing mode
     document.title = 'Edit Blog Post | Backsure Global Support';
+    document.querySelector('.page-header h1').textContent = 'Edit Blog Post';
     
     // Mock data for demo purposes
     if (postId === '1') {
       // Fill in form with sample data
-      document.getElementById('post-title').value = 'Introduction to Backsure Global Support Services';
-      document.getElementById('post-slug').textContent = 'introduction-to-backsure';
-      document.getElementById('post-slug').dataset.edited = 'true';
+      const titleInput = document.getElementById('post-title');
+      const slugField = document.getElementById('post-slug');
+      
+      if (titleInput && slugField) {
+        titleInput.value = 'Introduction to Backsure Global Support Services';
+        slugField.textContent = 'introduction-to-backsure';
+        slugField.dataset.edited = 'true';
+      }
       
       // Set editor content
       if (window.quillEditor) {
@@ -689,20 +805,37 @@ function loadPostData() {
       }
       
       // Set excerpt
-      document.getElementById('post-excerpt').value = 'Learn about our comprehensive services designed to help your business thrive in today\'s competitive market.';
+      const excerptField = document.getElementById('post-excerpt');
+      if (excerptField) {
+        excerptField.value = 'Learn about our comprehensive services designed to help your business thrive in today\'s competitive market.';
+      }
       
       // Set categories
-      document.getElementById('cat-business').checked = true;
+      const businessCategory = document.getElementById('cat-business');
+      if (businessCategory) {
+        businessCategory.checked = true;
+      }
       
       // Set tags
-      document.getElementById('post-tags').value = 'services, support, overview';
+      const tagsField = document.getElementById('post-tags');
+      if (tagsField) {
+        tagsField.value = 'services, support, overview';
+      }
       
       // Set meta info
-      document.getElementById('meta-title').value = 'Introduction to Backsure Global Support Services | Business Support';
-      document.getElementById('meta-description').value = 'Discover how Backsure Global Support can help your business with comprehensive services including finance, HR, dedicated teams, and more.';
+      const metaTitleField = document.getElementById('meta-title');
+      const metaDescField = document.getElementById('meta-description');
+      
+      if (metaTitleField && metaDescField) {
+        metaTitleField.value = 'Introduction to Backsure Global Support Services | Business Support';
+        metaDescField.value = 'Discover how Backsure Global Support can help your business with comprehensive services including finance, HR, dedicated teams, and more.';
+      }
       
       // Set status
-      document.getElementById('post-status').value = 'published';
+      const statusField = document.getElementById('post-status');
+      if (statusField) {
+        statusField.value = 'published';
+      }
       
       // Update character counters
       updateAllCounters();
@@ -712,10 +845,12 @@ function loadPostData() {
       const imagePlaceholder = document.getElementById('image-placeholder');
       const removeImageBtn = document.getElementById('remove-image-btn');
       
-      imagePreview.src = 'images/blog/placeholder-1.jpg';
-      imagePreview.style.display = 'block';
-      imagePlaceholder.style.display = 'none';
-      removeImageBtn.style.display = 'inline-block';
+      if (imagePreview && imagePlaceholder && removeImageBtn) {
+        imagePreview.src = 'images/blog/placeholder-1.jpg';
+        imagePreview.style.display = 'block';
+        imagePlaceholder.style.display = 'none';
+        removeImageBtn.style.display = 'inline-block';
+      }
     }
   }
 }
@@ -727,17 +862,26 @@ function updateAllCounters() {
   // Excerpt counter
   const excerptField = document.getElementById('post-excerpt');
   const excerptCounter = document.getElementById('excerpt-characters');
-  excerptCounter.textContent = excerptField.value.length;
+  
+  if (excerptField && excerptCounter) {
+    excerptCounter.textContent = excerptField.value.length;
+  }
   
   // Meta title counter
   const metaTitleField = document.getElementById('meta-title');
   const titleCounter = document.getElementById('title-characters');
-  titleCounter.textContent = metaTitleField.value.length;
+  
+  if (metaTitleField && titleCounter) {
+    titleCounter.textContent = metaTitleField.value.length;
+  }
   
   // Meta description counter
   const metaDescField = document.getElementById('meta-description');
   const descCounter = document.getElementById('description-characters');
-  descCounter.textContent = metaDescField.value.length;
+  
+  if (metaDescField && descCounter) {
+    descCounter.textContent = metaDescField.value.length;
+  }
 }
 
 /**
