@@ -897,6 +897,26 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
       
       <nav class="sidebar-nav">
         <ul>
+         <li>
+  <a href="admin-users.php">
+    <i class="fas fa-user-friends"></i>
+    <span>All Users</span>
+  </a>
+</li>
+
+<li>
+  <a href="admin-services.php">
+    <i class="fas fa-briefcase"></i>
+    <span>Manage Services</span>
+  </a>
+</li>
+
+<li>
+  <a href="admin-enquiries.php">
+    <i class="fas fa-envelope-open-text"></i>
+    <span>Client Inquiries</span>
+  </a>
+</li>
           <li class="active">
             <a href="admin-dashboard.php">
               <i class="fas fa-tachometer-alt"></i>
