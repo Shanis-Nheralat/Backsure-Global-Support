@@ -21,6 +21,7 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
   <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <!-- Chart.js for analytics -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -102,6 +103,23 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
       min-height: 100vh;
     }
 
+    .admin-container.sidebar-collapsed .admin-sidebar {
+      width: var(--sidebar-collapsed-width);
+    }
+
+    .admin-container.sidebar-collapsed .admin-main {
+      margin-left: var(--sidebar-collapsed-width);
+    }
+
+    .admin-container.sidebar-collapsed .sidebar-header h2,
+    .admin-container.sidebar-collapsed .admin-user .user-info,
+    .admin-container.sidebar-collapsed .admin-user .dropdown-toggle,
+    .admin-container.sidebar-collapsed .sidebar-nav ul li a span,
+    .admin-container.sidebar-collapsed .sidebar-nav ul li a .submenu-icon,
+    .admin-container.sidebar-collapsed .sidebar-footer a span {
+      display: none;
+    }
+
     .sidebar-header {
       padding: 15px 20px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -131,19 +149,33 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
       position: relative;
     }
 
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin-right: 10px;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
     .user-info {
-      margin-left: 10px;
+      flex: 1;
     }
 
     .user-info h3 {
-      color: white;
-      margin: 0 0 5px 0;
+      margin: 0;
       font-size: 0.9rem;
+      color: white;
     }
 
     .user-role {
-      color: rgba(255, 255, 255, 0.7);
       font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.7);
     }
 
     .dropdown-toggle {
@@ -151,19 +183,20 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
       border: none;
       color: white;
       cursor: pointer;
-      margin-left: auto;
+      padding: 5px;
     }
 
     .dropdown-menu {
       display: none;
       position: absolute;
+      top: 100%;
       right: 10px;
-      top: 60px;
       background-color: white;
       box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      border-radius: 4px;
-      min-width: 160px;
+      border-radius: 5px;
+      min-width: 180px;
       z-index: 101;
+      overflow: hidden;
     }
 
     .dropdown-menu.show {
@@ -171,24 +204,30 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
     }
 
     .dropdown-menu li {
-      margin: 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .dropdown-menu li:last-child {
+      border-bottom: none;
     }
 
     .dropdown-menu li a {
-      color: var(--gray-700) !important;
-      padding: 10px 15px;
+      color: var(--gray-700);
       display: flex;
       align-items: center;
+      padding: 10px 15px;
       text-decoration: none;
-    }
-
-    .dropdown-menu li a:hover {
-      background-color: var(--gray-100);
+      transition: background-color 0.2s;
     }
 
     .dropdown-menu li a i {
       margin-right: 10px;
       width: 16px;
+      text-align: center;
+    }
+
+    .dropdown-menu li a:hover {
+      background-color: var(--gray-100);
     }
 
     .sidebar-nav {
@@ -219,6 +258,15 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
       text-align: center;
     }
 
+    .sidebar-nav ul li a .submenu-icon {
+      margin-left: auto;
+      transition: transform 0.3s;
+    }
+
+    .sidebar-nav ul li.open > a .submenu-icon {
+      transform: rotate(90deg);
+    }
+
     .sidebar-nav ul li a:hover {
       background-color: rgba(255, 255, 255, 0.1);
       color: white;
@@ -229,27 +277,30 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
       color: white;
     }
 
-    .sidebar-nav ul li.has-submenu .submenu {
+    .sidebar-nav ul li .submenu {
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.3s ease-in-out;
+      transition: max-height 0.3s ease-out;
     }
 
-    .sidebar-nav ul li.has-submenu.open .submenu {
-      max-height: 500px;
+    .sidebar-nav ul li.open .submenu {
+      max-height: 1000px;
     }
 
-    .sidebar-nav ul li.has-submenu .submenu-icon {
-      margin-left: auto;
-      transition: transform 0.3s;
-    }
-
-    .sidebar-nav ul li.has-submenu.open .submenu-icon {
-      transform: rotate(90deg);
-    }
-
-    .sidebar-nav ul li.has-submenu .submenu li a {
+    .sidebar-nav ul li .submenu li a {
       padding-left: 50px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--danger-color);
+      color: white;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      margin-left: 8px;
     }
 
     .sidebar-footer {
@@ -299,6 +350,11 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
       font-size: 1.2rem;
       cursor: pointer;
       margin-right: 15px;
+    }
+
+    .breadcrumbs {
+      display: flex;
+      align-items: center;
     }
 
     .breadcrumbs a {
@@ -355,15 +411,9 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
       position: absolute;
       top: -5px;
       right: -5px;
-      background-color: var(--danger-color);
-      color: white;
-      font-size: 0.7rem;
       width: 18px;
       height: 18px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding: 0;
     }
 
     /* Main Content */
@@ -429,11 +479,6 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
       font-size: 1.5rem;
     }
 
-    .blue { background-color: var(--primary-color); }
-    .green { background-color: var(--success-color); }
-    .purple { background-color: #6f42c1; }
-    .orange { background-color: var(--warning-color); }
-
     .stat-content h3 {
       margin: 0 0 5px 0;
       font-size: 0.9rem;
@@ -468,6 +513,11 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
     .stat-change.neutral {
       color: var(--gray-600);
     }
+
+    .blue { background-color: var(--primary-color); }
+    .green { background-color: var(--success-color); }
+    .purple { background-color: #6f42c1; }
+    .orange { background-color: var(--warning-color); }
 
     /* Analytics Section */
     .analytics-section {
@@ -516,6 +566,7 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
 
     .chart-body {
       height: 300px;
+      position: relative;
     }
 
     .analytics-sidebar {
@@ -548,6 +599,7 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
     .source-info, .page-info {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       margin-bottom: 5px;
     }
 
@@ -821,10 +873,14 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
     <!-- Sidebar Navigation -->
     <aside class="admin-sidebar">
       <div class="sidebar-header">
+        <img src="Logo.png" alt="BSG Support Logo" class="admin-logo">
         <h2>Admin Panel</h2>
       </div>
       
       <div class="admin-user">
+        <div class="user-avatar">
+          <img src="avatar.webp" alt="Admin User">
+        </div>
         <div class="user-info">
           <h3><?php echo htmlspecialchars($admin_username); ?></h3>
           <span class="user-role"><?php echo htmlspecialchars($admin_role); ?></span>
@@ -857,13 +913,19 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
               <li><a href="#"><i class="fas fa-file-alt"></i> Pages Editor</a></li>
               <li><a href="#"><i class="fas fa-blog"></i> Blog Management</a></li>
               <li><a href="#"><i class="fas fa-briefcase"></i> Services Editor</a></li>
+              <li><a href="#"><i class="fas fa-images"></i> Media Library</a></li>
             </ul>
           </li>
-          <li>
-            <a href="#">
+          <li class="has-submenu">
+            <a href="javascript:void(0)">
               <i class="fas fa-users"></i>
               <span>User Management</span>
+              <i class="fas fa-chevron-right submenu-icon"></i>
             </a>
+            <ul class="submenu">
+              <li><a href="#"><i class="fas fa-user-friends"></i> All Users</a></li>
+              <li><a href="#"><i class="fas fa-user-tag"></i> Roles & Permissions</a></li>
+            </ul>
           </li>
           <li>
             <a href="#">
@@ -874,9 +936,45 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
           </li>
           <li>
             <a href="#">
-              <i class="fas fa-cogs"></i>
-              <span>Settings</span>
+              <i class="fas fa-star"></i>
+              <span>Testimonials & Logos</span>
             </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="fas fa-question-circle"></i>
+              <span>FAQ Management</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="fas fa-envelope-open-text"></i>
+              <span>Subscribers</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="fas fa-search"></i>
+              <span>SEO Settings</span>
+            </a>
+          </li>
+          <li>
+            <a href="#">
+              <i class="fas fa-plug"></i>
+              <span>Integrations</span>
+            </a>
+          </li>
+          <li class="has-submenu">
+            <a href="javascript:void(0)">
+              <i class="fas fa-cogs"></i>
+              <span>Site Settings</span>
+              <i class="fas fa-chevron-right submenu-icon"></i>
+            </a>
+            <ul class="submenu">
+              <li><a href="#"><i class="fas fa-sliders-h"></i> General Settings</a></li>
+              <li><a href="#"><i class="fas fa-palette"></i> Appearance</a></li>
+              <li><a href="#"><i class="fas fa-database"></i> Backup & Restore</a></li>
+            </ul>
           </li>
         </ul>
       </nav>
@@ -1055,6 +1153,36 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
                 </li>
               </ul>
             </div>
+            
+            <div class="widget page-performance">
+              <h3>Top Pages</h3>
+              <ul class="page-list">
+                <li>
+                  <div class="page-info">
+                    <span class="page-name">Home</span>
+                    <span class="page-views">1,245 views</span>
+                  </div>
+                </li>
+                <li>
+                  <div class="page-info">
+                    <span class="page-name">Finance & Accounting</span>
+                    <span class="page-views">842 views</span>
+                  </div>
+                </li>
+                <li>
+                  <div class="page-info">
+                    <span class="page-name">Contact Us</span>
+                    <span class="page-views">625 views</span>
+                  </div>
+                </li>
+                <li>
+                  <div class="page-info">
+                    <span class="page-name">Dedicated Teams</span>
+                    <span class="page-views">418 views</span>
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
         
@@ -1107,19 +1235,147 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
                 </div>
               </div>
             </div>
+            
+            <div class="activity-item">
+              <div class="activity-icon testimonial">
+                <i class="fas fa-star"></i>
+              </div>
+              <div class="activity-content">
+                <h4>New Testimonial Added</h4>
+                <p>A new testimonial from ABC Company was published.</p>
+                <div class="activity-meta">
+                  <span class="activity-time">3 days ago</span>
+                  <a href="#" class="activity-action">View Testimonial</a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         
-        <!-- Admin Footer -->
-        <footer class="admin-footer">
-          <div class="footer-left">
-            <p>&copy; 2025 Backsure Global Support. All rights reserved.</p>
+        <!-- Quick Actions & Recent Inquiries -->
+        <div class="quick-access-section">
+          <div class="quick-actions">
+            <div class="section-header">
+              <h2>Quick Actions</h2>
+            </div>
+            <div class="action-buttons">
+              <a href="#" class="quick-action-btn">
+                <i class="fas fa-plus"></i>
+                <span>New Blog Post</span>
+              </a>
+              <a href="#" class="quick-action-btn">
+                <i class="fas fa-edit"></i>
+                <span>Edit Pages</span>
+              </a>
+              <a href="#" class="quick-action-btn">
+                <i class="fas fa-upload"></i>
+                <span>Upload Media</span>
+              </a>
+              <a href="#" class="quick-action-btn">
+                <i class="fas fa-user-plus"></i>
+                <span>Add User</span>
+              </a>
+              <a href="#" class="quick-action-btn">
+                <i class="fas fa-briefcase"></i>
+                <span>Manage Services</span>
+              </a>
+              <a href="#" class="quick-action-btn">
+                <i class="fas fa-download"></i>
+                <span>Backup Data</span>
+              </a>
+            </div>
           </div>
-          <div class="footer-right">
-            <span>Admin Panel v1.0</span>
+          
+          <div class="recent-inquiries">
+            <div class="section-header">
+              <h2>Recent Inquiries</h2>
+              <a href="#" class="view-all">View All</a>
+            </div>
+            <div class="inquiries-table-container">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>John Smith</td>
+                    <td>john.smith@example.com</td>
+                    <td>Dedicated Teams Inquiry</td>
+                    <td>Apr 17, 2025</td>
+                    <td><span class="status-badge new">New</span></td>
+                    <td>
+                      <div class="table-actions">
+                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
+                        <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Emma Johnson</td>
+                    <td>emma.j@example.com</td>
+                    <td>Business Care Plans</td>
+                    <td>Apr 16, 2025</td>
+                    <td><span class="status-badge new">New</span></td>
+                    <td>
+                      <div class="table-actions">
+                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
+                        <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Michael Chen</td>
+                    <td>m.chen@example.com</td>
+                    <td>Insurance Support</td>
+                    <td>Apr 15, 2025</td>
+                    <td><span class="status-badge replied">Replied</span></td>
+                    <td>
+                      <div class="table-actions">
+                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
+                        <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Sarah Davis</td>
+                    <td>sarah.d@example.com</td>
+                    <td>Finance & Accounting</td>
+                    <td>Apr 12, 2025</td>
+                    <td><span class="status-badge closed">Closed</span></td>
+                    <td>
+                      <div class="table-actions">
+                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
+                        <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-        </footer>
+        </div>
       </div>
+      
+      <!-- Admin Footer -->
+      <footer class="admin-footer">
+        <div class="footer-left">
+          <p>&copy; 2025 Backsure Global Support. All rights reserved.</p>
+        </div>
+        <div class="footer-right">
+          <span>Admin Panel v1.0</span>
+        </div>
+      </footer>
     </main>
   </div>
   
@@ -1192,7 +1448,8 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
       const userDropdown = document.getElementById('user-dropdown');
       
       if (userDropdownToggle && userDropdown) {
-        userDropdownToggle.addEventListener('click', function() {
+        userDropdownToggle.addEventListener('click', function(e) {
+          e.stopPropagation();
           userDropdown.classList.toggle('show');
         });
         
@@ -1212,6 +1469,18 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
           e.preventDefault();
           const parent = this.parentElement;
           
+          // Close other open submenus
+          const openItems = document.querySelectorAll('.has-submenu.open');
+          openItems.forEach(openItem => {
+            if (openItem !== parent) {
+              openItem.classList.remove('open');
+              const submenu = openItem.querySelector('.submenu');
+              if (submenu) {
+                submenu.style.maxHeight = null;
+              }
+            }
+          });
+          
           // Toggle current submenu
           parent.classList.toggle('open');
           const submenu = parent.querySelector('.submenu');
@@ -1223,6 +1492,16 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
               submenu.style.maxHeight = null;
             }
           }
+        });
+      });
+      
+      // Initialize any other interactive elements
+      const chartControls = document.querySelectorAll('.chart-controls button');
+      chartControls.forEach(button => {
+        button.addEventListener('click', function() {
+          chartControls.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          // Here you would update the chart data based on the selected time period
         });
       });
     });
