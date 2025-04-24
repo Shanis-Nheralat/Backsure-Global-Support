@@ -1,4 +1,247 @@
-width: var(--sidebar-width);
+<?php
+// Start session first thing - no whitespace before this
+session_start();
+
+// Block unauthorized users
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+    header("Location: admin-login.php");
+    exit();
+}
+
+// Check role permissions - only Super Admin and Marketing Admin can access this page
+$allowed_roles = ['admin', 'superadmin', 'marketing'];
+if (isset($_SESSION['admin_role']) && !in_array($_SESSION['admin_role'], $allowed_roles)) {
+    header("Location: admin-dashboard.php?error=unauthorized");
+    exit();
+}
+
+// Super Admins can edit and delete, Marketing Admins can only edit
+$canDelete = (isset($_SESSION['admin_role']) && ($_SESSION['admin_role'] === 'admin' || $_SESSION['admin_role'] === 'superadmin'));
+
+// Include database configuration
+require_once 'db_config.php';
+
+// Get admin information from session
+$admin_username = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Admin User';
+$admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Administrator';
+
+// Initialize variables
+$services = [];
+$message = '';
+$messageType = '';
+$editingService = null;
+$categories = ['Accounting', 'HR', 'IT', 'Marketing', 'Customer Support', 'Administration'];
+
+// Database connection
+try {
+    $pdo = get_db_connection();
+    
+    // Create services table if it doesn't exist
+    $pdo->exec("CREATE TABLE IF NOT EXISTS services (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        description TEXT,
+        icon VARCHAR(50),
+        image VARCHAR(255),
+        category VARCHAR(100),
+        tags TEXT,
+        display_order INT DEFAULT 0,
+        status ENUM('active', 'inactive') DEFAULT 'active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP
+    )");
+    
+    // Process form submissions
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        // Add/Edit Service
+        if (isset($_POST['action']) && ($_POST['action'] === 'add' || $_POST['action'] === 'edit')) {
+            $title = trim($_POST['title']);
+            $description = trim($_POST['description']);
+            $icon = trim($_POST['icon']);
+            $category = $_POST['category'];
+            $tags = trim($_POST['tags']);
+            $display_order = (int)$_POST['display_order'];
+            $status = isset($_POST['status']) ? $_POST['status'] : 'active';
+            
+            // Handle image upload
+            $image = '';
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+                $uploadDir = 'uploads/services/';
+                
+                // Create directory if it doesn't exist
+                if (!is_dir($uploadDir)) {
+                    mkdir($uploadDir, 0755, true);
+                }
+                
+                $fileName = basename($_FILES['image']['name']);
+                $targetFile = $uploadDir . time() . '_' . $fileName;
+                
+                // Check if image file is an actual image
+                $check = getimagesize($_FILES['image']['tmp_name']);
+                if ($check !== false) {
+                    // Upload file
+                    if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
+                        $image = $targetFile;
+                    }
+                }
+            } elseif (isset($_POST['existing_image']) && !empty($_POST['existing_image'])) {
+                $image = $_POST['existing_image'];
+            }
+            
+            // Validate inputs
+            if (empty($title)) {
+                $message = "Service title is required.";
+                $messageType = "error";
+            } else {
+                if ($_POST['action'] === 'add') {
+                    // Insert new service
+                    $stmt = $pdo->prepare("INSERT INTO services (title, description, icon, image, category, tags, display_order, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+                    if ($stmt->execute([$title, $description, $icon, $image, $category, $tags, $display_order, $status])) {
+                        $message = "Service added successfully.";
+                        $messageType = "success";
+                    } else {
+                        $message = "Error adding service.";
+                        $messageType = "error";
+                    }
+                } else { // Edit
+                    $serviceId = $_POST['service_id'];
+                    
+                    // Check if user has permission to edit
+                    if ($_SESSION['admin_role'] === 'marketing' && !$canDelete) {
+                        // Marketing admins can only update content, not status
+                        $stmt = $pdo->prepare("UPDATE services SET title = ?, description = ?, icon = ?, image = ?, category = ?, tags = ?, display_order = ? WHERE id = ?");
+                        if ($stmt->execute([$title, $description, $icon, $image, $category, $tags, $display_order, $serviceId])) {
+                            $message = "Service updated successfully.";
+                            $messageType = "success";
+                        } else {
+                            $message = "Error updating service.";
+                            $messageType = "error";
+                        }
+                    } else {
+                        // Super admins can update everything
+                        $stmt = $pdo->prepare("UPDATE services SET title = ?, description = ?, icon = ?, image = ?, category = ?, tags = ?, display_order = ?, status = ? WHERE id = ?");
+                        if ($stmt->execute([$title, $description, $icon, $image, $category, $tags, $display_order, $status, $serviceId])) {
+                            $message = "Service updated successfully.";
+                            $messageType = "success";
+                        } else {
+                            $message = "Error updating service.";
+                            $messageType = "error";
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Delete Service
+        if (isset($_POST['action']) && $_POST['action'] === 'delete' && $canDelete) {
+            $serviceId = $_POST['service_id'];
+            
+            // Get service image before deleting
+            $stmt = $pdo->prepare("SELECT image FROM services WHERE id = ?");
+            $stmt->execute([$serviceId]);
+            $serviceImage = $stmt->fetchColumn();
+            
+            // Delete service
+            $stmt = $pdo->prepare("DELETE FROM services WHERE id = ?");
+            if ($stmt->execute([$serviceId])) {
+                // Delete service image if exists
+                if (!empty($serviceImage) && file_exists($serviceImage)) {
+                    unlink($serviceImage);
+                }
+                
+                $message = "Service deleted successfully.";
+                $messageType = "success";
+            } else {
+                $message = "Error deleting service.";
+                $messageType = "error";
+            }
+        }
+    }
+    
+    // Handle edit request from GET
+    if (isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['id'])) {
+        $serviceId = $_GET['id'];
+        $stmt = $pdo->prepare("SELECT * FROM services WHERE id = ?");
+        $stmt->execute([$serviceId]);
+        $editingService = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+    
+    // Get all services for display
+    $stmt = $pdo->query("SELECT * FROM services ORDER BY display_order, title");
+    $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+} catch (PDOException $e) {
+    $message = "Database error: " . $e->getMessage();
+    $messageType = "error";
+}
+?><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow">
+  <title>Services Management | Backsure Global Support</title>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <style>
+    /* Reuse dashboard styles */
+    :root {
+      --primary-color: #062767;
+      --primary-light: #3a5ca2;
+      --primary-dark: #041c4a;
+      --accent-color: #b19763;
+      --accent-light: #cdb48e;
+      --accent-dark: #97814c;
+      --success-color: #1cc88a;
+      --info-color: #36b9cc;
+      --warning-color: #f6c23e;
+      --danger-color: #e74a3b;
+      --dark-color: #333333;
+      --light-color: #f8f9fc;
+      --gray-100: #f8f9fc;
+      --gray-200: #eaecf4;
+      --gray-300: #dddfeb;
+      --gray-400: #d1d3e2;
+      --gray-500: #b7b9cc;
+      --gray-600: #858796;
+      --gray-700: #6e707e;
+      --gray-800: #5a5c69;
+      --gray-900: #3a3b45;
+      
+      --sidebar-width: 250px;
+      --sidebar-collapsed-width: 80px;
+      --header-height: 60px;
+      --transition-speed: 0.3s;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--gray-800);
+      background-color: var(--gray-100);
+    }
+
+    .admin-body {
+      min-height: 100vh;
+    }
+
+    .admin-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .admin-sidebar {
+      width: var(--sidebar-width);
       background-color: var(--primary-color);
       color: white;
       position: fixed;
@@ -898,31 +1141,23 @@ width: var(--sidebar-width);
           <i class="fas fa-chevron-down"></i>
         </button>
         <ul id="user-dropdown" class="dropdown-menu">
-          <li><a href="#"><i class="fas fa-user"></i> My Profile</a></li>
-          <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+          <li><a href="admin-profile.php"><i class="fas fa-user"></i> My Profile</a></li>
+          <li><a href="admin-general.php"><i class="fas fa-cog"></i> Settings</a></li>
           <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
       
       <nav class="sidebar-nav">
         <ul>
+          <!-- Dashboard (Priority 1) -->
           <li>
             <a href="admin-dashboard.php">
               <i class="fas fa-tachometer-alt"></i>
               <span>Dashboard</span>
             </a>
           </li>
-          <li class="has-submenu">
-            <a href="javascript:void(0)">
-              <i class="fas fa-users"></i>
-              <span>User Management</span>
-              <i class="fas fa-chevron-right submenu-icon"></i>
-            </a>
-            <ul class="submenu">
-              <li><a href="admin-users.php"><i class="fas fa-user-friends"></i> All Users</a></li>
-              <li><a href="admin-roles.php"><i class="fas fa-user-tag"></i> Roles & Permissions</a></li>
-            </ul>
-          </li>
+          
+          <!-- Content Management (Priority 2) -->
           <li class="has-submenu open">
             <a href="javascript:void(0)">
               <i class="fas fa-edit"></i>
@@ -930,49 +1165,56 @@ width: var(--sidebar-width);
               <i class="fas fa-chevron-right submenu-icon"></i>
             </a>
             <ul class="submenu">
-              <li><a href="#"><i class="fas fa-file-alt"></i> Pages Editor</a></li>
-              <li><a href="#"><i class="fas fa-blog"></i> Blog Management</a></li>
+              <li><a href="admin-blog.php"><i class="fas fa-blog"></i> Blog Management</a></li>
               <li class="active"><a href="admin-services.php"><i class="fas fa-briefcase"></i> Services Editor</a></li>
-              <li><a href="#"><i class="fas fa-images"></i> Media Library</a></li>
+              <li><a href="admin-testimonials.php"><i class="fas fa-star"></i> Testimonials & Logos</a></li>
+              <li><a href="admin-faq.php"><i class="fas fa-question-circle"></i> FAQ Management</a></li>
+              <li><a href="admin-solutions.php"><i class="fas fa-file-alt"></i> Solutions</a></li>
             </ul>
           </li>
-          <li>
-            <a href="admin-inquiries.php">
+          
+          <!-- CRM / Clients (Priority 3) -->
+          <li class="has-submenu">
+            <a href="javascript:void(0)">
               <i class="fas fa-envelope"></i>
-              <span>Lead Management</span>
-              <span class="badge">3</span>
+              <span>CRM</span>
+              <i class="fas fa-chevron-right submenu-icon"></i>
             </a>
+            <ul class="submenu">
+              <li><a href="admin-enquiries.php"><i class="fas fa-envelope-open-text"></i> Client Inquiries</a></li>
+              <li><a href="admin-subscribers.php"><i class="fas fa-envelope-open"></i> Subscribers</a></li>
+              <li><a href="admin-clients.php"><i class="fas fa-users"></i> Clients</a></li>
+            </ul>
           </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-star"></i>
-              <span>Testimonials & Logos</span>
+          
+          <!-- HR Tools (Priority 4) -->
+          <li class="has-submenu">
+            <a href="javascript:void(0)">
+              <i class="fas fa-user-tie"></i>
+              <span>HR Tools</span>
+              <i class="fas fa-chevron-right submenu-icon"></i>
             </a>
+            <ul class="submenu">
+              <li><a href="admin-candidate.php"><i class="fas fa-user-graduate"></i> Candidates</a></li>
+              <li><a href="admin-candidate-notes.php"><i class="fas fa-sticky-note"></i> Candidate Notes</a></li>
+            </ul>
           </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-question-circle"></i>
-              <span>FAQ Management</span>
+          
+          <!-- Users & Roles (Priority 5) -->
+          <li class="has-submenu">
+            <a href="javascript:void(0)">
+              <i class="fas fa-users-cog"></i>
+              <span>User Management</span>
+              <i class="fas fa-chevron-right submenu-icon"></i>
             </a>
+            <ul class="submenu">
+              <li><a href="admin-users.php"><i class="fas fa-user-friends"></i> All Users</a></li>
+              <li><a href="admin-roles.php"><i class="fas fa-user-tag"></i> Roles & Permissions</a></li>
+              <li><a href="admin-profile.php"><i class="fas fa-id-card"></i> My Profile</a></li>
+            </ul>
           </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-envelope-open-text"></i>
-              <span>Subscribers</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-search"></i>
-              <span>SEO Settings</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-plug"></i>
-              <span>Integrations</span>
-            </a>
-          </li>
+          
+          <!-- Settings (Priority 6) -->
           <li class="has-submenu">
             <a href="javascript:void(0)">
               <i class="fas fa-cogs"></i>
@@ -980,9 +1222,9 @@ width: var(--sidebar-width);
               <i class="fas fa-chevron-right submenu-icon"></i>
             </a>
             <ul class="submenu">
-              <li><a href="#"><i class="fas fa-sliders-h"></i> General Settings</a></li>
-              <li><a href="#"><i class="fas fa-palette"></i> Appearance</a></li>
-              <li><a href="#"><i class="fas fa-database"></i> Backup & Restore</a></li>
+              <li><a href="admin-seo.php"><i class="fas fa-search"></i> SEO Settings</a></li>
+              <li><a href="admin-general.php"><i class="fas fa-sliders-h"></i> General Settings</a></li>
+              <li><a href="admin-integrations.php"><i class="fas fa-plug"></i> Integrations</a></li>
             </ul>
           </li>
         </ul>
@@ -1430,256 +1672,4 @@ width: var(--sidebar-width);
     });
   </script>
 </body>
-</html><?php
-// Start session first thing - no whitespace before this
-session_start();
-
-// Block unauthorized users
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header("Location: admin-login.php");
-    exit();
-}
-
-// Check role permissions - only Super Admin and Marketing Admin can access this page
-$allowed_roles = ['admin', 'superadmin', 'marketing'];
-if (isset($_SESSION['admin_role']) && !in_array($_SESSION['admin_role'], $allowed_roles)) {
-    header("Location: admin-dashboard.php?error=unauthorized");
-    exit();
-}
-
-// Super Admins can edit and delete, Marketing Admins can only edit
-$canDelete = (isset($_SESSION['admin_role']) && ($_SESSION['admin_role'] === 'admin' || $_SESSION['admin_role'] === 'superadmin'));
-
-// Include database configuration
-require_once 'db_config.php';
-
-// Get admin information from session
-$admin_username = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Admin User';
-$admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Administrator';
-
-// Initialize variables
-$services = [];
-$message = '';
-$messageType = '';
-$editingService = null;
-$categories = ['Accounting', 'HR', 'IT', 'Marketing', 'Customer Support', 'Administration'];
-
-// Database connection
-try {
-    $pdo = get_db_connection();
-    
-    // Create services table if it doesn't exist
-    $pdo->exec("CREATE TABLE IF NOT EXISTS services (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        description TEXT,
-        icon VARCHAR(50),
-        image VARCHAR(255),
-        category VARCHAR(100),
-        tags TEXT,
-        display_order INT DEFAULT 0,
-        status ENUM('active', 'inactive') DEFAULT 'active',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP
-    )");
-    
-    // Process form submissions
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // Add/Edit Service
-        if (isset($_POST['action']) && ($_POST['action'] === 'add' || $_POST['action'] === 'edit')) {
-            $title = trim($_POST['title']);
-            $description = trim($_POST['description']);
-            $icon = trim($_POST['icon']);
-            $category = $_POST['category'];
-            $tags = trim($_POST['tags']);
-            $display_order = (int)$_POST['display_order'];
-            $status = isset($_POST['status']) ? $_POST['status'] : 'active';
-            
-            // Handle image upload
-            $image = '';
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
-                $uploadDir = 'uploads/services/';
-                
-                // Create directory if it doesn't exist
-                if (!is_dir($uploadDir)) {
-                    mkdir($uploadDir, 0755, true);
-                }
-                
-                $fileName = basename($_FILES['image']['name']);
-                $targetFile = $uploadDir . time() . '_' . $fileName;
-                
-                // Check if image file is an actual image
-                $check = getimagesize($_FILES['image']['tmp_name']);
-                if ($check !== false) {
-                    // Upload file
-                    if (move_uploaded_file($_FILES['image']['tmp_name'], $targetFile)) {
-                        $image = $targetFile;
-                    }
-                }
-            } elseif (isset($_POST['existing_image']) && !empty($_POST['existing_image'])) {
-                $image = $_POST['existing_image'];
-            }
-            
-            // Validate inputs
-            if (empty($title)) {
-                $message = "Service title is required.";
-                $messageType = "error";
-            } else {
-                if ($_POST['action'] === 'add') {
-                    // Insert new service
-                    $stmt = $pdo->prepare("INSERT INTO services (title, description, icon, image, category, tags, display_order, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-                    if ($stmt->execute([$title, $description, $icon, $image, $category, $tags, $display_order, $status])) {
-                        $message = "Service added successfully.";
-                        $messageType = "success";
-                    } else {
-                        $message = "Error adding service.";
-                        $messageType = "error";
-                    }
-                } else { // Edit
-                    $serviceId = $_POST['service_id'];
-                    
-                    // Check if user has permission to edit
-                    if ($_SESSION['admin_role'] === 'marketing' && !$canDelete) {
-                        // Marketing admins can only update content, not status
-                        $stmt = $pdo->prepare("UPDATE services SET title = ?, description = ?, icon = ?, image = ?, category = ?, tags = ?, display_order = ? WHERE id = ?");
-                        if ($stmt->execute([$title, $description, $icon, $image, $category, $tags, $display_order, $serviceId])) {
-                            $message = "Service updated successfully.";
-                            $messageType = "success";
-                        } else {
-                            $message = "Error updating service.";
-                            $messageType = "error";
-                        }
-                    } else {
-                        // Super admins can update everything
-                        $stmt = $pdo->prepare("UPDATE services SET title = ?, description = ?, icon = ?, image = ?, category = ?, tags = ?, display_order = ?, status = ? WHERE id = ?");
-                        if ($stmt->execute([$title, $description, $icon, $image, $category, $tags, $display_order, $status, $serviceId])) {
-                            $message = "Service updated successfully.";
-                            $messageType = "success";
-                        } else {
-                            $message = "Error updating service.";
-                            $messageType = "error";
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Delete Service
-        if (isset($_POST['action']) && $_POST['action'] === 'delete' && $canDelete) {
-            $serviceId = $_POST['service_id'];
-            
-            // Get service image before deleting
-            $stmt = $pdo->prepare("SELECT image FROM services WHERE id = ?");
-            $stmt->execute([$serviceId]);
-            $serviceImage = $stmt->fetchColumn();
-            
-            // Delete service
-            $stmt = $pdo->prepare("DELETE FROM services WHERE id = ?");
-            if ($stmt->execute([$serviceId])) {
-                // Delete service image if exists
-                if (!empty($serviceImage) && file_exists($serviceImage)) {
-                    unlink($serviceImage);
-                }
-                
-                $message = "Service deleted successfully.";
-                $messageType = "success";
-            } else {
-                $message = "Error deleting service.";
-                $messageType = "error";
-            }
-        }
-    }
-    
-    // Handle edit request from GET
-    if (isset($_GET['action']) && $_GET['action'] === 'edit' && isset($_GET['id'])) {
-        $serviceId = $_GET['id'];
-        $stmt = $pdo->prepare("SELECT * FROM services WHERE id = ?");
-        $stmt->execute([$serviceId]);
-        $editingService = $stmt->fetch(PDO::FETCH_ASSOC);
-    }
-    
-    // Get all services for display
-    $stmt = $pdo->query("SELECT * FROM services ORDER BY display_order, title");
-    $services = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
-} catch (PDOException $e) {
-    $message = "Database error: " . $e->getMessage();
-    $messageType = "error";
-}
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="robots" content="noindex, nofollow">
-  <title>Services Management | Backsure Global Support</title>
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <style>
-    /* Reuse dashboard styles */
-    :root {
-      --primary-color: #062767;
-      --primary-light: #3a5ca2;
-      --primary-dark: #041c4a;
-      --accent-color: #b19763;
-      --accent-light: #cdb48e;
-      --accent-dark: #97814c;
-      --success-color: #1cc88a;
-      --info-color: #36b9cc;
-      --warning-color: #f6c23e;
-      --danger-color: #e74a3b;
-      --dark-color: #333333;
-      --light-color: #f8f9fc;
-      --gray-100: #f8f9fc;
-      --gray-200: #eaecf4;
-      --gray-300: #dddfeb;
-      --gray-400: #d1d3e2;
-      --gray-500: #b7b9cc;
-      --gray-600: #858796;
-      --gray-700: #6e707e;
-      --gray-800: #5a5c69;
-      --gray-900: #3a3b45;
-      
-      --sidebar-width: 250px;
-      --sidebar-collapsed-width: 80px;
-      --header-height: 60px;
-      --transition-speed: 0.3s;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Open Sans', sans-serif;
-      font-size: 14px;
-      line-height: 1.6;
-      color: var(--gray-800);
-      background-color: var(--gray-100);
-    }
-
-    .admin-body {
-      min-height: 100vh;
-    }
-
-    .admin-container {
-      display: flex;
-      min-height: 100vh;
-    }
-
-    /* Sidebar Styles */
-    .admin-sidebar {
-      width: var(--sidebar-width);
-      background-color: var(--primary-color);
-      color: white;
-      position: fixed;
-      left: 0;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-      transition: width var(--transition-speed);
-      z-index: 100;
+</html>
