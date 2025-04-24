@@ -889,27 +889,23 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
           <i class="fas fa-chevron-down"></i>
         </button>
         <ul id="user-dropdown" class="dropdown-menu">
-          <li><a href="#"><i class="fas fa-user"></i> My Profile</a></li>
-          <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+          <li><a href="admin-profile.php"><i class="fas fa-user"></i> My Profile</a></li>
+          <li><a href="admin-general.php"><i class="fas fa-cog"></i> Settings</a></li>
           <li><a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
         </ul>
       </div>
       
       <nav class="sidebar-nav">
         <ul>
-        
-<li>
-  <a href="admin-enquiries.php">
-    <i class="fas fa-envelope-open-text"></i>
-    <span>Client Inquiries</span>
-  </a>
-</li>
+          <!-- Dashboard (Priority 1) -->
           <li class="active">
             <a href="admin-dashboard.php">
               <i class="fas fa-tachometer-alt"></i>
               <span>Dashboard</span>
             </a>
           </li>
+          
+          <!-- Content Management (Priority 2) -->
           <li class="has-submenu">
             <a href="javascript:void(0)">
               <i class="fas fa-edit"></i>
@@ -917,60 +913,56 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
               <i class="fas fa-chevron-right submenu-icon"></i>
             </a>
             <ul class="submenu">
-              <li><a href="#"><i class="fas fa-file-alt"></i> Pages Editor</a></li>
-              <li><a href="#"><i class="fas fa-blog"></i> Blog Management</a></li>
-              <li><a href="#"><i class="fas fa-briefcase"></i> Services Editor</a></li>
-              <li><a href="#"><i class="fas fa-images"></i> Media Library</a></li>
+              <li><a href="admin-blog.php"><i class="fas fa-blog"></i> Blog Management</a></li>
+              <li><a href="admin-services.php"><i class="fas fa-briefcase"></i> Services Editor</a></li>
+              <li><a href="admin-testimonials.php"><i class="fas fa-star"></i> Testimonials & Logos</a></li>
+              <li><a href="admin-faq.php"><i class="fas fa-question-circle"></i> FAQ Management</a></li>
+              <li><a href="admin-solutions.php"><i class="fas fa-file-alt"></i> Solutions</a></li>
             </ul>
           </li>
+          
+          <!-- CRM / Clients (Priority 3) -->
           <li class="has-submenu">
             <a href="javascript:void(0)">
-              <i class="fas fa-users"></i>
+              <i class="fas fa-envelope"></i>
+              <span>CRM</span>
+              <i class="fas fa-chevron-right submenu-icon"></i>
+            </a>
+            <ul class="submenu">
+              <li><a href="admin-enquiries.php"><i class="fas fa-envelope-open-text"></i> Client Inquiries</a></li>
+              <li><a href="admin-subscribers.php"><i class="fas fa-envelope-open"></i> Subscribers</a></li>
+              <li><a href="admin-clients.php"><i class="fas fa-users"></i> Clients</a></li>
+            </ul>
+          </li>
+          
+          <!-- HR Tools (Priority 4) -->
+          <li class="has-submenu">
+            <a href="javascript:void(0)">
+              <i class="fas fa-user-tie"></i>
+              <span>HR Tools</span>
+              <i class="fas fa-chevron-right submenu-icon"></i>
+            </a>
+            <ul class="submenu">
+              <li><a href="admin-candidate.php"><i class="fas fa-user-graduate"></i> Candidates</a></li>
+              <li><a href="admin-candidate-notes.php"><i class="fas fa-sticky-note"></i> Candidate Notes</a></li>
+            </ul>
+          </li>
+          
+          <!-- Users & Roles (Priority 5) -->
+          <li class="has-submenu">
+            <a href="javascript:void(0)">
+              <i class="fas fa-users-cog"></i>
               <span>User Management</span>
               <i class="fas fa-chevron-right submenu-icon"></i>
             </a>
             <ul class="submenu">
-              <li><a href="#"><i class="fas fa-user-friends"></i> All Users</a></li>
-              <li><a href="#"><i class="fas fa-user-tag"></i> Roles & Permissions</a></li>
+              <li><a href="admin-users.php"><i class="fas fa-user-friends"></i> All Users</a></li>
+              <li><a href="admin-roles.php"><i class="fas fa-user-tag"></i> Roles & Permissions</a></li>
+              <li><a href="admin-profile.php"><i class="fas fa-id-card"></i> My Profile</a></li>
             </ul>
           </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-envelope"></i>
-              <span>Lead Management</span>
-              <span class="badge">3</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-star"></i>
-              <span>Testimonials & Logos</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-question-circle"></i>
-              <span>FAQ Management</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-envelope-open-text"></i>
-              <span>Subscribers</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-search"></i>
-              <span>SEO Settings</span>
-            </a>
-          </li>
-          <li>
-            <a href="#">
-              <i class="fas fa-plug"></i>
-              <span>Integrations</span>
-            </a>
-          </li>
+          
+          <!-- Settings (Priority 6) -->
           <li class="has-submenu">
             <a href="javascript:void(0)">
               <i class="fas fa-cogs"></i>
@@ -978,9 +970,9 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
               <i class="fas fa-chevron-right submenu-icon"></i>
             </a>
             <ul class="submenu">
-              <li><a href="#"><i class="fas fa-sliders-h"></i> General Settings</a></li>
-              <li><a href="#"><i class="fas fa-palette"></i> Appearance</a></li>
-              <li><a href="#"><i class="fas fa-database"></i> Backup & Restore</a></li>
+              <li><a href="admin-seo.php"><i class="fas fa-search"></i> SEO Settings</a></li>
+              <li><a href="admin-general.php"><i class="fas fa-sliders-h"></i> General Settings</a></li>
+              <li><a href="admin-integrations.php"><i class="fas fa-plug"></i> Integrations</a></li>
             </ul>
           </li>
         </ul>
@@ -1197,7 +1189,7 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
         <div class="activities-section">
           <div class="section-header">
             <h2>Recent Activities</h2>
-            <a href="#" class="view-all">View All</a>
+            <a href="admin-enquiries.php" class="view-all">View All</a>
           </div>
           
           <div class="activity-container">
@@ -1210,7 +1202,7 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
                 <p>John Smith submitted a contact form inquiry about Dedicated Teams.</p>
                 <div class="activity-meta">
                   <span class="activity-time">2 hours ago</span>
-                  <a href="#" class="activity-action">View Details</a>
+                  <a href="admin-enquiries.php" class="activity-action">View Details</a>
                 </div>
               </div>
             </div>
@@ -1224,7 +1216,7 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
                 <p>Sarah Johnson was added as a Marketing Admin.</p>
                 <div class="activity-meta">
                   <span class="activity-time">Yesterday</span>
-                  <a href="#" class="activity-action">View User</a>
+                  <a href="admin-users.php" class="activity-action">View User</a>
                 </div>
               </div>
             </div>
@@ -1238,7 +1230,7 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
                 <p>The Home page content was updated by Mark Wilson.</p>
                 <div class="activity-meta">
                   <span class="activity-time">2 days ago</span>
-                  <a href="#" class="activity-action">View Page</a>
+                  <a href="index.html" target="_blank" class="activity-action">View Page</a>
                 </div>
               </div>
             </div>
@@ -1252,7 +1244,7 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
                 <p>A new testimonial from ABC Company was published.</p>
                 <div class="activity-meta">
                   <span class="activity-time">3 days ago</span>
-                  <a href="#" class="activity-action">View Testimonial</a>
+                  <a href="admin-testimonials.php" class="activity-action">View Testimonial</a>
                 </div>
               </div>
             </div>
@@ -1266,27 +1258,27 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
               <h2>Quick Actions</h2>
             </div>
             <div class="action-buttons">
-              <a href="#" class="quick-action-btn">
+              <a href="admin-blog.php" class="quick-action-btn">
                 <i class="fas fa-plus"></i>
                 <span>New Blog Post</span>
               </a>
-              <a href="#" class="quick-action-btn">
+              <a href="admin-services.php" class="quick-action-btn">
                 <i class="fas fa-edit"></i>
-                <span>Edit Pages</span>
+                <span>Edit Services</span>
               </a>
-              <a href="#" class="quick-action-btn">
+              <a href="admin-blog.php" class="quick-action-btn">
                 <i class="fas fa-upload"></i>
                 <span>Upload Media</span>
               </a>
-              <a href="#" class="quick-action-btn">
+              <a href="admin-users.php" class="quick-action-btn">
                 <i class="fas fa-user-plus"></i>
                 <span>Add User</span>
               </a>
-              <a href="#" class="quick-action-btn">
+              <a href="admin-services.php" class="quick-action-btn">
                 <i class="fas fa-briefcase"></i>
                 <span>Manage Services</span>
               </a>
-              <a href="#" class="quick-action-btn">
+              <a href="admin-general.php" class="quick-action-btn">
                 <i class="fas fa-download"></i>
                 <span>Backup Data</span>
               </a>
@@ -1296,7 +1288,7 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
           <div class="recent-inquiries">
             <div class="section-header">
               <h2>Recent Inquiries</h2>
-              <a href="#" class="view-all">View All</a>
+              <a href="admin-enquiries.php" class="view-all">View All</a>
             </div>
             <div class="inquiries-table-container">
               <table class="admin-table">
@@ -1319,9 +1311,9 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
                     <td><span class="status-badge new">New</span></td>
                     <td>
                       <div class="table-actions">
-                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
-                        <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
-                        <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                        <a href="admin-enquiries.php" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="admin-enquiries.php" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
+                        <a href="admin-enquiries.php" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
                       </div>
                     </td>
                   </tr>
@@ -1333,9 +1325,9 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
                     <td><span class="status-badge new">New</span></td>
                     <td>
                       <div class="table-actions">
-                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
-                        <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
-                        <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                        <a href="admin-enquiries.php" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="admin-enquiries.php" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
+                        <a href="admin-enquiries.php" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
                       </div>
                     </td>
                   </tr>
@@ -1347,9 +1339,9 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
                     <td><span class="status-badge replied">Replied</span></td>
                     <td>
                       <div class="table-actions">
-                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
-                        <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
-                        <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                        <a href="admin-enquiries.php" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="admin-enquiries.php" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
+                        <a href="admin-enquiries.php" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
                       </div>
                     </td>
                   </tr>
@@ -1361,9 +1353,9 @@ $admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Admini
                     <td><span class="status-badge closed">Closed</span></td>
                     <td>
                       <div class="table-actions">
-                        <a href="#" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
-                        <a href="#" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
-                        <a href="#" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
+                        <a href="admin-enquiries.php" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="admin-enquiries.php" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
+                        <a href="admin-enquiries.php" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
                       </div>
                     </td>
                   </tr>
