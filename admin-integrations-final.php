@@ -1,10 +1,10 @@
 <?php
-// Enable error reporting for debugging (you can remove this in production)
+// Start session first thing - no whitespace before this
+session_start();
+
+// Enable error reporting (remove in production)
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-
-// Start session
-session_start();
 
 // Block unauthorized users
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
@@ -75,7 +75,7 @@ $integrations = [
                 'server_prefix' => 'us1',
                 'default_list_id' => 'a1b2c3d4e5',
                 'enable_sync' => true,
-                'sync_frequency' => 'daily', // 'realtime', 'hourly', 'daily'
+                'sync_frequency' => 'daily',
                 'double_opt_in' => true
             ]
         ],
@@ -110,7 +110,7 @@ $integrations = [
                 'sync_deals' => true,
                 'deal_pipeline_id' => '',
                 'lead_status_property' => 'lifecyclestage',
-                'sync_frequency' => 'daily' // 'realtime', 'hourly', 'daily'
+                'sync_frequency' => 'daily'
             ]
         ],
         [
@@ -128,7 +128,7 @@ $integrations = [
                 'instance_url' => '',
                 'sync_contacts' => true,
                 'sync_opportunities' => true,
-                'sync_frequency' => 'daily' // 'realtime', 'hourly', 'daily'
+                'sync_frequency' => 'daily'
             ]
         ]
     ],
@@ -368,7 +368,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // In a real implementation, validate and save to database
         // For now, just redirect with success message
-        header('Location: admin-integrations-final.php?success=updated&category=' . $integration_category);
+        header('Location: admin-integrations-new.php?success=updated&category=' . $integration_category);
         exit;
     }
     
@@ -381,9 +381,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // In a real implementation, update the integration status in the database
         // For now, just redirect with success message
         if ($new_status === 'active') {
-            header('Location: admin-integrations-final.php?success=activated&category=' . $integration_category);
+            header('Location: admin-integrations-new.php?success=activated&category=' . $integration_category);
         } else {
-            header('Location: admin-integrations-final.php?success=deactivated&category=' . $integration_category);
+            header('Location: admin-integrations-new.php?success=deactivated&category=' . $integration_category);
         }
         exit;
     }
@@ -394,7 +394,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // In a real implementation, set up the new integration in the database
         // For now, just redirect with success message
-        header('Location: admin-integrations-final.php?success=installed');
+        header('Location: admin-integrations-new.php?success=installed');
         exit;
     }
     
@@ -405,7 +405,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // In a real implementation, test the API connection
         // For now, just redirect with success message
-        header('Location: admin-integrations-final.php?success=connection_tested&category=' . $integration_category);
+        header('Location: admin-integrations-new.php?success=connection_tested&category=' . $integration_category);
         exit;
     }
     
@@ -413,7 +413,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'clear_logs') {
         // In a real implementation, clear logs from the database
         // For now, just redirect with success message
-        header('Location: admin-integrations-final.php?success=logs_cleared&tab=logs');
+        header('Location: admin-integrations-new.php?success=logs_cleared&tab=logs');
         exit;
     }
 }
@@ -437,8 +437,8 @@ function getIntegrationByIdAndCategory($id, $category, $integrations) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
   <title>Integrations | Backsure Global Support</title>
   <!-- Font Awesome for icons -->
@@ -448,7 +448,7 @@ function getIntegrationByIdAndCategory($id, $category, $integrations) {
   <!-- Include Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    /* Root variables and common styles - matching dashboard style */
+    /* Root variables and common styles */
     :root {
       --primary-color: #062767;
       --primary-light: #3a5ca2;
@@ -908,4 +908,39 @@ function getIntegrationByIdAndCategory($id, $category, $integrations) {
     
     .integration-category-nav .nav-link {
         white-space: nowrap;
-        margin-
+        margin-right: 5px;
+    }
+    
+    /* Status Toggle Button */
+    .status-toggle {
+        min-width: 80px;
+    }
+    
+    /* Available Integration Card */
+    .available-integration {
+        height: 100%;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .integration-category-nav {
+            padding-bottom: 15px;
+        }
+        
+        .integration-category-nav .nav-link {
+            font-size: 0.85rem;
+            padding: 0.5rem;
+        }
+
+        .admin-main {
+          margin-left: 0;
+        }
+        
+        .admin-sidebar {
+          left: -250px;
+        }
+        
+        .admin-container.sidebar-collapsed .admin-sidebar {
+          left: 0;
+        }
+    }
