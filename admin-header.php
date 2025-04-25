@@ -1,24 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="robots" content="noindex, nofollow">
-  <title><?php echo $page_title; ?> | Backsure Global Support</title>
+<?php
+/**
+ * Admin Header Component
+ * This file contains the header for the admin panel
+ * It should be included in all admin pages
+ */
+
+// Set default values for notification and task counts
+if (!isset($notification_count)) {
+    $notification_count = 0;
+}
+
+if (!isset($task_count)) {
+    $task_count = 0;
+}
+
+// Default page title if not set
+if (!isset($page_title) || empty($page_title)) {
+    $page_title = '';
+}
+?>
+<!-- Top Navigation Bar -->
+<header class="admin-header">
+  <div class="header-left">
+    <button id="sidebar-toggle" class="sidebar-toggle">
+      <i class="fas fa-bars"></i>
+    </button>
+    <div class="breadcrumbs">
+      <a href="admin-dashboard.php">Dashboard</a>
+      <?php if(isset($page_title) && !empty($page_title)): ?>
+        <span> &gt; </span>
+        <span><?php echo htmlspecialchars($page_title); ?></span>
+      <?php endif; ?>
+    </div>
+  </div>
   
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  
-  <!-- Chart.js for analytics -->
-  <?php if ($active_menu == 'dashboard'): ?>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <?php endif; ?>
-  
-  <!-- Include your CSS files -->
-  <link rel="stylesheet" href="assets/css/bootstrap.min.css">
-  <link rel="stylesheet" href="assets/css/admin-style.css">
-</head>
-<body class="admin-body">
-  <div class="admin-container">
+  <div class="header-right">
+    <div class="admin-search">
+      <input type="text" placeholder="Search...">
+      <button type="submit">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+    
+    <div class="header-actions">
+      <button class="action-btn notification-btn">
+        <i class="fas fa-bell"></i>
+        <span class="badge"><?php echo isset($notification_count) ? intval($notification_count) : 0; ?></span>
+      </button>
+      
+      <button class="action-btn task-btn">
+        <i class="fas fa-check-circle"></i>
+        <span class="badge"><?php echo isset($task_count) ? intval($task_count) : 0; ?></span>
+      </button>
+      
+      <button class="action-btn help-btn">
+        <i class="fas fa-question-circle"></i>
+      </button>
+    </div>
+  </div>
+</header>
