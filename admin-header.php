@@ -7,11 +7,11 @@
 
 // Set default values for notification and task counts
 if (!isset($notification_count)) {
-    $notification_count = 0;
+    $notification_count = 5;
 }
 
 if (!isset($task_count)) {
-    $task_count = 0;
+    $task_count = 2;
 }
 
 // Default page title if not set
@@ -27,7 +27,7 @@ if (!isset($page_title) || empty($page_title)) {
     </button>
     <div class="breadcrumbs">
       <a href="admin-dashboard.php">Dashboard</a>
-      <?php if(isset($page_title) && !empty($page_title)): ?>
+      <?php if(!empty($page_title) && $current_page != 'dashboard'): ?>
         <span> &gt; </span>
         <span><?php echo htmlspecialchars($page_title); ?></span>
       <?php endif; ?>
@@ -45,12 +45,12 @@ if (!isset($page_title) || empty($page_title)) {
     <div class="header-actions">
       <button class="action-btn notification-btn">
         <i class="fas fa-bell"></i>
-        <span class="badge"><?php echo isset($notification_count) ? intval($notification_count) : 0; ?></span>
+        <span class="badge"><?php echo intval($notification_count); ?></span>
       </button>
       
       <button class="action-btn task-btn">
         <i class="fas fa-check-circle"></i>
-        <span class="badge"><?php echo isset($task_count) ? intval($task_count) : 0; ?></span>
+        <span class="badge"><?php echo intval($task_count); ?></span>
       </button>
       
       <button class="action-btn help-btn">
