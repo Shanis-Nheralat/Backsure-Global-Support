@@ -1,4 +1,14 @@
 <?php
+// Include the menu configuration
+require_once 'admin-menu-config.php';
+
+// Get admin role from session or authentication system
+$admin_role = $admin_user['role'];
+
+// Render the menu
+echo render_admin_menu($admin_role, $current_page);
+?>
+<?php
 /**
  * Admin Sidebar Component
  * This file contains the sidebar navigation for the admin panel
