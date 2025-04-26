@@ -1,5 +1,6 @@
 <?php
 /**
+<?php echo display_admin_messages(); ?>
  * Admin Header Component
  * This file contains the header for the admin panel
  */
