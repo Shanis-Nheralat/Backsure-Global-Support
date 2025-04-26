@@ -25,6 +25,22 @@ $notification_count = 0; // In a real application, this would come from a databa
     <button id="sidebar-toggle" class="sidebar-toggle">
       <i class="fas fa-bars"></i>
     </button>
+
+<div class="theme-settings">
+  <select id="theme-switcher" class="form-control form-control-sm">
+    <option value="default">Default Theme</option>
+    <option value="dark">Dark Theme</option>
+    <option value="blue">Blue Theme</option>
+    <option value="green">Green Theme</option>
+    <option value="purple">Purple Theme</option>
+    <option value="high-contrast">High Contrast</option>
+  </select>
+  
+  <div class="custom-control custom-switch ml-3">
+    <input type="checkbox" class="custom-control-input" id="auto-dark-mode">
+    <label class="custom-control-label" for="auto-dark-mode">Auto Dark Mode</label>
+  </div>
+</div>
     
     <div class="breadcrumbs">
       <?php 
