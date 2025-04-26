@@ -1,0 +1,29 @@
+<?php
+// Include required files
+require_once 'admin-auth.php';
+require_admin_role(['admin']);
+require_once 'db_config.php';
+require_once 'admin-analytics.php';
+
+// Set page variables
+$page_title = 'Admin Analytics';
+$current_page = 'analytics';
+
+// Get date range from query parameters
+$date_from = isset($_GET['date_from']) ? $_GET['date_from'] : date('Y-m-d', strtotime('-30 days'));
+$date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-d');
+
+// Include header and sidebar
+include 'admin-head.php';
+include 'admin-sidebar.php';
+?>
+
+<main class="admin-main">
+  <?php include 'admin-header.php'; ?>
+  
+  <div class="admin-content">
+    <?php echo render_analytics_dashboard($date_from, $date_to); ?>
+  </div>
+  
+  <?php include 'admin-footer.php'; ?>
+</main>
