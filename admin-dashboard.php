@@ -1,399 +1,403 @@
 <?php
 /**
  * Admin Dashboard
- * Main dashboard page for the admin panel
+ * Main dashboard for the admin panel
  */
 
-// Start session first thing - no whitespace before this
-session_start();
+// Include authentication component
+require_once 'admin-auth.php';
 
-// Block unauthorized users
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
-    header("Location: admin-login.php");
-    exit();
+// Require authentication
+require_admin_auth();
+
+// Set page variables
+$page_title = 'Dashboard';
+$current_page = 'dashboard';
+$breadcrumbs = [
+    ['title' => 'Dashboard', 'url' => 'admin-dashboard.php']
+];
+
+// Extra CSS/JS files needed for this page
+$extra_css = [
+    'assets/css/admin-dashboard.css'
+];
+$extra_js = [
+    'assets/js/chart.min.js',
+    'assets/js/admin-dashboard.js'
+];
+
+// Get admin info
+$admin_user = get_admin_user();
+$admin_username = $admin_user['username'];
+$admin_role = $admin_user['role'];
+
+// Function to get recent activity (in a real app, this would come from a database)
+function get_recent_activity() {
+    return [
+        [
+            'type' => 'inquiry',
+            'title' => 'New Inquiry',
+            'description' => 'John Smith submitted a new inquiry about business services.',
+            'time' => '2 hours ago',
+            'url' => 'admin-inquiries.php?action=view&id=123'
+        ],
+        [
+            'type' => 'user',
+            'title' => 'New User Registered',
+            'description' => 'Sarah Johnson created a new account.',
+            'time' => '5 hours ago',
+            'url' => 'admin-users.php?action=view&id=456'
+        ],
+        [
+            'type' => 'content',
+            'title' => 'Blog Post Published',
+            'description' => 'The article "5 Ways to Improve Your Business" was published.',
+            'time' => '1 day ago',
+            'url' => 'admin-blog.php?action=view&id=789'
+        ],
+        [
+            'type' => 'testimonial',
+            'title' => 'New Testimonial',
+            'description' => 'Global Services Inc. submitted a new testimonial.',
+            'time' => '2 days ago',
+            'url' => 'admin-testimonials.php?action=view&id=101'
+        ],
+    ];
 }
 
-// Get admin information from session
-$admin_username = isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Admin User';
-$admin_role = isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : 'Administrator';
+// Get stats (in a real app, these would come from a database)
+$stats = [
+    'visitors' => [
+        'value' => 2,845,
+        'change' => 12.5,
+        'icon' => 'users',
+        'color' => 'blue'
+    ],
+    'inquiries' => [
+        'value' => 42,
+        'change' => 5.8,
+        'icon' => 'envelope',
+        'color' => 'green'
+    ],
+    'blog_views' => [
+        'value' => 1,258,
+        'change' => -2.3,
+        'icon' => 'newspaper',
+        'color' => 'purple'
+    ],
+    'conversions' => [
+        'value' => 18,
+        'change' => 9.2,
+        'icon' => 'chart-line',
+        'color' => 'orange'
+    ],
+];
 
-// Set current page for sidebar highlighting
-$current_page = 'dashboard';
-$page_title = 'Dashboard Overview';
+// Get recent inquiries (in a real app, these would come from a database)
+$recent_inquiries = [
+    [
+        'id' => 123,
+        'name' => 'John Smith',
+        'subject' => 'Business Insurance Quote',
+        'date' => '2025-04-23',
+        'status' => 'new'
+    ],
+    [
+        'id' => 122,
+        'name' => 'Emily Johnson',
+        'subject' => 'HR Services Inquiry',
+        'date' => '2025-04-22',
+        'status' => 'replied'
+    ],
+    [
+        'id' => 121,
+        'name' => 'Michael Brown',
+        'subject' => 'Accounting Support',
+        'date' => '2025-04-22',
+        'status' => 'new'
+    ],
+    [
+        'id' => 120,
+        'name' => 'Sarah Davis',
+        'subject' => 'Tax Consultation Request',
+        'date' => '2025-04-21',
+        'status' => 'closed'
+    ],
+];
 
-// Sample notification and task counts - in a real app, these would come from the database
-$notification_count = 5;
-$task_count = 2;
-?><!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="robots" content="noindex, nofollow">
-  <title>Admin Dashboard | Backsure Global Support</title>
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <!-- Chart.js for analytics -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Admin CSS - External stylesheet -->
-  <link rel="stylesheet" href="admin-dashboard.css">
-</head>
-<body class="admin-body">
-  <div class="admin-container">
-    <!-- Include the sidebar -->
-    <?php include 'admin-sidebar.php'; ?>
+// Include header template
+include 'admin-head.php';
+include 'admin-sidebar.php';
+?>
+
+<!-- Main Content Area -->
+<main class="admin-main">
+  <?php include 'admin-header.php'; ?>
+  
+  <!-- Dashboard Content -->
+  <div class="admin-content">
+    <div class="page-header">
+      <h1>Dashboard</h1>
+      <div class="date-display">
+        <i class="fas fa-calendar"></i>
+        <span id="current-date">April 25, 2025</span>
+      </div>
+    </div>
     
-    <!-- Main Content Area -->
-    <main class="admin-main">
-      <!-- Include the header -->
-      <?php include 'admin-header.php'; ?>
-      
-      <!-- Dashboard Content -->
-      <div class="admin-content">
-        <div class="page-header">
-          <h1>Dashboard Overview</h1>
-          <div class="date-display">
-            <i class="far fa-calendar-alt"></i>
-            <span id="current-date">Loading date...</span>
+    <!-- Stats Overview -->
+    <div class="stats-overview">
+      <?php foreach ($stats as $key => $stat): ?>
+        <div class="stat-card">
+          <div class="stat-icon <?php echo $stat['color']; ?>">
+            <i class="fas fa-<?php echo $stat['icon']; ?>"></i>
           </div>
-        </div>
-        
-        <!-- Stats Overview -->
-        <div class="stats-overview">
-          <div class="stat-card">
-            <div class="stat-icon blue">
-              <i class="fas fa-eye"></i>
-            </div>
-            <div class="stat-content">
-              <h3>Website Visitors</h3>
-              <div class="stat-value">2,458</div>
-              <div class="stat-change positive">
-                <i class="fas fa-arrow-up"></i>
-                <span>15.3%</span> vs last month
-              </div>
-            </div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-icon green">
-              <i class="fas fa-envelope-open"></i>
-            </div>
-            <div class="stat-content">
-              <h3>New Inquiries</h3>
-              <div class="stat-value">37</div>
-              <div class="stat-change positive">
-                <i class="fas fa-arrow-up"></i>
-                <span>8.2%</span> vs last month
-              </div>
-            </div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-icon purple">
-              <i class="fas fa-file-alt"></i>
-            </div>
-            <div class="stat-content">
-              <h3>Blog Articles</h3>
-              <div class="stat-value">14</div>
-              <div class="stat-change neutral">
-                <i class="fas fa-minus"></i>
-                <span>0%</span> vs last month
-              </div>
-            </div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-icon orange">
-              <i class="fas fa-user-plus"></i>
-            </div>
-            <div class="stat-content">
-              <h3>New Subscribers</h3>
-              <div class="stat-value">28</div>
-              <div class="stat-change negative">
-                <i class="fas fa-arrow-down"></i>
-                <span>5.7%</span> vs last month
-              </div>
+          <div class="stat-content">
+            <h3><?php echo ucwords(str_replace('_', ' ', $key)); ?></h3>
+            <div class="stat-value"><?php echo number_format($stat['value']); ?></div>
+            <div class="stat-change <?php echo $stat['change'] >= 0 ? 'positive' : 'negative'; ?>">
+              <i class="fas fa-<?php echo $stat['change'] >= 0 ? 'arrow-up' : 'arrow-down'; ?>"></i>
+              <?php echo abs($stat['change']); ?>% since last month
             </div>
           </div>
         </div>
-        
-        <!-- Charts & Analytics -->
-        <div class="analytics-section">
-          <div class="chart-container">
-            <div class="chart-header">
-              <h2>Website Traffic</h2>
-              <div class="chart-controls">
-                <button class="active">Weekly</button>
-                <button>Monthly</button>
-                <button>Yearly</button>
-              </div>
-            </div>
-            <div class="chart-body">
-              <canvas id="traffic-chart"></canvas>
-            </div>
-          </div>
-          
-          <div class="analytics-sidebar">
-            <div class="widget traffic-sources">
-              <h3>Traffic Sources</h3>
-              <ul class="source-list">
-                <li>
-                  <div class="source-info">
-                    <span class="source-name">Direct</span>
-                    <span class="source-value">45%</span>
-                  </div>
-                  <div class="progress-bar">
-                    <div class="progress" style="width: 45%; background-color: #4e73df;"></div>
-                  </div>
-                </li>
-                <li>
-                  <div class="source-info">
-                    <span class="source-name">Organic Search</span>
-                    <span class="source-value">30%</span>
-                  </div>
-                  <div class="progress-bar">
-                    <div class="progress" style="width: 30%; background-color: #1cc88a;"></div>
-                  </div>
-                </li>
-                <li>
-                  <div class="source-info">
-                    <span class="source-name">Social Media</span>
-                    <span class="source-value">15%</span>
-                  </div>
-                  <div class="progress-bar">
-                    <div class="progress" style="width: 15%; background-color: #36b9cc;"></div>
-                  </div>
-                </li>
-                <li>
-                  <div class="source-info">
-                    <span class="source-name">Referral</span>
-                    <span class="source-value">10%</span>
-                  </div>
-                  <div class="progress-bar">
-                    <div class="progress" style="width: 10%; background-color: #f6c23e;"></div>
-                  </div>
-                </li>
-              </ul>
-            </div>
-            
-            <div class="widget page-performance">
-              <h3>Top Pages</h3>
-              <ul class="page-list">
-                <li>
-                  <div class="page-info">
-                    <span class="page-name">Home</span>
-                    <span class="page-views">1,245 views</span>
-                  </div>
-                </li>
-                <li>
-                  <div class="page-info">
-                    <span class="page-name">Finance & Accounting</span>
-                    <span class="page-views">842 views</span>
-                  </div>
-                </li>
-                <li>
-                  <div class="page-info">
-                    <span class="page-name">Contact Us</span>
-                    <span class="page-views">625 views</span>
-                  </div>
-                </li>
-                <li>
-                  <div class="page-info">
-                    <span class="page-name">Dedicated Teams</span>
-                    <span class="page-views">418 views</span>
-                  </div>
-                </li>
-              </ul>
-            </div>
+      <?php endforeach; ?>
+    </div>
+    
+    <!-- Analytics Section -->
+    <div class="analytics-section">
+      <div class="chart-container">
+        <div class="chart-header">
+          <h2>Website Traffic</h2>
+          <div class="chart-controls">
+            <button class="active">Weekly</button>
+            <button>Monthly</button>
+            <button>Yearly</button>
           </div>
         </div>
-        
-        <!-- Recent Activities -->
-        <div class="activities-section">
-          <div class="section-header">
-            <h2>Recent Activities</h2>
-            <a href="admin-inquiries.php" class="view-all">View All</a>
-          </div>
-          
-          <div class="activity-container">
-            <div class="activity-item">
-              <div class="activity-icon inquiry">
-                <i class="fas fa-envelope"></i>
-              </div>
-              <div class="activity-content">
-                <h4>New Inquiry Received</h4>
-                <p>John Smith submitted a contact form inquiry about Dedicated Teams.</p>
-                <div class="activity-meta">
-                  <span class="activity-time">2 hours ago</span>
-                  <a href="admin-inquiries.php" class="activity-action">View Details</a>
-                </div>
-              </div>
-            </div>
-            
-            <div class="activity-item">
-              <div class="activity-icon user">
-                <i class="fas fa-user-plus"></i>
-              </div>
-              <div class="activity-content">
-                <h4>New Admin User Added</h4>
-                <p>Sarah Johnson was added as a Marketing Admin.</p>
-                <div class="activity-meta">
-                  <span class="activity-time">Yesterday</span>
-                  <a href="admin-users.php" class="activity-action">View User</a>
-                </div>
-              </div>
-            </div>
-            
-            <div class="activity-item">
-              <div class="activity-icon content">
-                <i class="fas fa-edit"></i>
-              </div>
-              <div class="activity-content">
-                <h4>Page Content Updated</h4>
-                <p>The Home page content was updated by Mark Wilson.</p>
-                <div class="activity-meta">
-                  <span class="activity-time">2 days ago</span>
-                  <a href="index.php" target="_blank" class="activity-action">View Page</a>
-                </div>
-              </div>
-            </div>
-            
-            <div class="activity-item">
-              <div class="activity-icon testimonial">
-                <i class="fas fa-star"></i>
-              </div>
-              <div class="activity-content">
-                <h4>New Testimonial Added</h4>
-                <p>A new testimonial from ABC Company was published.</p>
-                <div class="activity-meta">
-                  <span class="activity-time">3 days ago</span>
-                  <a href="admin-testimonials.php" class="activity-action">View Testimonial</a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Quick Actions & Recent Inquiries -->
-        <div class="quick-access-section">
-          <div class="quick-actions">
-            <div class="section-header">
-              <h2>Quick Actions</h2>
-            </div>
-            <div class="action-buttons">
-              <a href="admin-blog.php" class="quick-action-btn">
-                <i class="fas fa-plus"></i>
-                <span>New Blog Post</span>
-              </a>
-              <a href="admin-services.php" class="quick-action-btn">
-                <i class="fas fa-edit"></i>
-                <span>Edit Services</span>
-              </a>
-              <a href="admin-blog.php" class="quick-action-btn">
-                <i class="fas fa-upload"></i>
-                <span>Upload Media</span>
-              </a>
-              <a href="admin-users.php" class="quick-action-btn">
-                <i class="fas fa-user-plus"></i>
-                <span>Add User</span>
-              </a>
-              <a href="admin-services.php" class="quick-action-btn">
-                <i class="fas fa-briefcase"></i>
-                <span>Manage Services</span>
-              </a>
-              <a href="admin-settings.php" class="quick-action-btn">
-                <i class="fas fa-download"></i>
-                <span>Backup Data</span>
-              </a>
-            </div>
-          </div>
-          
-          <div class="recent-inquiries">
-            <div class="section-header">
-              <h2>Recent Inquiries</h2>
-              <a href="admin-inquiries.php" class="view-all">View All</a>
-            </div>
-            <div class="inquiries-table-container">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Subject</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>John Smith</td>
-                    <td>john.smith@example.com</td>
-                    <td>Dedicated Teams Inquiry</td>
-                    <td>Apr 17, 2025</td>
-                    <td><span class="status-badge new">New</span></td>
-                    <td>
-                      <div class="table-actions">
-                        <a href="admin-inquiries.php" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
-                        <a href="admin-inquiries.php" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
-                        <a href="admin-inquiries.php" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Emma Johnson</td>
-                    <td>emma.j@example.com</td>
-                    <td>Business Care Plans</td>
-                    <td>Apr 16, 2025</td>
-                    <td><span class="status-badge new">New</span></td>
-                    <td>
-                      <div class="table-actions">
-                        <a href="admin-inquiries.php" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
-                        <a href="admin-inquiries.php" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
-                        <a href="admin-inquiries.php" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Michael Chen</td>
-                    <td>m.chen@example.com</td>
-                    <td>Insurance Support</td>
-                    <td>Apr 15, 2025</td>
-                    <td><span class="status-badge replied">Replied</span></td>
-                    <td>
-                      <div class="table-actions">
-                        <a href="admin-inquiries.php" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
-                        <a href="admin-inquiries.php" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
-                        <a href="admin-inquiries.php" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>Sarah Davis</td>
-                    <td>sarah.d@example.com</td>
-                    <td>Finance & Accounting</td>
-                    <td>Apr 12, 2025</td>
-                    <td><span class="status-badge closed">Closed</span></td>
-                    <td>
-                      <div class="table-actions">
-                        <a href="admin-inquiries.php" class="view-btn" title="View"><i class="fas fa-eye"></i></a>
-                        <a href="admin-inquiries.php" class="reply-btn" title="Reply"><i class="fas fa-reply"></i></a>
-                        <a href="admin-inquiries.php" class="delete-btn" title="Delete"><i class="fas fa-trash-alt"></i></a>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+        <div class="chart-body">
+          <canvas id="traffic-chart"></canvas>
         </div>
       </div>
       
-      <!-- Include the footer -->
-      <?php include 'admin-footer.php'; ?>
-    </main>
+      <div class="analytics-sidebar">
+        <div class="widget">
+          <h3>Traffic Sources</h3>
+          <ul class="source-list">
+            <li>
+              <div class="source-info">
+                <span class="source-name">Google</span>
+                <span class="source-value">45%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" style="width: 45%; background-color: #4e73df;"></div>
+              </div>
+            </li>
+            <li>
+              <div class="source-info">
+                <span class="source-name">Direct</span>
+                <span class="source-value">30%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" style="width: 30%; background-color: #1cc88a;"></div>
+              </div>
+            </li>
+            <li>
+              <div class="source-info">
+                <span class="source-name">Referral</span>
+                <span class="source-value">15%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" style="width: 15%; background-color: #36b9cc;"></div>
+              </div>
+            </li>
+            <li>
+              <div class="source-info">
+                <span class="source-name">Social</span>
+                <span class="source-value">10%</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" style="width: 10%; background-color: #f6c23e;"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="widget">
+          <h3>Top Pages</h3>
+          <ul class="page-list">
+            <li>
+              <div class="page-info">
+                <span class="page-name">Home Page</span>
+                <span class="page-views">1,245</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" style="width: 65%; background-color: #4e73df;"></div>
+              </div>
+            </li>
+            <li>
+              <div class="page-info">
+                <span class="page-name">Services</span>
+                <span class="page-views">987</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" style="width: 52%; background-color: #1cc88a;"></div>
+              </div>
+            </li>
+            <li>
+              <div class="page-info">
+                <span class="page-name">About Us</span>
+                <span class="page-views">743</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" style="width: 39%; background-color: #36b9cc;"></div>
+              </div>
+            </li>
+            <li>
+              <div class="page-info">
+                <span class="page-name">Contact</span>
+                <span class="page-views">521</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" style="width: 27%; background-color: #f6c23e;"></div>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Quick Access Section -->
+    <div class="quick-access-section">
+      <div class="quick-actions">
+        <div class="section-header">
+          <h2>Quick Actions</h2>
+        </div>
+        
+        <div class="action-buttons">
+          <a href="admin-inquiries.php" class="quick-action-btn">
+            <i class="fas fa-envelope"></i>
+            Inquiries
+          </a>
+          <a href="admin-users.php" class="quick-action-btn">
+            <i class="fas fa-users"></i>
+            Users
+          </a>
+          <a href="admin-blog.php" class="quick-action-btn">
+            <i class="fas fa-blog"></i>
+            Blog
+          </a>
+          <a href="admin-services.php" class="quick-action-btn">
+            <i class="fas fa-briefcase"></i>
+            Services
+          </a>
+          <a href="admin-settings.php" class="quick-action-btn">
+            <i class="fas fa-cog"></i>
+            Settings
+          </a>
+          <a href="admin-profile.php" class="quick-action-btn">
+            <i class="fas fa-user"></i>
+            Profile
+          </a>
+        </div>
+      </div>
+      
+      <div class="recent-inquiries">
+        <div class="section-header">
+          <h2>Recent Inquiries</h2>
+          <a href="admin-inquiries.php" class="view-all">View All</a>
+        </div>
+        
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Subject</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php foreach ($recent_inquiries as $inquiry): ?>
+              <tr>
+                <td><?php echo htmlspecialchars($inquiry['name']); ?></td>
+                <td><?php echo htmlspecialchars($inquiry['subject']); ?></td>
+                <td><?php echo date('M d, Y', strtotime($inquiry['date'])); ?></td>
+                <td>
+                  <span class="status-badge <?php echo $inquiry['status']; ?>">
+                    <?php echo ucfirst($inquiry['status']); ?>
+                  </span>
+                </td>
+                <td>
+                  <div class="table-actions">
+                    <a href="admin-inquiries.php?action=view&id=<?php echo $inquiry['id']; ?>" title="View">
+                      <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="admin-inquiries.php?action=edit&id=<?php echo $inquiry['id']; ?>" title="Reply">
+                      <i class="fas fa-reply"></i>
+                    </a>
+                    <?php if (has_admin_permission('inquiries_delete')): ?>
+                      <a href="#" class="delete-btn" data-id="<?php echo $inquiry['id']; ?>" title="Delete">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    <?php endif; ?>
+                  </div>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Activities Section -->
+    <div class="activities-section">
+      <div class="section-header">
+        <h2>Recent Activity</h2>
+        <a href="#" class="view-all">View All</a>
+      </div>
+      
+      <div class="activity-container">
+        <?php $recent_activities = get_recent_activity(); ?>
+        <?php foreach ($recent_activities as $activity): ?>
+          <div class="activity-item">
+            <div class="activity-icon <?php echo $activity['type']; ?>">
+              <i class="fas fa-<?php echo get_activity_icon($activity['type']); ?>"></i>
+            </div>
+            <div class="activity-content">
+              <h4><?php echo htmlspecialchars($activity['title']); ?></h4>
+              <p><?php echo htmlspecialchars($activity['description']); ?></p>
+              <div class="activity-meta">
+                <span class="activity-time"><?php echo $activity['time']; ?></span>
+                <a href="<?php echo $activity['url']; ?>" class="activity-action">View Details</a>
+              </div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
   </div>
+  
+  <?php
+  // Helper function to get icon for activity type
+  function get_activity_icon($type) {
+    switch ($type) {
+      case 'inquiry':
+        return 'envelope';
+      case 'user':
+        return 'user';
+      case 'content':
+        return 'file-alt';
+      case 'testimonial':
+        return 'star';
+      default:
+        return 'bell';
+    }
+  }
+  ?>
+  
+  <?php include 'admin-footer.php'; ?>
+</main>
+</div>
 </body>
 </html>
