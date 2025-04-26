@@ -52,6 +52,7 @@ if (!isset($extra_js)) {
   <script src="<?php echo htmlspecialchars($js_file); ?>"></script>
   <?php endforeach; ?>
   <script src="assets/js/admin-lazy-load.js"></script>
+  <link rel="stylesheet" href="assets/css/admin-themes.css">
 </head>
 <body class="admin-body">
   <div class="admin-container">
