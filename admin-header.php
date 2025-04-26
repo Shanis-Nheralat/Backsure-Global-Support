@@ -1,61 +1,56 @@
 <?php
 /**
- * Admin Header Component
- * This file contains the header for the admin panel
- * It should be included in all admin pages
+ * Admin Head Component
+ * This file contains the head section for all admin panel pages
  */
 
-// Set default values for notification and task counts
-if (!isset($notification_count)) {
-    $notification_count = 5;
+// Set page title if not already set
+if (!isset($page_title)) {
+    $page_title = 'Admin Panel';
 }
 
-if (!isset($task_count)) {
-    $task_count = 2;
+// Set additional CSS files if needed
+if (!isset($extra_css)) {
+    $extra_css = [];
 }
 
-// Default page title if not set
-if (!isset($page_title) || empty($page_title)) {
-    $page_title = '';
+// Set additional JS files if needed
+if (!isset($extra_js)) {
+    $extra_js = [];
 }
 ?>
-<!-- Top Navigation Bar -->
-<header class="admin-header">
-  <div class="header-left">
-    <button id="sidebar-toggle" class="sidebar-toggle">
-      <i class="fas fa-bars"></i>
-    </button>
-    <div class="breadcrumbs">
-      <a href="admin-dashboard.php">Dashboard</a>
-      <?php if(!empty($page_title) && $current_page != 'dashboard'): ?>
-        <span> &gt; </span>
-        <span><?php echo htmlspecialchars($page_title); ?></span>
-      <?php endif; ?>
-    </div>
-  </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow">
+  <title><?php echo htmlspecialchars($page_title); ?> | Backsure Global Support</title>
   
-  <div class="header-right">
-    <div class="admin-search">
-      <input type="text" placeholder="Search...">
-      <button type="submit">
-        <i class="fas fa-search"></i>
-      </button>
-    </div>
-    
-    <div class="header-actions">
-      <button class="action-btn notification-btn">
-        <i class="fas fa-bell"></i>
-        <span class="badge"><?php echo intval($notification_count); ?></span>
-      </button>
-      
-      <button class="action-btn task-btn">
-        <i class="fas fa-check-circle"></i>
-        <span class="badge"><?php echo intval($task_count); ?></span>
-      </button>
-      
-      <button class="action-btn help-btn">
-        <i class="fas fa-question-circle"></i>
-      </button>
-    </div>
-  </div>
-</header>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Favicon -->
+  <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+  
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="assets/css/admin-core.css">
+  
+  <!-- Page specific CSS -->
+  <?php foreach ($extra_css as $css_file): ?>
+  <link rel="stylesheet" href="<?php echo htmlspecialchars($css_file); ?>">
+  <?php endforeach; ?>
+  
+  <!-- Core JS -->
+  <script src="assets/js/jquery.min.js"></script>
+  
+  <!-- Page specific JS -->
+  <?php foreach ($extra_js as $js_file): ?>
+  <script src="<?php echo htmlspecialchars($js_file); ?>"></script>
+  <?php endforeach; ?>
+</head>
+<body class="admin-body">
+  <div class="admin-container">
