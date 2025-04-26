@@ -2,23 +2,31 @@
 /**
  * Admin Sidebar Component
  * This file contains the sidebar navigation for the admin panel
- * It should be included in all admin pages
  */
-// If current_page is not set, default to empty
+
+// Set current page if not already set
 if (!isset($current_page)) {
     $current_page = '';
+}
+
+// Get admin info if not already available
+if (!isset($admin_username) || !isset($admin_role)) {
+    require_once 'admin-auth.php';
+    $admin_user = get_admin_user();
+    $admin_username = $admin_user['username'];
+    $admin_role = $admin_user['role'];
 }
 ?>
 <!-- Sidebar Navigation -->
 <aside class="admin-sidebar">
   <div class="sidebar-header">
-    <img src="Logo.png" alt="BSG Support Logo" class="admin-logo">
+    <img src="assets/images/logo.png" alt="Logo" class="admin-logo">
     <h2>Admin Panel</h2>
   </div>
   
   <div class="admin-user">
     <div class="user-avatar">
-      <img src="avatar.webp" alt="Admin User">
+      <img src="assets/images/avatar.webp" alt="Admin User">
     </div>
     <div class="user-info">
       <h3><?php echo htmlspecialchars($admin_username); ?></h3>
@@ -51,7 +59,7 @@ if (!isset($current_page)) {
           <span>Content Management</span>
           <i class="fas fa-chevron-right submenu-icon"></i>
         </a>
-        <ul class="submenu" <?php echo in_array($current_page, ['blog', 'services', 'testimonials', 'faq', 'solutions']) ? ' style="max-height: 1000px;"' : ''; ?>>
+        <ul class="submenu">
           <li<?php echo ($current_page == 'blog') ? ' class="active"' : ''; ?>><a href="admin-blog.php"><i class="fas fa-blog"></i> Blog Management</a></li>
           <li<?php echo ($current_page == 'services') ? ' class="active"' : ''; ?>><a href="admin-services.php"><i class="fas fa-briefcase"></i> Services Editor</a></li>
           <li<?php echo ($current_page == 'testimonials') ? ' class="active"' : ''; ?>><a href="admin-testimonials.php"><i class="fas fa-star"></i> Testimonials & Logos</a></li>
@@ -67,48 +75,35 @@ if (!isset($current_page)) {
           <span>CRM</span>
           <i class="fas fa-chevron-right submenu-icon"></i>
         </a>
-        <ul class="submenu" <?php echo in_array($current_page, ['inquiries', 'subscribers', 'clients']) ? ' style="max-height: 1000px;"' : ''; ?>>
+        <ul class="submenu">
           <li<?php echo ($current_page == 'inquiries') ? ' class="active"' : ''; ?>><a href="admin-inquiries.php"><i class="fas fa-envelope-open-text"></i> Client Inquiries</a></li>
           <li<?php echo ($current_page == 'subscribers') ? ' class="active"' : ''; ?>><a href="admin-subscribers.php"><i class="fas fa-envelope-open"></i> Subscribers</a></li>
           <li<?php echo ($current_page == 'clients') ? ' class="active"' : ''; ?>><a href="admin-clients.php"><i class="fas fa-users"></i> Clients</a></li>
         </ul>
       </li>
       
-      <!-- HR Tools (Priority 4) -->
-      <li class="has-submenu<?php echo in_array($current_page, ['candidates', 'candidate-notes']) ? ' open' : ''; ?>">
-        <a href="javascript:void(0)">
-          <i class="fas fa-user-tie"></i>
-          <span>HR Tools</span>
-          <i class="fas fa-chevron-right submenu-icon"></i>
-        </a>
-        <ul class="submenu" <?php echo in_array($current_page, ['candidates', 'candidate-notes']) ? ' style="max-height: 1000px;"' : ''; ?>>
-          <li<?php echo ($current_page == 'candidates') ? ' class="active"' : ''; ?>><a href="admin-candidates.php"><i class="fas fa-user-graduate"></i> Candidates</a></li>
-          <li<?php echo ($current_page == 'candidate-notes') ? ' class="active"' : ''; ?>><a href="admin-candidate-notes.php"><i class="fas fa-sticky-note"></i> Candidate Notes</a></li>
-        </ul>
-      </li>
-      
-      <!-- Users & Roles (Priority 5) -->
+      <!-- Users & Roles (Priority 4) -->
       <li class="has-submenu<?php echo in_array($current_page, ['users', 'roles', 'profile']) ? ' open' : ''; ?>">
         <a href="javascript:void(0)">
           <i class="fas fa-users-cog"></i>
           <span>User Management</span>
           <i class="fas fa-chevron-right submenu-icon"></i>
         </a>
-        <ul class="submenu" <?php echo in_array($current_page, ['users', 'roles', 'profile']) ? ' style="max-height: 1000px;"' : ''; ?>>
+        <ul class="submenu">
           <li<?php echo ($current_page == 'users') ? ' class="active"' : ''; ?>><a href="admin-users.php"><i class="fas fa-user-friends"></i> All Users</a></li>
           <li<?php echo ($current_page == 'roles') ? ' class="active"' : ''; ?>><a href="admin-roles.php"><i class="fas fa-user-tag"></i> Roles & Permissions</a></li>
           <li<?php echo ($current_page == 'profile') ? ' class="active"' : ''; ?>><a href="admin-profile.php"><i class="fas fa-id-card"></i> My Profile</a></li>
         </ul>
       </li>
       
-      <!-- Settings (Priority 6) -->
+      <!-- Settings (Priority 5) -->
       <li class="has-submenu<?php echo in_array($current_page, ['seo', 'settings', 'integrations']) ? ' open' : ''; ?>">
         <a href="javascript:void(0)">
           <i class="fas fa-cogs"></i>
           <span>Site Settings</span>
           <i class="fas fa-chevron-right submenu-icon"></i>
         </a>
-        <ul class="submenu" <?php echo in_array($current_page, ['seo', 'settings', 'integrations']) ? ' style="max-height: 1000px;"' : ''; ?>>
+        <ul class="submenu">
           <li<?php echo ($current_page == 'seo') ? ' class="active"' : ''; ?>><a href="admin-seo.php"><i class="fas fa-search"></i> SEO Settings</a></li>
           <li<?php echo ($current_page == 'settings') ? ' class="active"' : ''; ?>><a href="admin-settings.php"><i class="fas fa-sliders-h"></i> General Settings</a></li>
           <li<?php echo ($current_page == 'integrations') ? ' class="active"' : ''; ?>><a href="admin-integrations.php"><i class="fas fa-plug"></i> Integrations</a></li>
