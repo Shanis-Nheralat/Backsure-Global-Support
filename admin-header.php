@@ -1,7 +1,7 @@
 <?php
 /**
- * Admin Head Component
- * This file contains the head section for all admin panel pages
+ * Admin Header Component
+ * This file contains the header for the admin panel
  */
 
 // Set page title if not already set
@@ -9,48 +9,61 @@ if (!isset($page_title)) {
     $page_title = 'Admin Panel';
 }
 
-// Set additional CSS files if needed
-if (!isset($extra_css)) {
-    $extra_css = [];
+// Set breadcrumbs if not already set
+if (!isset($breadcrumbs)) {
+    $breadcrumbs = [
+        ['title' => 'Dashboard', 'url' => 'admin-dashboard.php']
+    ];
 }
 
-// Set additional JS files if needed
-if (!isset($extra_js)) {
-    $extra_js = [];
-}
+// Handle notifications
+$notification_count = 0; // In a real application, this would come from a database
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="robots" content="noindex, nofollow">
-  <title><?php echo htmlspecialchars($page_title); ?> | Backsure Global Support</title>
+<!-- Top Navigation Bar -->
+<header class="admin-header">
+  <div class="header-left">
+    <button id="sidebar-toggle" class="sidebar-toggle">
+      <i class="fas fa-bars"></i>
+    </button>
+    
+    <div class="breadcrumbs">
+      <?php 
+      $breadcrumb_count = count($breadcrumbs);
+      foreach ($breadcrumbs as $index => $breadcrumb): 
+          $is_last = ($index === $breadcrumb_count - 1);
+      ?>
+          <?php if (!$is_last): ?>
+              <a href="<?php echo htmlspecialchars($breadcrumb['url']); ?>"><?php echo htmlspecialchars($breadcrumb['title']); ?></a>
+          <?php else: ?>
+              <span><?php echo htmlspecialchars($breadcrumb['title']); ?></span>
+          <?php endif; ?>
+          
+          <?php if (!$is_last): ?>
+              <span class="breadcrumb-separator">/</span>
+          <?php endif; ?>
+      <?php endforeach; ?>
+    </div>
+  </div>
   
-  <!-- Font Awesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-  
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  
-  <!-- Favicon -->
-  <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
-  
-  <!-- Core CSS -->
-  <link rel="stylesheet" href="assets/css/admin-core.css">
-  
-  <!-- Page specific CSS -->
-  <?php foreach ($extra_css as $css_file): ?>
-  <link rel="stylesheet" href="<?php echo htmlspecialchars($css_file); ?>">
-  <?php endforeach; ?>
-  
-  <!-- Core JS -->
-  <script src="assets/js/jquery.min.js"></script>
-  
-  <!-- Page specific JS -->
-  <?php foreach ($extra_js as $js_file): ?>
-  <script src="<?php echo htmlspecialchars($js_file); ?>"></script>
-  <?php endforeach; ?>
-</head>
-<body class="admin-body">
-  <div class="admin-container">
+  <div class="header-right">
+    <div class="admin-search">
+      <input type="text" placeholder="Search...">
+      <button type="submit">
+        <i class="fas fa-search"></i>
+      </button>
+    </div>
+    
+    <div class="header-actions">
+      <button class="action-btn notification-btn">
+        <i class="fas fa-bell"></i>
+        <?php if ($notification_count > 0): ?>
+        <span class="badge"><?php echo $notification_count; ?></span>
+        <?php endif; ?>
+      </button>
+      
+      <button class="action-btn help-btn">
+        <i class="fas fa-question-circle"></i>
+      </button>
+    </div>
+  </div>
+</header>
