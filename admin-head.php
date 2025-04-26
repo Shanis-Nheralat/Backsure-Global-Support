@@ -51,6 +51,7 @@ if (!isset($extra_js)) {
   <?php foreach ($extra_js as $js_file): ?>
   <script src="<?php echo htmlspecialchars($js_file); ?>"></script>
   <?php endforeach; ?>
+  <script src="assets/js/admin-lazy-load.js"></script>
 </head>
 <body class="admin-body">
   <div class="admin-container">
