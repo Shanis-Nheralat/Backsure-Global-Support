@@ -4,9 +4,20 @@
  * This file handles authentication for all admin panel pages
  */
 
-// Start session if not already started
+// Start session if not already started - with header check
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+    // Check if headers have already been sent
+    if (!headers_sent()) {
+        session_start();
+    } else {
+        // Log the issue but continue without breaking
+        error_log('Headers already sent before session_start in admin-auth.php');
+        // For sessions that haven't started but headers already sent,
+        // we'll use a fallback mechanism for this page load
+        if (!isset($_SESSION)) {
+            $_SESSION = array();
+        }
+    }
 }
 
 /**
@@ -37,9 +48,17 @@ function has_admin_role($allowed_roles = []) {
  * Use at top of admin pages
  */
 function require_admin_auth() {
+    // Only redirect if headers haven't been sent yet
     if (!is_admin_logged_in()) {
-        header("Location: admin-login.php");
-        exit();
+        if (!headers_sent()) {
+            header("Location: admin-login.php");
+            exit();
+        } else {
+            // If headers already sent, display error message instead
+            echo '<div class="auth-error">Authentication required. Please <a href="admin-login.php">log in</a> to continue.</div>';
+            // Optional: halt script execution
+            die();
+        }
     }
 }
 
@@ -51,10 +70,17 @@ function require_admin_role($allowed_roles = []) {
     // First check if logged in
     require_admin_auth();
     
-    // Then check role if specified
+    // Then check role if specified - only redirect if headers haven't been sent
     if (!empty($allowed_roles) && !has_admin_role($allowed_roles)) {
-        header("Location: admin-dashboard.php?error=unauthorized");
-        exit();
+        if (!headers_sent()) {
+            header("Location: admin-dashboard.php?error=unauthorized");
+            exit();
+        } else {
+            // If headers already sent, display error message instead
+            echo '<div class="auth-error">You do not have permission to access this page.</div>';
+            // Optional: halt script execution
+            die();
+        }
     }
 }
 
