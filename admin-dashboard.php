@@ -1,24 +1,35 @@
 <?php
 /**
  * Admin Dashboard
+ * Main dashboard for the admin panel
  */
 
-// Authentication and permissions
+// Include authentication component
 require_once 'admin-auth.php';
+
+// Require authentication
 require_admin_auth();
 
 // Include notifications system
 require_once 'admin-notifications.php';
 
-// Track page view for analytics
+// Include analytics
 require_once 'admin-analytics.php';
-log_page_view(basename($_SERVER['PHP_SELF']));
 
-// Page variables
+// Set page variables
 $page_title = 'Dashboard';
-$current_page = 'dashboard'; // Must match ID in admin-menu-config.php
+$current_page = 'dashboard';
 $breadcrumbs = [
     ['title' => 'Dashboard', 'url' => 'admin-dashboard.php']
+];
+
+// Extra CSS/JS files needed for this page
+$extra_css = [
+    'assets/css/admin-dashboard.css'
+];
+$extra_js = [
+    'https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js',
+    'assets/js/admin-dashboard.js'
 ];
 
 // Get admin info
@@ -26,19 +37,144 @@ $admin_user = get_admin_user();
 $admin_username = $admin_user['username'];
 $admin_role = $admin_user['role'];
 
-// Extra assets
-$extra_css = [
-    'assets/css/dashboard.css'
-];
-$extra_js = [
-    'assets/js/admin-dashboard-visuals.js'
+// Track page view
+log_page_view(basename($_SERVER['PHP_SELF']));
+
+// Function to get recent activity (in a real app, this would come from a database)
+function get_recent_activity() {
+    return [
+        [
+            'type' => 'inquiry',
+            'title' => 'New Inquiry',
+            'description' => 'John Smith submitted a new inquiry about business services.',
+            'time' => '2 hours ago',
+            'url' => 'admin-inquiries.php?action=view&id=123'
+        ],
+        [
+            'type' => 'user',
+            'title' => 'New User Registered',
+            'description' => 'Sarah Johnson created a new account.',
+            'time' => '5 hours ago',
+            'url' => 'admin-users.php?action=view&id=456'
+        ],
+        [
+            'type' => 'content',
+            'title' => 'Blog Post Published',
+            'description' => 'The article "5 Ways to Improve Your Business" was published.',
+            'time' => '1 day ago',
+            'url' => 'admin-blog.php?action=view&id=789'
+        ],
+        [
+            'type' => 'testimonial',
+            'title' => 'New Testimonial',
+            'description' => 'Global Services Inc. submitted a new testimonial.',
+            'time' => '2 days ago',
+            'url' => 'admin-testimonials.php?action=view&id=101'
+        ],
+    ];
+}
+
+// Get stats (in a real app, these would come from a database)
+$stats = [
+    'visitors' => [
+        'value' => 2,845,
+        'change' => 12.5,
+        'icon' => 'users',
+        'color' => 'blue'
+    ],
+    'inquiries' => [
+        'value' => 42,
+        'change' => 5.8,
+        'icon' => 'envelope',
+        'color' => 'green'
+    ],
+    'blog_views' => [
+        'value' => 1,258,
+        'change' => -2.3,
+        'icon' => 'newspaper',
+        'color' => 'purple'
+    ],
+    'conversions' => [
+        'value' => 18,
+        'change' => 9.2,
+        'icon' => 'chart-line',
+        'color' => 'orange'
+    ],
 ];
 
-// Include templates
+// Get recent inquiries (in a real app, these would come from a database)
+$recent_inquiries = [
+    [
+        'id' => 123,
+        'name' => 'John Smith',
+        'subject' => 'Business Insurance Quote',
+        'date' => '2025-04-23',
+        'status' => 'new'
+    ],
+    [
+        'id' => 122,
+        'name' => 'Emily Johnson',
+        'subject' => 'HR Services Inquiry',
+        'date' => '2025-04-22',
+        'status' => 'replied'
+    ],
+    [
+        'id' => 121,
+        'name' => 'Michael Brown',
+        'subject' => 'Accounting Support',
+        'date' => '2025-04-22',
+        'status' => 'new'
+    ],
+    [
+        'id' => 120,
+        'name' => 'Sarah Davis',
+        'subject' => 'Tax Consultation Request',
+        'date' => '2025-04-21',
+        'status' => 'closed'
+    ],
+];
+
+// Dashboard chart data function
+function get_dashboard_chart_data() {
+    // In a real implementation, these would be database queries
+    // Example: SELECT COUNT(*) as count, DATE(created_at) as date FROM page_views GROUP BY DATE(created_at) ORDER BY date LIMIT 7
+    
+    // Sample data for demonstration
+    $activity_data = [
+        'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+        'pageViews' => [1200, 1800, 1400, 2000, 2400, 2200, 2600],
+        'sessions' => [400, 500, 450, 600, 700, 650, 750],
+        'newUsers' => [200, 250, 220, 280, 320, 300, 350]
+    ];
+    
+    $content_distribution = [
+        ['name' => 'Blog Posts', 'value' => 45, 'color' => '#3498db'],
+        ['name' => 'Services', 'value' => 25, 'color' => '#2ecc71'],
+        ['name' => 'Testimonials', 'value' => 15, 'color' => '#9b59b6'],
+        ['name' => 'FAQ', 'value' => 10, 'color' => '#f39c12'],
+        ['name' => 'Other', 'value' => 5, 'color' => '#e74c3c']
+    ];
+    
+    $user_actions = [
+        ['name' => 'View', 'count' => 820],
+        ['name' => 'Create', 'count' => 330],
+        ['name' => 'Update', 'count' => 450],
+        ['name' => 'Delete', 'count' => 140]
+    ];
+    
+    return [
+        'activity' => $activity_data,
+        'content' => $content_distribution,
+        'actions' => $user_actions
+    ];
+}
+
+// Include header template
 include 'admin-head.php';
 include 'admin-sidebar.php';
 ?>
 
+<!-- Main Content Area -->
 <main class="admin-main">
   <?php include 'admin-header.php'; ?>
   
