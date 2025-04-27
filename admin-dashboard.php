@@ -38,11 +38,10 @@ $breadcrumbs = [
 
 // Extra CSS/JS files needed for this page
 $extra_css = [
-    'assets/css/admin-dashboard.css'
+    '/assets/css/admin-dashboard.css'
 ];
 $extra_js = [
-    'https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js',
-    'assets/js/admin-dashboard.js'
+    '/assets/js/admin-dashboard.js'
 ];
 
 // Get admin info
@@ -189,7 +188,10 @@ function get_dashboard_chart_data() {
     ];
 }
 
-// Include header template
+// Explicitly load Chart.js before including head
+$chart_js_loaded = false;
+
+// Include header template with error handling
 try {
     include 'admin-head.php';
     include 'admin-sidebar.php';
@@ -241,14 +243,14 @@ try {
     </div>
     
     <!-- New Enhanced Analytics Dashboard -->
-    <div class="dashboard-charts bg-white p-6 rounded-lg shadow mb-6">
-      <h2 class="text-2xl font-bold mb-6">Admin Panel Analytics</h2>
+    <div class="dashboard-charts">
+      <h2>Admin Panel Analytics</h2>
       
       <!-- Tabs -->
-      <div class="chart-tabs flex border-b mb-6">
-        <button class="chart-tab active py-2 px-4 border-b-2 border-blue-500 text-blue-500" data-tab="overview">Overview</button>
-        <button class="chart-tab py-2 px-4 text-gray-500" data-tab="content">Content</button>
-        <button class="chart-tab py-2 px-4 text-gray-500" data-tab="users">User Actions</button>
+      <div class="chart-tabs">
+        <button class="chart-tab active" data-tab="overview">Overview</button>
+        <button class="chart-tab" data-tab="content">Content</button>
+        <button class="chart-tab" data-tab="users">User Actions</button>
       </div>
       
       <!-- Tab content containers -->
@@ -256,57 +258,57 @@ try {
         
         <!-- Overview Tab (shown by default) -->
         <div class="chart-pane active" id="overview-pane">
-          <h3 class="text-lg font-semibold mb-4">Activity Overview</h3>
-          <div class="chart-container" style="position: relative; height: 300px;">
+          <h3>Activity Overview</h3>
+          <div class="chart-container">
             <canvas id="activityChart"></canvas>
           </div>
           
           <!-- Stats cards -->
-          <div class="stats-cards grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-            <div class="stat-card bg-blue-50 p-4 rounded">
-              <h4 class="text-lg text-blue-700">Total Page Views</h4>
-              <p class="text-3xl font-bold">12,600</p>
-              <p class="text-sm text-green-600">↑ 18.5% from last month</p>
+          <div class="stats-cards">
+            <div class="stat-summary-card blue">
+              <h4>Total Page Views</h4>
+              <p class="stat-summary-value">12,600</p>
+              <p class="stat-summary-change positive">↑ 18.5% from last month</p>
             </div>
             
-            <div class="stat-card bg-green-50 p-4 rounded">
-              <h4 class="text-lg text-green-700">Active Users</h4>
-              <p class="text-3xl font-bold">4,050</p>
-              <p class="text-sm text-green-600">↑ 12.3% from last month</p>
+            <div class="stat-summary-card green">
+              <h4>Active Users</h4>
+              <p class="stat-summary-value">4,050</p>
+              <p class="stat-summary-change positive">↑ 12.3% from last month</p>
             </div>
             
-            <div class="stat-card bg-purple-50 p-4 rounded">
-              <h4 class="text-lg text-purple-700">Avg. Session Duration</h4>
-              <p class="text-3xl font-bold">2m 45s</p>
-              <p class="text-sm text-red-600">↓ 3.1% from last month</p>
+            <div class="stat-summary-card purple">
+              <h4>Avg. Session Duration</h4>
+              <p class="stat-summary-value">2m 45s</p>
+              <p class="stat-summary-change negative">↓ 3.1% from last month</p>
             </div>
           </div>
         </div>
         
         <!-- Content Tab -->
-        <div class="chart-pane" id="content-pane" style="display: none;">
-          <h3 class="text-lg font-semibold mb-4">Content Distribution</h3>
-          <div class="flex flex-col md:flex-row">
-            <div class="w-full md:w-1/2">
-              <div class="chart-container" style="position: relative; height: 300px;">
+        <div class="chart-pane" id="content-pane">
+          <h3>Content Distribution</h3>
+          <div class="chart-layout">
+            <div class="chart-col">
+              <div class="chart-container">
                 <canvas id="contentDistributionChart"></canvas>
               </div>
             </div>
             
-            <div class="w-full md:w-1/2 mt-6 md:mt-0">
-              <div class="content-bars grid grid-cols-1 gap-4">
+            <div class="chart-col">
+              <div class="content-bars">
                 <?php 
                 $chart_data = get_dashboard_chart_data();
                 foreach ($chart_data['content'] as $item): ?>
-                  <div class="flex items-center">
-                    <div class="w-4 h-4 rounded-full mr-2" style="background-color: <?php echo $item['color']; ?>"></div>
-                    <div class="flex-1">
-                      <div class="flex justify-between">
+                  <div class="content-bar-item">
+                    <div class="color-indicator" style="background-color: <?php echo $item['color']; ?>"></div>
+                    <div class="content-bar-info">
+                      <div class="content-bar-header">
                         <span><?php echo $item['name']; ?></span>
-                        <span class="font-bold"><?php echo $item['value']; ?>%</span>
+                        <span class="content-bar-value"><?php echo $item['value']; ?>%</span>
                       </div>
-                      <div class="w-full bg-gray-200 rounded-full h-2.5 mt-1">
-                        <div class="h-2.5 rounded-full" style="width: <?php echo $item['value']; ?>%; background-color: <?php echo $item['color']; ?>"></div>
+                      <div class="progress-container">
+                        <div class="progress-bar" style="width: <?php echo $item['value']; ?>%; background-color: <?php echo $item['color']; ?>"></div>
                       </div>
                     </div>
                   </div>
@@ -316,38 +318,38 @@ try {
           </div>
           
           <!-- Content performance table -->
-          <div class="mt-6">
-            <h4 class="text-lg font-semibold mb-2">Content Performance</h4>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+          <div class="content-performance">
+            <h4>Content Performance</h4>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content Type</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Views</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg. Time</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Engagement</th>
+                    <th>Content Type</th>
+                    <th>Views</th>
+                    <th>Avg. Time</th>
+                    <th>Engagement</th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody>
                   <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">Blog Posts</td>
-                    <td class="px-6 py-4 whitespace-nowrap">4,526</td>
-                    <td class="px-6 py-4 whitespace-nowrap">3m 12s</td>
-                    <td class="px-6 py-4 whitespace-nowrap">High</td>
+                    <td>Blog Posts</td>
+                    <td>4,526</td>
+                    <td>3m 12s</td>
+                    <td>High</td>
                   </tr>
                   
                   <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">Services</td>
-                    <td class="px-6 py-4 whitespace-nowrap">2,845</td>
-                    <td class="px-6 py-4 whitespace-nowrap">2m 05s</td>
-                    <td class="px-6 py-4 whitespace-nowrap">Medium</td>
+                    <td>Services</td>
+                    <td>2,845</td>
+                    <td>2m 05s</td>
+                    <td>Medium</td>
                   </tr>
                   
                   <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">Testimonials</td>
-                    <td class="px-6 py-4 whitespace-nowrap">1,724</td>
-                    <td class="px-6 py-4 whitespace-nowrap">1m 45s</td>
-                    <td class="px-6 py-4 whitespace-nowrap">Medium</td>
+                    <td>Testimonials</td>
+                    <td>1,724</td>
+                    <td>1m 45s</td>
+                    <td>Medium</td>
                   </tr>
                 </tbody>
               </table>
@@ -356,60 +358,60 @@ try {
         </div>
         
         <!-- Users Tab -->
-        <div class="chart-pane" id="users-pane" style="display: none;">
-          <h3 class="text-lg font-semibold mb-4">User Actions</h3>
-          <div class="chart-container" style="position: relative; height: 300px;">
+        <div class="chart-pane" id="users-pane">
+          <h3>User Actions</h3>
+          <div class="chart-container">
             <canvas id="userActionsChart"></canvas>
           </div>
           
           <!-- Active users table -->
-          <div class="mt-6">
-            <h4 class="text-lg font-semibold mb-2">Most Active Users</h4>
-            <div class="overflow-x-auto">
-              <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+          <div class="active-users">
+            <h4>Most Active Users</h4>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
                   <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Activity</th>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                    <th>Last Activity</th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody>
                   <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white">JS</div>
-                        <div class="ml-3">John Smith</div>
+                    <td>
+                      <div class="user-info">
+                        <div class="user-avatar blue">JS</div>
+                        <div class="user-name">John Smith</div>
                       </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">Admin</td>
-                    <td class="px-6 py-4 whitespace-nowrap">214</td>
-                    <td class="px-6 py-4 whitespace-nowrap">Today at 10:45 AM</td>
+                    <td>Admin</td>
+                    <td>214</td>
+                    <td>Today at 10:45 AM</td>
                   </tr>
                   
                   <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="h-8 w-8 rounded-full bg-green-500 flex items-center justify-center text-white">AD</div>
-                        <div class="ml-3">Alice Davis</div>
+                    <td>
+                      <div class="user-info">
+                        <div class="user-avatar green">AD</div>
+                        <div class="user-name">Alice Davis</div>
                       </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">Editor</td>
-                    <td class="px-6 py-4 whitespace-nowrap">187</td>
-                    <td class="px-6 py-4 whitespace-nowrap">Today at 9:12 AM</td>
+                    <td>Editor</td>
+                    <td>187</td>
+                    <td>Today at 9:12 AM</td>
                   </tr>
                   
                   <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="h-8 w-8 rounded-full bg-purple-500 flex items-center justify-center text-white">RJ</div>
-                        <div class="ml-3">Robert Johnson</div>
+                    <td>
+                      <div class="user-info">
+                        <div class="user-avatar purple">RJ</div>
+                        <div class="user-name">Robert Johnson</div>
                       </div>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">Author</td>
-                    <td class="px-6 py-4 whitespace-nowrap">156</td>
-                    <td class="px-6 py-4 whitespace-nowrap">Yesterday at 2:30 PM</td>
+                    <td>Author</td>
+                    <td>156</td>
+                    <td>Yesterday at 2:30 PM</td>
                   </tr>
                 </tbody>
               </table>
@@ -592,7 +594,7 @@ try {
                     <a href="admin-inquiries.php?action=edit&id=<?php echo $inquiry['id']; ?>" title="Reply">
                       <i class="fas fa-reply"></i>
                     </a>
-                    <?php if (has_admin_permission('inquiries_delete')): ?>
+                    <?php if (function_exists('has_admin_permission') && has_admin_permission('inquiries_delete')): ?>
                       <a href="#" class="delete-btn" data-id="<?php echo $inquiry['id']; ?>" title="Delete">
                         <i class="fas fa-trash"></i>
                       </a>
@@ -655,13 +657,25 @@ try {
   }
   ?>
   
+  <!-- Make sure Chart.js is loaded -->
   <script>
-    // Additional JavaScript for the enhanced dashboard charts
-    document.addEventListener("DOMContentLoaded", function() {
-      // Chart data
-      const activityData = <?php echo json_encode($chart_data['activity']); ?>;
-      const contentData = <?php echo json_encode($chart_data['content']); ?>;
-      const actionsData = <?php echo json_encode($chart_data['actions']); ?>;
+    // Check if Chart.js is loaded and load it if not
+    if (typeof Chart === 'undefined') {
+      console.log('Loading Chart.js from dashboard script');
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js';
+      script.onload = initDashboardCharts;
+      document.head.appendChild(script);
+    } else {
+      console.log('Chart.js is already loaded');
+      document.addEventListener("DOMContentLoaded", initDashboardCharts);
+    }
+    
+    // Initialize dashboard charts
+    function initDashboardCharts() {
+      console.log('Initializing dashboard charts');
+      // Get chart data
+      const chartData = <?php echo json_encode(get_dashboard_chart_data()); ?>;
       
       // Tab switching functionality
       const tabs = document.querySelectorAll(".chart-tab");
@@ -670,17 +684,15 @@ try {
       tabs.forEach(tab => {
         tab.addEventListener("click", function() {
           // Remove active class from all tabs/panes
-          tabs.forEach(t => t.classList.remove("active", "border-blue-500", "text-blue-500"));
-          tabs.forEach(t => t.classList.add("text-gray-500"));
-          panes.forEach(p => p.style.display = "none");
+          tabs.forEach(t => t.classList.remove("active"));
+          panes.forEach(p => p.classList.remove("active"));
           
           // Add active class to current tab
-          this.classList.add("active", "border-blue-500", "text-blue-500");
-          this.classList.remove("text-gray-500");
+          this.classList.add("active");
           
           // Show the corresponding pane
           const paneId = this.getAttribute("data-tab") + "-pane";
-          document.getElementById(paneId).style.display = "block";
+          document.getElementById(paneId).classList.add("active");
         });
       });
       
@@ -692,11 +704,11 @@ try {
           new Chart(activityCtx, {
             type: "line",
             data: {
-              labels: activityData.labels,
+              labels: chartData.activity.labels,
               datasets: [
                 {
                   label: "Page Views",
-                  data: activityData.pageViews,
+                  data: chartData.activity.pageViews,
                   borderColor: "#3498db",
                   backgroundColor: "rgba(52, 152, 219, 0.1)",
                   borderWidth: 2,
@@ -705,9 +717,7 @@ try {
                 },
                 {
                   label: "Sessions",
-                  data: activityData.sessions,
-                  borderColor: "#2ecc71",
-                  backgroundColor: "rgba(46, 204, 113, 0.
+                  data: chartData.activity.sessions,
                   borderColor: "#2ecc71",
                   backgroundColor: "rgba(46, 204, 113, 0.1)",
                   borderWidth: 2,
@@ -716,7 +726,7 @@ try {
                 },
                 {
                   label: "New Users",
-                  data: activityData.newUsers,
+                  data: chartData.activity.newUsers,
                   borderColor: "#9b59b6",
                   backgroundColor: "rgba(155, 89, 182, 0.1)",
                   borderWidth: 2,
@@ -752,7 +762,7 @@ try {
           const contentValues = [];
           const contentColors = [];
           
-          contentData.forEach(item => {
+          chartData.content.forEach(item => {
             contentLabels.push(item.name);
             contentValues.push(item.value);
             contentColors.push(item.color);
@@ -798,7 +808,7 @@ try {
           const actionLabels = [];
           const actionCounts = [];
           
-          actionsData.forEach(item => {
+          chartData.actions.forEach(item => {
             actionLabels.push(item.name);
             actionCounts.push(item.count);
           });
@@ -883,34 +893,3 @@ try {
             }
           });
         }
-      } catch (e) {
-        console.error("Error initializing charts:", e);
-        // Show fallback message if charts fail to load
-        document.querySelectorAll(".chart-container").forEach(container => {
-          container.innerHTML = "<div class='chart-error'>Charts could not be loaded. Please check if Chart.js is properly loaded.</div>";
-        });
-      }
-      
-      // Set current date
-      document.getElementById("current-date").textContent = new Date().toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      });
-    });
-  </script>
-  
-  <?php 
-  // Include footer with error handling
-  try {
-    include 'admin-footer.php'; 
-  } catch (Exception $e) {
-    echo "<footer style='padding: 20px; text-align: center;'>&copy; " . date('Y') . " Admin Panel</footer>";
-  }
-  ?>
-</main>
-
-<?php 
-// End output buffering and send content to browser
-ob_end_flush();
-?>
