@@ -6,19 +6,22 @@
   <title><?php echo isset($page_title) ? htmlspecialchars($page_title) : 'Admin Panel'; ?> | Backsure Global Support</title>
   
   <!-- Favicon -->
-  <link rel="shortcut icon" href="assets/images/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/assets/images/favicon.ico" type="image/x-icon">
   
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   
-  <!-- Core styles - UPDATED PATHS -->
-  <link rel="stylesheet" href="admin-core.css">
-  <link rel="stylesheet" href="admin-themes.css">
+  <!-- Core styles - FIXED PATHS -->
+  <link rel="stylesheet" href="/admin-core.css">
+  <link rel="stylesheet" href="/admin-themes.css">
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
@@ -30,9 +33,9 @@
     <?php endforeach; ?>
   <?php endif; ?>
   
-  <!-- Core JavaScript - UPDATED PATHS -->
-  <script src="admin-core.js" defer></script>
-  <script src="admin-theme-switcher.js" defer></script>
+  <!-- Core JavaScript - FIXED PATHS -->
+  <script src="/admin-core.js" defer></script>
+  <script src="/admin-theme-switcher.js" defer></script>
   
   <!-- Extra JavaScript files -->
   <?php if (isset($extra_js) && is_array($extra_js)): ?>
