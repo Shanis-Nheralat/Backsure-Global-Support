@@ -21,7 +21,6 @@ $analytics_loaded = false;
 try {
     // Include analytics with error handling
     if (file_exists('admin-analytics.php')) {
-        // Safely include analytics file
         require_once 'admin-analytics.php';
         $analytics_loaded = true;
     }
@@ -190,16 +189,7 @@ function get_dashboard_chart_data() {
     ];
 }
 
-// Helper function to determine if a user has permission - with error handling
-function has_admin_permission($permission) {
-    if (function_exists('check_admin_permission')) {
-        return check_admin_permission($permission);
-    }
-    // Default to true if function doesn't exist (to avoid breaking UI)
-    return true;
-}
-
-// Include header template with error handling
+// Include header template
 try {
     include 'admin-head.php';
     include 'admin-sidebar.php';
@@ -716,6 +706,8 @@ try {
                 {
                   label: "Sessions",
                   data: activityData.sessions,
+                  borderColor: "#2ecc71",
+                  backgroundColor: "rgba(46, 204, 113, 0.
                   borderColor: "#2ecc71",
                   backgroundColor: "rgba(46, 204, 113, 0.1)",
                   borderWidth: 2,
