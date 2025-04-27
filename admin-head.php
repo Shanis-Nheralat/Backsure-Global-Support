@@ -1,6 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Add this inside the <head> section -->
+<style>
+  .admin-sidebar {
+    width: 250px;
+    background-color: #062767;
+    color: white;
+    height: 100vh;
+    overflow-y: auto;
+    position: fixed;
+    left: 0;
+    top: 0;
+  }
+  
+  .admin-main {
+    margin-left: 250px;
+  }
+  
+  /* Basic menu styling */
+  .sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .sidebar-nav ul li a {
+    display: block;
+    padding: 10px 20px;
+    color: white;
+    text-decoration: none;
+  }
+  
+  .sidebar-nav ul li a:hover {
+    background-color: rgba(255,255,255,0.1);
+  }
+</style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?php echo isset($page_title) ? htmlspecialchars($page_title) : 'Admin Panel'; ?> | Backsure Global Support</title>
