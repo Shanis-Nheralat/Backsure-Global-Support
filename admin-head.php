@@ -16,9 +16,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   
-  <!-- Core styles -->
-  <link rel="stylesheet" href="assets/css/admin-core.css">
-  <link rel="stylesheet" href="assets/css/admin-themes.css">
+  <!-- Core styles - UPDATED PATHS -->
+  <link rel="stylesheet" href="admin-core.css">
+  <link rel="stylesheet" href="admin-themes.css">
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
@@ -30,9 +30,16 @@
     <?php endforeach; ?>
   <?php endif; ?>
   
-  <!-- Core JavaScript -->
-  <script src="assets/js/admin-core.js"></script>
-  <script src="assets/js/admin-theme-switcher.js"></script>
+  <!-- Core JavaScript - UPDATED PATHS -->
+  <script src="admin-core.js" defer></script>
+  <script src="admin-theme-switcher.js" defer></script>
+  
+  <!-- Extra JavaScript files -->
+  <?php if (isset($extra_js) && is_array($extra_js)): ?>
+    <?php foreach ($extra_js as $js_file): ?>
+      <script src="<?php echo $js_file; ?>" defer></script>
+    <?php endforeach; ?>
+  <?php endif; ?>
 </head>
 <body class="admin-body">
 <div class="admin-container">
