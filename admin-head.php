@@ -62,8 +62,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   
   <!-- Core styles - DYNAMIC PATHS -->
-  <link rel="stylesheet" href="<?php echo $baseUrl; ?>admin-core.css">
-  <link rel="stylesheet" href="<?php echo $baseUrl; ?>admin-themes.css">
+  <link rel="stylesheet" href="admin-core.css">
+  <link rel="stylesheet" href="admin-themes.css">
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
@@ -71,18 +71,18 @@
   <!-- Extra CSS files -->
   <?php if (isset($extra_css) && is_array($extra_css)): ?>
     <?php foreach ($extra_css as $css_file): ?>
-      <link rel="stylesheet" href="<?php echo $baseUrl . ltrim($css_file, '/'); ?>">
+      <link rel="stylesheet" href="<?php echo ltrim($css_file, '/'); ?>">
     <?php endforeach; ?>
   <?php endif; ?>
   
   <!-- Core JavaScript - DYNAMIC PATHS -->
-  <script src="<?php echo $baseUrl; ?>admin-core.js" defer></script>
-  <script src="<?php echo $baseUrl; ?>admin-theme-switcher.js" defer></script>
+  <script src="admin-core.js" defer></script>
+  <script src="admin-theme-switcher.js" defer></script>
   
   <!-- Extra JavaScript files -->
   <?php if (isset($extra_js) && is_array($extra_js)): ?>
     <?php foreach ($extra_js as $js_file): ?>
-      <script src="<?php echo $baseUrl . ltrim($js_file, '/'); ?>" defer></script>
+      <script src="<?php echo ltrim($js_file, '/'); ?>" defer></script>
     <?php endforeach; ?>
   <?php endif; ?>
 </head>
