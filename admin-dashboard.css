@@ -1,672 +1,479 @@
-/* Dashboard Specific Styles */
-
-/* Stats Overview */
-.stats-overview {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.stat-card {
-  background: var(--card-bg);
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: var(--card-shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  display: flex;
-  align-items: center;
-}
-
-.stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--card-shadow-hover);
-}
-
-.stat-icon {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 20px;
-}
-
-.stat-icon i {
-  font-size: 24px;
-  color: white;
-}
-
-.stat-icon.blue {
-  background-color: var(--blue);
-}
-
-.stat-icon.green {
-  background-color: var(--green);
-}
-
-.stat-icon.purple {
-  background-color: var(--purple);
-}
-
-.stat-icon.orange {
-  background-color: var(--orange);
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-content h3 {
-  font-size: 16px;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
-}
-
-.stat-value {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.stat-change {
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.stat-change.positive {
-  color: var(--success);
-}
-
-.stat-change.negative {
-  color: var(--danger);
-}
-
-/* Date Display */
-.date-display {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  color: var(--text-secondary);
-}
-
-.date-display i {
-  color: var(--primary-color);
-}
-
-/* Dashboard Charts */
-.dashboard-charts {
-  background: var(--card-bg);
-  border-radius: 10px;
-  padding: 25px;
-  box-shadow: var(--card-shadow);
-  margin-bottom: 30px;
-}
-
-.dashboard-charts h2 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 25px;
-  color: var(--text-primary);
-}
-
-.chart-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: 25px;
-}
-
-.chart-tab {
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  background: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-secondary);
-  border-bottom: 2px solid transparent;
-}
-
-.chart-tab.active {
-  color: var(--primary-color);
-  border-bottom-color: var(--primary-color);
-}
-
-.chart-pane {
-  display: none;
-}
-
-.chart-pane.active {
-  display: block;
-}
-
-.chart-pane h3 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: var(--text-primary);
-}
-
-.chart-container {
-  position: relative;
-  height: 300px;
-  margin-bottom: 20px;
-}
-
-/* Chart layout for content tab */
-.chart-layout {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 30px;
-  margin-bottom: 30px;
-}
-
-.chart-col {
-  flex: 1;
-  min-width: 300px;
-}
-
-/* Stats cards in overview tab */
-.stats-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
-}
-
-.stat-summary-card {
-  padding: 20px;
-  border-radius: 10px;
-}
-
-.stat-summary-card.blue {
-  background-color: rgba(52, 152, 219, 0.1);
-}
-
-.stat-summary-card.green {
-  background-color: rgba(46, 204, 113, 0.1);
-}
-
-.stat-summary-card.purple {
-  background-color: rgba(155, 89, 182, 0.1);
-}
-
-.stat-summary-card h4 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.stat-summary-card.blue h4 {
-  color: #3498db;
-}
-
-.stat-summary-card.green h4 {
-  color: #2ecc71;
-}
-
-.stat-summary-card.purple h4 {
-  color: #9b59b6;
-}
-
-.stat-summary-value {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 5px;
-  color: var(--text-primary);
-}
-
-.stat-summary-change {
-  font-size: 14px;
-}
-
-.stat-summary-change.positive {
-  color: var(--success);
-}
-
-.stat-summary-change.negative {
-  color: var(--danger);
-}
-
-/* Content distribution bars */
-.content-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.content-bar-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.color-indicator {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.content-bar-info {
-  flex: 1;
-}
-
-.content-bar-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-  font-size: 14px;
-}
-
-.content-bar-value {
-  font-weight: 600;
-}
-
-.progress-container {
-  width: 100%;
-  height: 8px;
-  background-color: var(--border-color);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-bar {
-  height: 100%;
-  border-radius: 4px;
-}
-
-/* Tables */
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.admin-table th {
-  text-align: left;
-  padding: 12px 15px;
-  background-color: var(--table-header-bg);
-  color: var(--text-secondary);
-  font-weight: 600;
-  font-size: 14px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.admin-table td {
-  padding: 12px 15px;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--text-primary);
-}
-
-.content-performance h4,
-.active-users h4 {
-  font-size: 16px;
-  font-weight: 600;
-  margin: 20px 0 15px;
-  color: var(--text-primary);
-}
-
-.table-responsive {
-  overflow-x: auto;
-}
-
-/* User info in users tab */
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.user-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 12px;
-}
-
-.user-avatar.blue {
-  background-color: var(--blue);
-}
-
-.user-avatar.green {
-  background-color: var(--green);
-}
-
-.user-avatar.purple {
-  background-color: var(--purple);
-}
-
-/* Analytics Section */
-.analytics-section {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.chart-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.chart-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.chart-controls {
-  display: flex;
-  gap: 10px;
-}
-
-.chart-controls button {
-  background: none;
-  border: 1px solid var(--border-color);
-  padding: 5px 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.chart-controls button.active {
-  background-color: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.chart-body {
-  height: 300px;
-}
-
-.analytics-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.widget {
-  background: var(--card-bg);
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: var(--card-shadow);
-}
-
-.widget h3 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 15px;
-  color: var(--text-primary);
-}
-
-.source-list,
-.page-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.source-list li,
-.page-list li {
-  margin-bottom: 12px;
-}
-
-.source-info,
-.page-info {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 5px;
-  font-size: 14px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 6px;
-  background-color: var(--border-color);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.progress {
-  height: 100%;
-  border-radius: 3px;
-}
-
-/* Quick Access Section */
-.quick-access-section {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.section-header h2 {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.view-all {
-  font-size: 14px;
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-.view-all:hover {
-  text-decoration: underline;
-}
-
-.action-buttons {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 15px;
-}
-
-.quick-action-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 15px;
-  background: var(--card-bg);
-  border-radius: 10px;
-  box-shadow: var(--card-shadow);
-  text-decoration: none;
-  color: var(--text-primary);
-  transition: all 0.2s ease;
-}
-
-.quick-action-btn:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--card-shadow-hover);
-}
-
-.quick-action-btn i {
-  font-size: 24px;
-  color: var(--primary-color);
-}
-
-/* Status badges */
-.status-badge {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 15px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.status-badge.new {
-  background-color: rgba(52, 152, 219, 0.1);
-  color: #3498db;
-}
-
-.status-badge.replied {
-  background-color: rgba(46, 204, 113, 0.1);
-  color: #2ecc71;
-}
-
-.status-badge.closed {
-  background-color: rgba(149, 165, 166, 0.1);
-  color: #95a5a6;
-}
-
-/* Table actions */
-.table-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.table-actions a {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 4px;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
-}
-
-.table-actions a:hover {
-  background-color: var(--hover-bg);
-  color: var(--primary-color);
-}
-
-/* Activities Section */
-.activities-section {
-  margin-bottom: 30px;
-}
-
-.activity-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.activity-item {
-  background: var(--card-bg);
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: var(--card-shadow);
-  display: flex;
-  gap: 15px;
-}
-
-.activity-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  flex-shrink: 0;
-}
-
-.activity-icon.inquiry {
-  background-color: #3498db;
-}
-
-.activity-icon.user {
-  background-color: #2ecc71;
-}
-
-.activity-icon.content {
-  background-color: #9b59b6;
-}
-
-.activity-icon.testimonial {
-  background-color: #f39c12;
-}
-
-.activity-content {
-  flex: 1;
-}
-
-.activity-content h4 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-}
-
-.activity-content p {
-  font-size: 14px;
-  color: var(--text-secondary);
-  margin-bottom: 10px;
-}
-
-.activity-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-}
-
-.activity-time {
-  color: var(--text-muted);
-}
-
-.activity-action {
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-.activity-action:hover {
-  text-decoration: underline;
-}
-
-/* Error state for charts */
-.chart-error {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--danger);
-  font-size: 14px;
-  text-align: center;
-  padding: 20px;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  .analytics-section,
-  .quick-access-section {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
-  .stats-overview {
-    grid-template-columns: 1fr;
+/**
+ * Admin Dashboard JavaScript
+ * Handles dashboard functionality, charts, and interactions
+ */
+
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Dashboard script loaded successfully');
+  
+  // Initialize dashboard functionality
+  initDashboard();
+});
+
+/**
+ * Initialize all dashboard components
+ */
+function initDashboard() {
+  // Initialize tabs
+  initDashboardTabs();
+  
+  // Initialize charts if Chart.js is loaded
+  if (typeof Chart !== 'undefined') {
+    initDashboardCharts();
+  } else {
+    console.error('Chart.js is not loaded. Loading it dynamically...');
+    loadChartJS();
   }
   
-  .chart-layout {
-    flex-direction: column;
-  }
+  // Initialize quick action buttons hover effects
+  initQuickActions();
   
-  .activity-container {
-    grid-template-columns: 1fr;
+  // Set current date
+  updateCurrentDate();
+  
+  // Initialize chart controls for the traffic chart
+  initChartControls();
+  
+  // Log dashboard view for analytics
+  logDashboardView();
+}
+
+/**
+ * Initialize dashboard tabs
+ */
+function initDashboardTabs() {
+  const tabs = document.querySelectorAll('.chart-tab');
+  const panes = document.querySelectorAll('.chart-pane');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      // Get target tab
+      const targetTab = this.getAttribute('data-tab');
+      
+      // Remove active class from all tabs and panes
+      tabs.forEach(t => t.classList.remove('active'));
+      panes.forEach(p => p.classList.remove('active'));
+      
+      // Add active class to current tab and pane
+      this.classList.add('active');
+      document.getElementById(`${targetTab}-pane`).classList.add('active');
+    });
+  });
+}
+
+/**
+ * Dynamically load Chart.js if not already loaded
+ */
+function loadChartJS() {
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js';
+  script.onload = initDashboardCharts;
+  document.head.appendChild(script);
+}
+
+/**
+ * Initialize all dashboard charts
+ */
+function initDashboardCharts() {
+  console.log('Initializing dashboard charts');
+  
+  try {
+    // Activity chart in Overview tab
+    initActivityChart();
+    
+    // Content distribution chart in Content tab
+    initContentDistributionChart();
+    
+    // User actions chart in Users tab
+    initUserActionsChart();
+    
+    // Traffic chart in Analytics section
+    initTrafficChart();
+  } catch (error) {
+    console.error('Error initializing charts:', error);
+    showChartErrors();
   }
+}
+
+/**
+ * Initialize activity overview chart
+ */
+function initActivityChart() {
+  const ctx = document.getElementById('activityChart');
+  if (!ctx) return;
+  
+  // Get data from the page or fetch from an API
+  // This is example data - in a real implementation, this would come from PHP/backend
+  const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
+  const pageViews = [1200, 1800, 1400, 2000, 2400, 2200, 2600];
+  const sessions = [400, 500, 450, 600, 700, 650, 750];
+  const newUsers = [200, 250, 220, 280, 320, 300, 350];
+  
+  // Create the chart
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Page Views',
+          data: pageViews,
+          borderColor: '#3498db',
+          backgroundColor: 'rgba(52, 152, 219, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'Sessions',
+          data: sessions,
+          borderColor: '#2ecc71',
+          backgroundColor: 'rgba(46, 204, 113, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'New Users',
+          data: newUsers,
+          borderColor: '#9b59b6',
+          backgroundColor: 'rgba(155, 89, 182, 0.1)',
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Initialize content distribution chart
+ */
+function initContentDistributionChart() {
+  const ctx = document.getElementById('contentDistributionChart');
+  if (!ctx) return;
+  
+  // Example data
+  const data = [
+    { name: 'Blog Posts', value: 45, color: '#3498db' },
+    { name: 'Services', value: 25, color: '#2ecc71' },
+    { name: 'Testimonials', value: 15, color: '#9b59b6' },
+    { name: 'FAQ', value: 10, color: '#f39c12' },
+    { name: 'Other', value: 5, color: '#e74c3c' }
+  ];
+  
+  const labels = data.map(item => item.name);
+  const values = data.map(item => item.value);
+  const colors = data.map(item => item.color);
+  
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          data: values,
+          backgroundColor: colors,
+          borderWidth: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 12
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return context.label + ': ' + context.raw + '%';
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Initialize user actions chart
+ */
+function initUserActionsChart() {
+  const ctx = document.getElementById('userActionsChart');
+  if (!ctx) return;
+  
+  // Example data
+  const data = [
+    { name: 'View', count: 820 },
+    { name: 'Create', count: 330 },
+    { name: 'Update', count: 450 },
+    { name: 'Delete', count: 140 }
+  ];
+  
+  const labels = data.map(item => item.name);
+  const counts = data.map(item => item.count);
+  
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Number of Actions',
+          data: counts,
+          backgroundColor: '#3498db',
+          borderWidth: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Initialize traffic chart in the analytics section
+ */
+function initTrafficChart() {
+  const ctx = document.getElementById('traffic-chart');
+  if (!ctx) return;
+  
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [
+        {
+          label: 'This Year',
+          data: [1500, 1800, 2200, 1800, 2400, 2800],
+          borderColor: '#4e73df',
+          backgroundColor: 'rgba(78, 115, 223, 0.05)',
+          pointBackgroundColor: '#4e73df',
+          tension: 0.3,
+          fill: true
+        },
+        {
+          label: 'Last Year',
+          data: [1000, 1300, 1500, 1200, 1800, 2100],
+          borderColor: '#1cc88a',
+          backgroundColor: 'rgba(28, 200, 138, 0.05)',
+          pointBackgroundColor: '#1cc88a',
+          tension: 0.3,
+          fill: true
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(0, 0, 0, 0.05)'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+}
+
+/**
+ * Initialize chart controls for traffic chart
+ */
+function initChartControls() {
+  const controls = document.querySelectorAll('.chart-controls button');
+  if (!controls.length) return;
+  
+  controls.forEach(button => {
+    button.addEventListener('click', function() {
+      // Remove active class from all controls
+      controls.forEach(btn => btn.classList.remove('active'));
+      
+      // Add active class to clicked button
+      this.classList.add('active');
+      
+      // In a real implementation, this would reload the chart with new data
+      // For demonstration, we're just updating the UI
+      
+      // Get the chart period from the button text
+      const period = this.textContent.trim().toLowerCase();
+      console.log(`Switching chart to ${period} view`);
+      
+      // This would typically trigger a function to update the chart data
+      // updateTrafficChartData(period);
+    });
+  });
+}
+
+/**
+ * Initialize quick action buttons
+ */
+function initQuickActions() {
+  const quickActions = document.querySelectorAll('.quick-action-btn');
+  
+  quickActions.forEach(button => {
+    button.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-5px)';
+    });
+    
+    button.addEventListener('mouseleave', function() {
+      this.style.transform = 'translateY(0)';
+    });
+  });
+}
+
+/**
+ * Update current date display with proper formatting
+ */
+function updateCurrentDate() {
+  const dateElement = document.getElementById('current-date');
+  if (!dateElement) return;
+  
+  const today = new Date();
+  const options = { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  };
+  
+  dateElement.textContent = today.toLocaleDateString('en-US', options);
+}
+
+/**
+ * Show error message if charts fail to load
+ */
+function showChartErrors() {
+  const chartContainers = document.querySelectorAll('.chart-container');
+  
+  chartContainers.forEach(container => {
+    container.innerHTML = `
+      <div class="chart-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>Charts could not be loaded. Please check if Chart.js is properly loaded.</p>
+      </div>
+    `;
+  });
+}
+
+/**
+ * Log dashboard view for analytics
+ */
+function logDashboardView() {
+  // In a real implementation, this would make an AJAX request to log the view
+  console.log('Dashboard view logged');
+  
+  // Example of how this might be implemented with fetch API
+  /*
+  fetch('admin-analytics.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      page: 'admin-dashboard.php',
+      action: 'view'
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('Analytics logged:', data);
+  })
+  .catch(error => {
+    console.error('Error logging analytics:', error);
+  });
+  */
+}
+
+/**
+ * Handles delete confirmation for table actions
+ */
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.delete-btn')) {
+    e.preventDefault();
+    
+    const deleteBtn = e.target.closest('.delete-btn');
+    const itemId = deleteBtn.getAttribute('data-id');
+    
+    if (confirm('Are you sure you want to delete this item?')) {
+      console.log(`Delete item with ID: ${itemId}`);
+      // This would typically make an AJAX request to delete the item
+      // deleteItem(itemId);
+    }
+  }
+});
+
+/**
+ * Utility function to format numbers with commas
+ * @param {number} num - Number to format
+ * @returns {string} Formatted number string
+ */
+function formatNumber(num) {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+/**
+ * Utility function to format date strings
+ * @param {string} dateString - Date string to format
+ * @returns {string} Formatted date string
+ */
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  });
 }
