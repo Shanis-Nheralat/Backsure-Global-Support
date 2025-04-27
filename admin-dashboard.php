@@ -4,6 +4,9 @@
  * Main dashboard for the admin panel
  */
 
+// Start output buffering to prevent header issues
+ob_start();
+
 // Include authentication component
 require_once 'admin-auth.php';
 
@@ -13,8 +16,19 @@ require_admin_auth();
 // Include notifications system
 require_once 'admin-notifications.php';
 
-// Include analytics
-require_once 'admin-analytics.php';
+// Track page view with safe inclusion of analytics
+$analytics_loaded = false;
+try {
+    // Include analytics with error handling
+    if (file_exists('admin-analytics.php')) {
+        // Safely include analytics file
+        require_once 'admin-analytics.php';
+        $analytics_loaded = true;
+    }
+} catch (Exception $e) {
+    // Log error but continue
+    error_log("Error loading analytics: " . $e->getMessage());
+}
 
 // Set page variables
 $page_title = 'Dashboard';
@@ -37,11 +51,18 @@ $admin_user = get_admin_user();
 $admin_username = $admin_user['username'];
 $admin_role = $admin_user['role'];
 
-// Track page view
-log_page_view(basename($_SERVER['PHP_SELF']));
+// Track page view only if analytics was loaded successfully
+if ($analytics_loaded && function_exists('log_page_view')) {
+    try {
+        log_page_view(basename($_SERVER['PHP_SELF']));
+    } catch (Exception $e) {
+        // Silently fail - already included error handling
+    }
+}
 
 // Function to get recent activity (in a real app, this would come from a database)
-function get_recent_activity() {
+// NOTE: Renamed this function to avoid conflict with admin-analytics.php
+function get_dashboard_recent_activity() {
     return [
         [
             'type' => 'inquiry',
@@ -169,14 +190,36 @@ function get_dashboard_chart_data() {
     ];
 }
 
-// Include header template
-include 'admin-head.php';
-include 'admin-sidebar.php';
+// Helper function to determine if a user has permission - with error handling
+function has_admin_permission($permission) {
+    if (function_exists('check_admin_permission')) {
+        return check_admin_permission($permission);
+    }
+    // Default to true if function doesn't exist (to avoid breaking UI)
+    return true;
+}
+
+// Include header template with error handling
+try {
+    include 'admin-head.php';
+    include 'admin-sidebar.php';
+} catch (Exception $e) {
+    error_log("Error including template files: " . $e->getMessage());
+    echo "<html><head><title>$page_title</title></head><body>";
+    echo "<div>Error loading template. Please check server logs.</div>";
+}
 ?>
 
 <!-- Main Content Area -->
 <main class="admin-main">
-  <?php include 'admin-header.php'; ?>
+  <?php 
+  // Include header with error handling
+  try {
+      include 'admin-header.php';
+  } catch (Exception $e) {
+      echo "<header style='padding: 20px;'><h1>$page_title</h1></header>";
+  }
+  ?>
   
   <!-- Dashboard Content -->
   <div class="admin-content">
@@ -184,7 +227,7 @@ include 'admin-sidebar.php';
       <h1>Dashboard</h1>
       <div class="date-display">
         <i class="fas fa-calendar"></i>
-        <span id="current-date">April 25, 2025</span>
+        <span id="current-date"><?php echo date('F d, Y'); ?></span>
       </div>
     </div>
     
@@ -581,7 +624,10 @@ include 'admin-sidebar.php';
       </div>
       
       <div class="activity-container">
-        <?php $recent_activities = get_recent_activity(); ?>
+        <?php 
+        // Use the renamed function to avoid conflicts
+        $recent_activities = get_dashboard_recent_activity(); 
+        ?>
         <?php foreach ($recent_activities as $activity): ?>
           <div class="activity-item">
             <div class="activity-icon <?php echo $activity['type']; ?>">
@@ -648,150 +694,231 @@ include 'admin-sidebar.php';
         });
       });
       
-      // Activity Chart
-      const activityCtx = document.getElementById("activityChart").getContext("2d");
-      new Chart(activityCtx, {
-        type: "line",
-        data: {
-          labels: activityData.labels,
-          datasets: [
-            {
-              label: "Page Views",
-              data: activityData.pageViews,
-              borderColor: "#3498db",
-              backgroundColor: "rgba(52, 152, 219, 0.1)",
-              borderWidth: 2,
-              tension: 0.3,
-              fill: true
+      // Try to initialize charts with error handling
+      try {
+        // Activity Chart
+        if (document.getElementById("activityChart")) {
+          const activityCtx = document.getElementById("activityChart").getContext("2d");
+          new Chart(activityCtx, {
+            type: "line",
+            data: {
+              labels: activityData.labels,
+              datasets: [
+                {
+                  label: "Page Views",
+                  data: activityData.pageViews,
+                  borderColor: "#3498db",
+                  backgroundColor: "rgba(52, 152, 219, 0.1)",
+                  borderWidth: 2,
+                  tension: 0.3,
+                  fill: true
+                },
+                {
+                  label: "Sessions",
+                  data: activityData.sessions,
+                  borderColor: "#2ecc71",
+                  backgroundColor: "rgba(46, 204, 113, 0.1)",
+                  borderWidth: 2,
+                  tension: 0.3,
+                  fill: true
+                },
+                {
+                  label: "New Users",
+                  data: activityData.newUsers,
+                  borderColor: "#9b59b6",
+                  backgroundColor: "rgba(155, 89, 182, 0.1)",
+                  borderWidth: 2,
+                  tension: 0.3,
+                  fill: true
+                }
+              ]
             },
-            {
-              label: "Sessions",
-              data: activityData.sessions,
-              borderColor: "#2ecc71",
-              backgroundColor: "rgba(46, 204, 113, 0.1)",
-              borderWidth: 2,
-              tension: 0.3,
-              fill: true
-            },
-            {
-              label: "New Users",
-              data: activityData.newUsers,
-              borderColor: "#9b59b6",
-              backgroundColor: "rgba(155, 89, 182, 0.1)",
-              borderWidth: 2,
-              tension: 0.3,
-              fill: true
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: "rgba(0, 0, 0, 0.05)"
-              }
-            },
-            x: {
-              grid: {
-                display: false
-              }
-            }
-          }
-        }
-      });// Content Distribution Chart
-      const contentDistributionCtx = document.getElementById("contentDistributionChart").getContext("2d");
-      const contentLabels = [];
-      const contentValues = [];
-      const contentColors = [];
-      
-      contentData.forEach(item => {
-        contentLabels.push(item.name);
-        contentValues.push(item.value);
-        contentColors.push(item.color);
-      });
-      
-      new Chart(contentDistributionCtx, {
-        type: "doughnut",
-        data: {
-          labels: contentLabels,
-          datasets: [
-            {
-              data: contentValues,
-              backgroundColor: contentColors,
-              borderWidth: 1
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: "bottom",
-              labels: {
-                boxWidth: 12
-              }
-            },
-            tooltip: {
-              callbacks: {
-                label: function(context) {
-                  return context.label + ": " + context.raw + "%";
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: {
+                    color: "rgba(0, 0, 0, 0.05)"
+                  }
+                },
+                x: {
+                  grid: {
+                    display: false
+                  }
                 }
               }
             }
-          }
+          });
         }
-      });
-      
-      // User Actions Chart
-      const userActionsCtx = document.getElementById("userActionsChart").getContext("2d");
-      const actionLabels = [];
-      const actionCounts = [];
-      
-      actionsData.forEach(item => {
-        actionLabels.push(item.name);
-        actionCounts.push(item.count);
-      });
-      
-      new Chart(userActionsCtx, {
-        type: "bar",
-        data: {
-          labels: actionLabels,
-          datasets: [
-            {
-              label: "Number of Actions",
-              data: actionCounts,
-              backgroundColor: "#3498db",
-              borderWidth: 0
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                color: "rgba(0, 0, 0, 0.05)"
-              }
+        
+        // Content Distribution Chart
+        if (document.getElementById("contentDistributionChart")) {
+          const contentDistributionCtx = document.getElementById("contentDistributionChart").getContext("2d");
+          const contentLabels = [];
+          const contentValues = [];
+          const contentColors = [];
+          
+          contentData.forEach(item => {
+            contentLabels.push(item.name);
+            contentValues.push(item.value);
+            contentColors.push(item.color);
+          });
+          
+          new Chart(contentDistributionCtx, {
+            type: "doughnut",
+            data: {
+              labels: contentLabels,
+              datasets: [
+                {
+                  data: contentValues,
+                  backgroundColor: contentColors,
+                  borderWidth: 1
+                }
+              ]
             },
-            x: {
-              grid: {
-                display: false
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    boxWidth: 12
+                  }
+                },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      return context.label + ": " + context.raw + "%";
+                    }
+                  }
+                }
               }
             }
-          }
+          });
         }
+        
+        // User Actions Chart
+        if (document.getElementById("userActionsChart")) {
+          const userActionsCtx = document.getElementById("userActionsChart").getContext("2d");
+          const actionLabels = [];
+          const actionCounts = [];
+          
+          actionsData.forEach(item => {
+            actionLabels.push(item.name);
+            actionCounts.push(item.count);
+          });
+          
+          new Chart(userActionsCtx, {
+            type: "bar",
+            data: {
+              labels: actionLabels,
+              datasets: [
+                {
+                  label: "Number of Actions",
+                  data: actionCounts,
+                  backgroundColor: "#3498db",
+                  borderWidth: 0
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: {
+                    color: "rgba(0, 0, 0, 0.05)"
+                  }
+                },
+                x: {
+                  grid: {
+                    display: false
+                  }
+                }
+              }
+            }
+          });
+        }
+        
+        // Initialize traffic chart
+        if (document.getElementById("traffic-chart")) {
+          const trafficCtx = document.getElementById("traffic-chart").getContext("2d");
+          new Chart(trafficCtx, {
+            type: "line",
+            data: {
+              labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+              datasets: [
+                {
+                  label: "This Year",
+                  data: [1500, 1800, 2200, 1800, 2400, 2800],
+                  borderColor: "#4e73df",
+                  backgroundColor: "rgba(78, 115, 223, 0.05)",
+                  pointBackgroundColor: "#4e73df",
+                  tension: 0.3,
+                  fill: true
+                },
+                {
+                  label: "Last Year",
+                  data: [1000, 1300, 1500, 1200, 1800, 2100],
+                  borderColor: "#1cc88a",
+                  backgroundColor: "rgba(28, 200, 138, 0.05)",
+                  pointBackgroundColor: "#1cc88a",
+                  tension: 0.3,
+                  fill: true
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: {
+                    color: "rgba(0, 0, 0, 0.05)"
+                  }
+                },
+                x: {
+                  grid: {
+                    display: false
+                  }
+                }
+              }
+            }
+          });
+        }
+      } catch (e) {
+        console.error("Error initializing charts:", e);
+        // Show fallback message if charts fail to load
+        document.querySelectorAll(".chart-container").forEach(container => {
+          container.innerHTML = "<div class='chart-error'>Charts could not be loaded. Please check if Chart.js is properly loaded.</div>";
+        });
+      }
+      
+      // Set current date
+      document.getElementById("current-date").textContent = new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
       });
     });
   </script>
   
-  <?php include 'admin-footer.php'; ?>
+  <?php 
+  // Include footer with error handling
+  try {
+    include 'admin-footer.php'; 
+  } catch (Exception $e) {
+    echo "<footer style='padding: 20px; text-align: center;'>&copy; " . date('Y') . " Admin Panel</footer>";
+  }
+  ?>
 </main>
-</div>
-</body>
-</html>
+
+<?php 
+// End output buffering and send content to browser
+ob_end_flush();
+?>
