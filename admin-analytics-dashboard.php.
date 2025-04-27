@@ -3,7 +3,7 @@
 require_once 'admin-auth.php';
 require_admin_role(['admin']);
 require_once 'db_config.php';
-require_once 'admin-analytics.php';
+require_once 'admin-analytics-functions.php'; // Changed from admin-analytics.php to avoid circular inclusion
 
 // Set page variables
 $page_title = 'Admin Analytics';
@@ -17,7 +17,6 @@ $date_to = isset($_GET['date_to']) ? $_GET['date_to'] : date('Y-m-d');
 include 'admin-head.php';
 include 'admin-sidebar.php';
 ?>
-
 <main class="admin-main">
   <?php include 'admin-header.php'; ?>
   
