@@ -4,6 +4,15 @@
  * Central location for all configuration settings
  */
 
+// Database configuration - COMMENTED OUT since we're using db_config.php
+// These are kept as reference only
+/*
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'backsure_admin');
+define('DB_USER', 'root');
+define('DB_PASSWORD', 'password');
+*/
+
 // System settings
 define('TIMEZONE', 'Asia/Dubai');
 define('DEBUG_MODE', true);  // Set to true for development during troubleshooting
@@ -36,6 +45,13 @@ if (session_status() === PHP_SESSION_NONE) {
     ini_set('session.cookie_samesite', 'Lax');
 }
 
+// Security settings
+define('REMEMBER_ME_DAYS', 30);  // Remember me cookie expiry in days
+define('PASSWORD_RESET_HOURS', 1);  // Password reset token expiry in hours
+define('VERIFY_TOKEN_HOURS', 24);  // Email verification token expiry in hours
+define('MAX_LOGIN_ATTEMPTS', 5);  // Maximum number of failed login attempts
+define('LOCKOUT_MINUTES', 15);  // Account lockout time in minutes after max failed attempts
+
 // Email settings
 define('EMAIL_FROM', 'support@backsureglobalsupport.com');
 define('EMAIL_FROM_NAME', 'Backsure Global Support');
@@ -45,13 +61,6 @@ define('EMAIL_REPLY_TO', 'no-reply@backsureglobalsupport.com');
 define('BASE_URL', 'https://backsureglobalsupport.com');  // Update with your domain
 define('ADMIN_URL', BASE_URL . '/admin');
 define('CLIENT_URL', BASE_URL . '/client');
-
-// Other settings
-define('REMEMBER_ME_DAYS', 30);  // Remember me cookie expiry in days
-define('PASSWORD_RESET_HOURS', 1);  // Password reset token expiry in hours
-define('VERIFY_TOKEN_HOURS', 24);  // Email verification token expiry in hours
-define('MAX_LOGIN_ATTEMPTS', 5);  // Maximum number of failed login attempts
-define('LOCKOUT_MINUTES', 15);  // Account lockout time in minutes after max failed attempts
 
 // Define common status values
 define('STATUS_PENDING', 'pending');
