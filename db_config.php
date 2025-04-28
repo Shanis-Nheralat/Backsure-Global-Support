@@ -6,11 +6,11 @@
  * Include this file in any script that needs database access.
  */
 
-// Database credentials - MODIFY THESE VALUES WITH YOUR CORRECT DATABASE INFO
+// Database credentials - UPDATE THESE WITH YOUR ACTUAL DATABASE INFO
 $db_host = 'localhost';         // Database host
-$db_name = 'YOUR_DATABASE';     // Correct database name
-$db_user = 'YOUR_USERNAME';     // Correct database username
-$db_pass = 'YOUR_PASSWORD';     // Correct database password
+$db_name = 'backsure_admin';    // Database name where admin_users table exists
+$db_user = 'root';              // Your database username
+$db_pass = 'password';          // Your database password
 
 /**
  * Get database connection
@@ -33,6 +33,20 @@ function get_db_connection() {
         // Log error - this keeps credentials out of error messages
         error_log("Database connection error: " . $e->getMessage());
         throw new PDOException("Database connection failed. Please check the error log for details.");
+    }
+}
+
+/**
+ * Quick test function to verify database connection
+ * 
+ * @return bool True if connection successful, false otherwise
+ */
+function test_db_connection() {
+    try {
+        $db = get_db_connection();
+        return true;
+    } catch (PDOException $e) {
+        return false;
     }
 }
 
