@@ -6,11 +6,11 @@
  * Include this file in any script that needs database access.
  */
 
-// Database credentials
-$db_host = 'localhost';         // Database host
-$db_name = 'backsure_admin';    // Database name from your config
-$db_user = 'root';              // Username from your config
-$db_pass = 'password';          // Password from your config
+// Database credentials from your cPanel
+$db_host = 'localhost';             // Database host
+$db_name = 'backzvsg_playground';   // Your database name
+$db_user = 'backzvsg_site';         // Your database username
+$db_pass = 'Pc*C^y]_ZnzU';          // Your database password
 
 /**
  * Get database connection
@@ -32,7 +32,7 @@ function get_db_connection() {
     } catch (PDOException $e) {
         // Log error - this keeps credentials out of error messages
         error_log("Database connection error: " . $e->getMessage());
-        throw new PDOException("Database connection failed: " . $e->getMessage());
+        throw new PDOException("Database connection failed. Please check the error log for details.");
     }
 }
 
