@@ -1,127 +1,198 @@
 /**
- * Admin Panel Theme Switcher
- * Allows switching between different themes and persists the selection
- * File: admin-theme-switcher.js
+ * JavaScript for theme selection
+ * Handles theme switching and persistence using Bootstrap framework
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-  initThemeSwitcher();
+    // Theme selector
+    const themeSelector = document.getElementById('theme-selector');
+    const autoDarkMode = document.getElementById('auto-dark-mode');
+    
+    // Load saved theme
+    const savedTheme = localStorage.getItem('admin_theme');
+    const autoDarkEnabled = localStorage.getItem('admin_auto_dark') === 'true';
+    
+    // Set initial theme
+    if (autoDarkEnabled) {
+        if (autoDarkMode) {
+            autoDarkMode.checked = true;
+        }
+        applyAutoDarkMode();
+    } else if (savedTheme) {
+        setTheme(savedTheme);
+        if (themeSelector) {
+            themeSelector.value = savedTheme;
+        }
+    }
+    
+    // Theme selector change event
+    if (themeSelector) {
+        themeSelector.addEventListener('change', function() {
+            const selectedTheme = this.value;
+            setTheme(selectedTheme);
+            localStorage.setItem('admin_theme', selectedTheme);
+            
+            // Disable auto dark mode when manually changing theme
+            if (autoDarkMode && autoDarkMode.checked) {
+                autoDarkMode.checked = false;
+                localStorage.setItem('admin_auto_dark', 'false');
+            }
+        });
+    }
+    
+    // Auto dark mode toggle
+    if (autoDarkMode) {
+        autoDarkMode.addEventListener('change', function() {
+            if (this.checked) {
+                localStorage.setItem('admin_auto_dark', 'true');
+                applyAutoDarkMode();
+            } else {
+                localStorage.setItem('admin_auto_dark', 'false');
+                
+                // Restore saved theme or default
+                const savedTheme = localStorage.getItem('admin_theme') || 'default';
+                setTheme(savedTheme);
+                if (themeSelector) {
+                    themeSelector.value = savedTheme;
+                }
+            }
+        });
+        
+        // Listen for system preference changes
+        if (window.matchMedia) {
+            const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            
+            // Add change listener
+            try {
+                // Chrome & Firefox
+                darkModeMediaQuery.addEventListener('change', function(e) {
+                    if (autoDarkMode && autoDarkMode.checked) {
+                        applyAutoDarkMode();
+                    }
+                });
+            } catch (error) {
+                try {
+                    // Safari
+                    darkModeMediaQuery.addListener(function(e) {
+                        if (autoDarkMode && autoDarkMode.checked) {
+                            applyAutoDarkMode();
+                        }
+                    });
+                } catch (error2) {
+                    console.error('Error setting up dark mode listener:', error2);
+                }
+            }
+        }
+    }
+    
+    // Handle sidebar toggle
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const adminContainer = document.querySelector('.admin-container');
+    const sidebarBackdrop = document.querySelector('.sidebar-backdrop');
+    
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            if (adminContainer) {
+                adminContainer.classList.toggle('sidebar-collapsed');
+            }
+        });
+    }
+    
+    // Close sidebar when clicking on backdrop (mobile)
+    if (sidebarBackdrop) {
+        sidebarBackdrop.addEventListener('click', function() {
+            if (adminContainer) {
+                adminContainer.classList.remove('sidebar-expanded');
+            }
+        });
+    }
+    
+    // Handle submenu toggles
+    const submenuToggles = document.querySelectorAll('.has-submenu > a');
+    submenuToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            if (this.getAttribute('href') === 'javascript:void(0)') {
+                e.preventDefault();
+                const parentLi = this.parentElement;
+                const submenu = parentLi.querySelector('.submenu');
+                
+                // Close other open submenus
+                document.querySelectorAll('.has-submenu.open').forEach(item => {
+                    if (item !== parentLi) {
+                        item.classList.remove('open');
+                        const otherSubmenu = item.querySelector('.submenu');
+                        if (otherSubmenu) {
+                            otherSubmenu.style.maxHeight = null;
+                        }
+                    }
+                });
+                
+                // Toggle current submenu
+                parentLi.classList.toggle('open');
+                
+                // Animate submenu height
+                if (submenu) {
+                    if (parentLi.classList.contains('open')) {
+                        submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                    } else {
+                        submenu.style.maxHeight = null;
+                    }
+                }
+            }
+        });
+    });
+    
+    // Initialize Bootstrap tooltips
+    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+    
+    // Initialize user dropdown
+    const userDropdownToggle = document.getElementById('user-dropdown-toggle');
+    const userDropdown = document.getElementById('user-dropdown');
+    
+    if (userDropdownToggle && userDropdown) {
+        userDropdownToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            userDropdown.classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!userDropdownToggle.contains(e.target) && !userDropdown.contains(e.target)) {
+                userDropdown.classList.remove('show');
+            }
+        });
+    }
 });
 
 /**
- * Initialize the theme switcher functionality
- */
-function initThemeSwitcher() {
-  // Set the initial theme from local storage or default
-  const currentTheme = localStorage.getItem('admin_theme') || 'default';
-  setTheme(currentTheme);
-  
-  // Find theme switcher dropdown (add this in admin-header.php)
-  const themeSwitcher = document.getElementById('theme-switcher');
-  if (themeSwitcher) {
-    // Set the dropdown to the current theme
-    themeSwitcher.value = currentTheme;
-    
-    // Add change listener
-    themeSwitcher.addEventListener('change', function() {
-      setTheme(this.value);
-      localStorage.setItem('admin_theme', this.value);
-    });
-  }
-  
-  // Check if auto dark mode is enabled
-  const autoDarkMode = localStorage.getItem('auto_dark_mode') === 'true';
-  if (autoDarkMode) {
-    const darkModeToggle = document.getElementById('auto-dark-mode');
-    if (darkModeToggle) {
-      darkModeToggle.checked = true;
-      setupAutoDarkMode();
-    }
-  }
-  
-  // Auto dark mode toggle
-  const darkModeToggle = document.getElementById('auto-dark-mode');
-  if (darkModeToggle) {
-    darkModeToggle.addEventListener('change', function() {
-      if (this.checked) {
-        localStorage.setItem('auto_dark_mode', 'true');
-        setupAutoDarkMode();
-      } else {
-        localStorage.setItem('auto_dark_mode', 'false');
-        // Remove the media query listener
-        window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handleColorSchemeChange);
-        // Restore the previously selected theme
-        setTheme(localStorage.getItem('admin_theme') || 'default');
-      }
-    });
-  }
-}
-
-/**
- * Set the active theme
- * @param {string} theme The theme name
+ * Apply theme to document
+ * 
+ * @param {string} theme Theme name
  */
 function setTheme(theme) {
-  // Remove any existing theme
-  document.documentElement.removeAttribute('data-theme');
-  
-  // If theme isn't default, set the data-theme attribute
-  if (theme !== 'default') {
     document.documentElement.setAttribute('data-theme', theme);
-  }
-  
-  // Update the theme switcher dropdown if it exists
-  const themeSwitcher = document.getElementById('theme-switcher');
-  if (themeSwitcher) {
-    themeSwitcher.value = theme;
-  }
-  
-  // Dispatch an event so other scripts can react to theme changes
-  document.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
 }
 
 /**
- * Setup automatic dark mode based on system preference
+ * Apply theme based on system preference
  */
-function setupAutoDarkMode() {
-  // Store the user's manually selected theme as a backup
-  const userTheme = localStorage.getItem('admin_theme') || 'default';
-  localStorage.setItem('user_selected_theme', userTheme);
-  
-  // Check if the user prefers dark mode
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  
-  // Set the theme based on system preference
-  setTheme(prefersDark ? 'dark' : 'default');
-  
-  // Listen for changes in color scheme preference
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleColorSchemeChange);
+function applyAutoDarkMode() {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        setTheme('dark');
+        const themeSelector = document.getElementById('theme-selector');
+        if (themeSelector) {
+            themeSelector.value = 'dark';
+        }
+    } else {
+        setTheme('default');
+        const themeSelector = document.getElementById('theme-selector');
+        if (themeSelector) {
+            themeSelector.value = 'default';
+        }
+    }
 }
-
-/**
- * Handle changes to the system color scheme
- * @param {MediaQueryListEvent} e Media query change event
- */
-function handleColorSchemeChange(e) {
-  setTheme(e.matches ? 'dark' : 'default');
-}
-
-/**
- * Add the following HTML to admin-header.php:
- * 
- * <div class="theme-settings">
- *   <select id="theme-switcher" class="form-control form-control-sm">
- *     <option value="default">Default Theme</option>
- *     <option value="dark">Dark Theme</option>
- *     <option value="blue">Blue Theme</option>
- *     <option value="green">Green Theme</option>
- *     <option value="purple">Purple Theme</option>
- *     <option value="high-contrast">High Contrast</option>
- *   </select>
- *   
- *   <div class="custom-control custom-switch ml-3">
- *     <input type="checkbox" class="custom-control-input" id="auto-dark-mode">
- *     <label class="custom-control-label" for="auto-dark-mode">Auto Dark Mode</label>
- *   </div>
- * </div>
- */
