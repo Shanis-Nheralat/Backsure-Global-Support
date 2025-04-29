@@ -245,4 +245,181 @@ function updateCurrentDate() {
  * @param {string} customMessage Optional custom message
  */
 function confirmDelete(type, id, customMessage) {
-    const message
+    const message = customMessage || `Are you sure you want to delete this ${type}?`;
+    
+    if (confirm(message)) {
+        window.location.href = `admin-${type}-delete.php?id=${id}`;
+    }
+}
+
+/**
+ * Show loading spinner
+ * 
+ * @param {HTMLElement} element Element to show spinner in
+ * @param {string} size Size of spinner (sm, md, lg)
+ * @param {string} color Color of spinner (primary, secondary, etc.)
+ */
+function showSpinner(element, size = 'md', color = 'primary') {
+    const spinner = document.createElement('div');
+    spinner.className = `spinner-border spinner-border-${size} text-${color}`;
+    spinner.setAttribute('role', 'status');
+    
+    const span = document.createElement('span');
+    span.className = 'visually-hidden';
+    span.textContent = 'Loading...';
+    
+    spinner.appendChild(span);
+    
+    // Store original content
+    const originalContent = element.innerHTML;
+    element.setAttribute('data-original-content', originalContent);
+    
+    // Clear and add spinner
+    element.innerHTML = '';
+    element.appendChild(spinner);
+    
+    // Disable element if it's a button
+    if (element.tagName === 'BUTTON' || element.tagName === 'A') {
+        element.disabled = true;
+    }
+}
+
+/**
+ * Hide loading spinner and restore original content
+ * 
+ * @param {HTMLElement} element Element with spinner
+ */
+function hideSpinner(element) {
+    const originalContent = element.getAttribute('data-original-content');
+    if (originalContent) {
+        element.innerHTML = originalContent;
+        element.removeAttribute('data-original-content');
+        
+        // Re-enable element if it's a button
+        if (element.tagName === 'BUTTON' || element.tagName === 'A') {
+            element.disabled = false;
+        }
+    }
+}
+
+/**
+ * Format number with commas for thousands
+ * 
+ * @param {number} number Number to format
+ * @return {string} Formatted number
+ */
+function formatNumber(number) {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+/**
+ * Format date to friendly format
+ * 
+ * @param {Date|string} date Date object or date string
+ * @param {string} format Format string (full, short, time, relative)
+ * @return {string} Formatted date
+ */
+function formatDate(date, format = 'full') {
+    if (typeof date === 'string') {
+        date = new Date(date);
+    }
+    
+    if (!(date instanceof Date) || isNaN(date)) {
+        return 'Invalid date';
+    }
+    
+    switch (format) {
+        case 'full':
+            return date.toLocaleDateString(undefined, {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+        case 'short':
+            return date.toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+        case 'time':
+            return date.toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+        case 'datetime':
+            return date.toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            }) + ' ' + date.toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+        case 'relative':
+            const now = new Date();
+            const diffMs = now - date;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+            
+            if (diffSec < 60) {
+                return 'Just now';
+            } else if (diffMin < 60) {
+                return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
+            } else if (diffHour < 24) {
+                return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
+            } else if (diffDay < 7) {
+                return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+            } else {
+                return date.toLocaleDateString(undefined, {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+            
+        default:
+            return date.toLocaleDateString();
+    }
+}
+
+// Add CSS for sidebar dropdown functionality
+(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+        .sidebar-nav .submenu {
+            display: none;
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.3s ease;
+        }
+        
+        .sidebar-nav .has-submenu.open > .submenu {
+            display: block;
+            max-height: 1000px; /* Large enough to contain all submenus */
+        }
+        
+        .sidebar-nav .has-submenu > a {
+            position: relative;
+        }
+        
+        .sidebar-nav .has-submenu > a .submenu-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-nav .has-submenu.open > a .submenu-icon {
+            transform: translateY(-50%) rotate(90deg);
+        }
+    `;
+    document.head.appendChild(style);
+})();
