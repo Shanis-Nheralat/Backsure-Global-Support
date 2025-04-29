@@ -3,17 +3,8 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Bootstrap tooltips
-    initTooltips();
-    
-    // Initialize Bootstrap popovers
-    initPopovers();
-    
-    // Initialize Bootstrap dropdowns
-    initDropdowns();
-    
-    // Initialize Bootstrap modals
-    initModals();
+    // Initialize Bootstrap components
+    initBootstrapComponents();
     
     // Setup sidebar functionality
     setupSidebar();
@@ -24,80 +15,37 @@ document.addEventListener('DOMContentLoaded', function() {
     // Setup notifications
     setupNotifications();
     
-    // Setup data tables
-    setupDataTables();
-    
-    // Setup form validation
-    setupFormValidation();
-    
-    // Setup confirmation dialogs
-    setupConfirmationDialogs();
-    
     // Update current date in dashboard
     updateCurrentDate();
 });
 
 /**
- * Initialize Bootstrap tooltips
+ * Initialize Bootstrap components
  */
-function initTooltips() {
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.forEach(function(tooltipTriggerEl) {
-        new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-}
-
-/**
- * Initialize Bootstrap popovers
- */
-function initPopovers() {
-    const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-    popoverTriggerList.forEach(function(popoverTriggerEl) {
-        new bootstrap.Popover(popoverTriggerEl);
-    });
-}
-
-/**
- * Initialize Bootstrap dropdowns
- */
-function initDropdowns() {
-    const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
-    dropdownElementList.forEach(function(dropdownToggleEl) {
-        if (!dropdownToggleEl.hasAttribute('data-bs-toggle')) {
-            new bootstrap.Dropdown(dropdownToggleEl);
-        }
-    });
-}
-
-/**
- * Initialize Bootstrap modals
- */
-function initModals() {
-    // Auto-show modals with data-auto-show attribute
-    const autoShowModals = document.querySelectorAll('.modal[data-auto-show]');
-    autoShowModals.forEach(function(modalEl) {
-        const modal = new bootstrap.Modal(modalEl);
-        modal.show();
-    });
-    
-    // Handle modal confirm buttons
-    document.querySelectorAll('[data-confirm-modal]').forEach(function(button) {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const modalId = this.getAttribute('data-confirm-modal');
-            const modal = new bootstrap.Modal(document.getElementById(modalId));
-            
-            // Set hidden input values if provided
-            if (this.hasAttribute('data-id')) {
-                const modalForm = document.querySelector(`#${modalId} form`);
-                if (modalForm && modalForm.querySelector('input[name="id"]')) {
-                    modalForm.querySelector('input[name="id"]').value = this.getAttribute('data-id');
-                }
-            }
-            
-            modal.show();
+function initBootstrapComponents() {
+    // Initialize tooltips
+    if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip) {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-    });
+    }
+    
+    // Initialize popovers
+    if (typeof bootstrap !== 'undefined' && bootstrap.Popover) {
+        const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+        popoverTriggerList.map(function (popoverTriggerEl) {
+            return new bootstrap.Popover(popoverTriggerEl);
+        });
+    }
+    
+    // Initialize dropdowns that don't have data-bs-toggle
+    if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+        const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle:not([data-bs-toggle])'));
+        dropdownElementList.forEach(function(dropdownToggleEl) {
+            new bootstrap.Dropdown(dropdownToggleEl);
+        });
+    }
 }
 
 /**
@@ -131,32 +79,74 @@ function setupSidebar() {
         });
     }
     
-    // Toggle submenu
+    // Fix sidebar dropdown functionality
+    fixSidebarDropdowns();
+}
+
+/**
+ * Fix sidebar dropdown toggle functionality
+ */
+function fixSidebarDropdowns() {
+    // Handle submenu toggles
     const submenuToggles = document.querySelectorAll('.has-submenu > a');
+    
     submenuToggles.forEach(function(toggle) {
-        toggle.addEventListener('click', function(e) {
-            if (this.getAttribute('href') === 'javascript:void(0)') {
-                e.preventDefault();
-                
-                const parentLi = this.parentElement;
-                const submenu = parentLi.querySelector('.submenu');
-                
-                if (parentLi.classList.contains('open')) {
-                    // Close submenu
-                    parentLi.classList.remove('open');
-                    if (submenu) {
-                        submenu.style.maxHeight = '0px';
-                    }
-                } else {
-                    // Open submenu
-                    parentLi.classList.add('open');
-                    if (submenu) {
-                        submenu.style.maxHeight = submenu.scrollHeight + 'px';
-                    }
-                }
-            }
-        });
+        // Remove any existing event listeners to prevent duplicates
+        toggle.removeEventListener('click', handleSubmenuToggle);
+        
+        // Add the click event listener
+        toggle.addEventListener('click', handleSubmenuToggle);
     });
+    
+    // Auto-open submenu if it contains active item
+    document.querySelectorAll('.sidebar-nav .submenu .active').forEach(function(activeItem) {
+        const parentLi = activeItem.closest('.has-submenu');
+        if (parentLi) {
+            parentLi.classList.add('open');
+            
+            // Make sure the submenu is visible
+            const submenu = parentLi.querySelector('.submenu');
+            if (submenu) {
+                submenu.style.display = 'block';
+            }
+        }
+    });
+}
+
+/**
+ * Handle submenu toggle click
+ * 
+ * @param {Event} e Click event
+ */
+function handleSubmenuToggle(e) {
+    if (this.getAttribute('href') === 'javascript:void(0)' || this.getAttribute('href') === '#') {
+        e.preventDefault();
+        
+        const parentLi = this.parentElement;
+        const submenu = parentLi.querySelector('.submenu');
+        
+        // Toggle open class
+        parentLi.classList.toggle('open');
+        
+        // Toggle submenu visibility
+        if (submenu) {
+            if (parentLi.classList.contains('open')) {
+                submenu.style.display = 'block';
+                // Use setTimeout to ensure the transition works
+                setTimeout(function() {
+                    submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                }, 10);
+            } else {
+                submenu.style.maxHeight = '0px';
+                // Hide the submenu after transition
+                setTimeout(function() {
+                    if (!parentLi.classList.contains('open')) {
+                        submenu.style.display = 'none';
+                    }
+                }, 300); // Transition duration
+            }
+        }
+    }
 }
 
 /**
@@ -236,59 +226,6 @@ function setupNotifications() {
 }
 
 /**
- * Setup data tables
- */
-function setupDataTables() {
-    // Initialize DataTables if available
-    if (typeof $.fn.DataTable !== 'undefined') {
-        $('.datatable').DataTable({
-            responsive: true,
-            language: {
-                search: "_INPUT_",
-                searchPlaceholder: "Search...",
-                lengthMenu: "Show _MENU_ entries per page",
-                info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                infoEmpty: "Showing 0 to 0 of 0 entries",
-                infoFiltered: "(filtered from _MAX_ total entries)"
-            }
-        });
-    }
-}
-
-/**
- * Setup form validation
- */
-function setupFormValidation() {
-    // Bootstrap 5 validation styles
-    const forms = document.querySelectorAll('.needs-validation');
-    
-    Array.from(forms).forEach(function(form) {
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            
-            form.classList.add('was-validated');
-        }, false);
-    });
-}
-
-/**
- * Setup confirmation dialogs
- */
-function setupConfirmationDialogs() {
-    // Handle delete confirmations
-    document.querySelectorAll('[data-confirm]').forEach(function(element) {
-        element.addEventListener('click', function(e) {
-            if (!confirm(this.getAttribute('data-confirm') || 'Are you sure you want to perform this action?')) {
-                e.preventDefault();
-            }
-        });
-    });
-}
-
-/**
  * Update current date in dashboard
  */
 function updateCurrentDate() {
@@ -308,59 +245,4 @@ function updateCurrentDate() {
  * @param {string} customMessage Optional custom message
  */
 function confirmDelete(type, id, customMessage) {
-    const message = customMessage || `Are you sure you want to delete this ${type}?`;
-    
-    if (confirm(message)) {
-        window.location.href = `admin-${type}-delete.php?id=${id}`;
-    }
-}
-
-/**
- * Show loading spinner
- * 
- * @param {HTMLElement} element Element to show spinner in
- * @param {string} size Size of spinner (sm, md, lg)
- * @param {string} color Color of spinner (primary, secondary, etc.)
- */
-function showSpinner(element, size = 'md', color = 'primary') {
-    const spinner = document.createElement('div');
-    spinner.className = `spinner-border spinner-border-${size} text-${color}`;
-    spinner.setAttribute('role', 'status');
-    
-    const span = document.createElement('span');
-    span.className = 'visually-hidden';
-    span.textContent = 'Loading...';
-    
-    spinner.appendChild(span);
-    
-    // Store original content
-    const originalContent = element.innerHTML;
-    element.setAttribute('data-original-content', originalContent);
-    
-    // Clear and add spinner
-    element.innerHTML = '';
-    element.appendChild(spinner);
-    
-    // Disable element if it's a button
-    if (element.tagName === 'BUTTON' || element.tagName === 'A') {
-        element.disabled = true;
-    }
-}
-
-/**
- * Hide loading spinner and restore original content
- * 
- * @param {HTMLElement} element Element with spinner
- */
-function hideSpinner(element) {
-    const originalContent = element.getAttribute('data-original-content');
-    if (originalContent) {
-        element.innerHTML = originalContent;
-        element.removeAttribute('data-original-content');
-        
-        // Re-enable element if it's a button
-        if (element.tagName === 'BUTTON' || element.tagName === 'A') {
-            element.disabled = false;
-        }
-    }
-}
+    const message
