@@ -1,10 +1,7 @@
 <?php
 /**
- * Navigation sidebar using the dynamic menu
+ * Navigation sidebar with explicit menu structure
  */
-
-// Get menu structure from configuration
-require_once 'admin-menu-config.php';
 ?>
 <!-- Sidebar Navigation -->
 <aside class="admin-sidebar">
@@ -38,12 +35,145 @@ require_once 'admin-menu-config.php';
   
   <nav class="sidebar-nav">
     <ul>
-      <?php 
-      // Use the render_admin_menu function from admin-menu-config.php
-      if (function_exists('render_admin_menu')) {
-        echo render_admin_menu($admin_menu, $current_page, $admin_role);
-      } 
-      ?>
+      <!-- Dashboard -->
+      <li class="<?php echo ($current_page === 'dashboard') ? 'active' : ''; ?>">
+        <a href="admin-dashboard.php">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      
+      <!-- Content Management -->
+      <li class="has-submenu <?php echo (in_array($current_page, ['blog', 'services', 'solutions', 'media', 'testimonials', 'faq'])) ? 'active open' : ''; ?>">
+        <a href="javascript:void(0)">
+          <i class="fas fa-edit"></i>
+          <span>Content Management</span>
+          <i class="fas fa-chevron-right submenu-icon"></i>
+        </a>
+        <ul class="submenu">
+          <li class="<?php echo ($current_page === 'blog') ? 'active' : ''; ?>">
+            <a href="admin-blog.php">
+              <i class="fas fa-blog"></i> Blog Management
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'services') ? 'active' : ''; ?>">
+            <a href="admin-services.php">
+              <i class="fas fa-briefcase"></i> Services Editor
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'solutions') ? 'active' : ''; ?>">
+            <a href="admin-solutions.php">
+              <i class="fas fa-project-diagram"></i> Solutions
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'media') ? 'active' : ''; ?>">
+            <a href="admin-media.php">
+              <i class="fas fa-images"></i> Media Library
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'testimonials') ? 'active' : ''; ?>">
+            <a href="admin-testimonials.php">
+              <i class="fas fa-star"></i> Testimonials & Logos
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'faq') ? 'active' : ''; ?>">
+            <a href="admin-faq.php">
+              <i class="fas fa-question-circle"></i> FAQ Management
+            </a>
+          </li>
+        </ul>
+      </li>
+      
+      <!-- CRM -->
+      <li class="has-submenu <?php echo (in_array($current_page, ['clients', 'subscribers', 'inquiries', 'leads'])) ? 'active open' : ''; ?>">
+        <a href="javascript:void(0)">
+          <i class="fas fa-users"></i>
+          <span>CRM</span>
+          <i class="fas fa-chevron-right submenu-icon"></i>
+        </a>
+        <ul class="submenu">
+          <li class="<?php echo ($current_page === 'clients') ? 'active' : ''; ?>">
+            <a href="admin-clients.php">
+              <i class="fas fa-user-tie"></i> Clients
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'subscribers') ? 'active' : ''; ?>">
+            <a href="admin-subscribers.php">
+              <i class="fas fa-envelope-open-text"></i> Subscribers
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'inquiries') ? 'active' : ''; ?>">
+            <a href="admin-inquiries.php">
+              <i class="fas fa-envelope"></i> Client Inquiries
+              <?php if (isset($unread_inquiries) && $unread_inquiries > 0): ?>
+                <span class="badge bg-danger"><?php echo $unread_inquiries; ?></span>
+              <?php endif; ?>
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'leads') ? 'active' : ''; ?>">
+            <a href="admin-leads.php">
+              <i class="fas fa-funnel-dollar"></i> Lead Management
+            </a>
+          </li>
+        </ul>
+      </li>
+      
+      <!-- User Management -->
+      <li class="has-submenu <?php echo (in_array($current_page, ['all_users', 'roles'])) ? 'active open' : ''; ?>">
+        <a href="javascript:void(0)">
+          <i class="fas fa-user-shield"></i>
+          <span>User Management</span>
+          <i class="fas fa-chevron-right submenu-icon"></i>
+        </a>
+        <ul class="submenu">
+          <li class="<?php echo ($current_page === 'all_users') ? 'active' : ''; ?>">
+            <a href="admin-users.php">
+              <i class="fas fa-user-friends"></i> All Users
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'roles') ? 'active' : ''; ?>">
+            <a href="admin-roles.php">
+              <i class="fas fa-user-tag"></i> Roles & Permissions
+            </a>
+          </li>
+        </ul>
+      </li>
+      
+      <!-- Site Settings -->
+      <li class="has-submenu <?php echo (in_array($current_page, ['general', 'appearance', 'seo', 'integrations', 'backup'])) ? 'active open' : ''; ?>">
+        <a href="javascript:void(0)">
+          <i class="fas fa-cogs"></i>
+          <span>Site Settings</span>
+          <i class="fas fa-chevron-right submenu-icon"></i>
+        </a>
+        <ul class="submenu">
+          <li class="<?php echo ($current_page === 'general') ? 'active' : ''; ?>">
+            <a href="admin-settings.php">
+              <i class="fas fa-sliders-h"></i> General Settings
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'appearance') ? 'active' : ''; ?>">
+            <a href="admin-appearance.php">
+              <i class="fas fa-palette"></i> Appearance
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'seo') ? 'active' : ''; ?>">
+            <a href="admin-seo.php">
+              <i class="fas fa-search"></i> SEO Settings
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'integrations') ? 'active' : ''; ?>">
+            <a href="admin-integrations.php">
+              <i class="fas fa-plug"></i> Integrations
+            </a>
+          </li>
+          <li class="<?php echo ($current_page === 'backup') ? 'active' : ''; ?>">
+            <a href="admin-backup.php">
+              <i class="fas fa-database"></i> Backup & Restore
+            </a>
+          </li>
+        </ul>
+      </li>
     </ul>
   </nav>
   
@@ -57,3 +187,38 @@ require_once 'admin-menu-config.php';
 
 <!-- For mobile sidebar backdrop -->
 <div class="sidebar-backdrop"></div>
+
+<script>
+// Add this script to fix the sidebar toggle functionality
+document.addEventListener('DOMContentLoaded', function() {
+  // Handle submenu toggles
+  const submenuToggles = document.querySelectorAll('.has-submenu > a');
+  
+  submenuToggles.forEach(function(toggle) {
+    toggle.addEventListener('click', function(e) {
+      if (this.getAttribute('href') === 'javascript:void(0)') {
+        e.preventDefault();
+        
+        const parentLi = this.parentElement;
+        parentLi.classList.toggle('open');
+        
+        // Close other submenus
+        submenuToggles.forEach(function(otherToggle) {
+          const otherParentLi = otherToggle.parentElement;
+          if (otherParentLi !== parentLi && otherParentLi.classList.contains('open')) {
+            otherParentLi.classList.remove('open');
+          }
+        });
+      }
+    });
+  });
+  
+  // Auto-open submenu if it contains active item
+  document.querySelectorAll('.sidebar-nav .submenu .active').forEach(function(activeItem) {
+    const parentLi = activeItem.closest('.has-submenu');
+    if (parentLi) {
+      parentLi.classList.add('open');
+    }
+  });
+});
+</script>
