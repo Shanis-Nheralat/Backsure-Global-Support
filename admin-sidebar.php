@@ -188,37 +188,4 @@
 <!-- For mobile sidebar backdrop -->
 <div class="sidebar-backdrop"></div>
 
-<script>
-// Add this script to fix the sidebar toggle functionality
-document.addEventListener('DOMContentLoaded', function() {
-  // Handle submenu toggles
-  const submenuToggles = document.querySelectorAll('.has-submenu > a');
-  
-  submenuToggles.forEach(function(toggle) {
-    toggle.addEventListener('click', function(e) {
-      if (this.getAttribute('href') === 'javascript:void(0)') {
-        e.preventDefault();
-        
-        const parentLi = this.parentElement;
-        parentLi.classList.toggle('open');
-        
-        // Close other submenus
-        submenuToggles.forEach(function(otherToggle) {
-          const otherParentLi = otherToggle.parentElement;
-          if (otherParentLi !== parentLi && otherParentLi.classList.contains('open')) {
-            otherParentLi.classList.remove('open');
-          }
-        });
-      }
-    });
-  });
-  
-  // Auto-open submenu if it contains active item
-  document.querySelectorAll('.sidebar-nav .submenu .active').forEach(function(activeItem) {
-    const parentLi = activeItem.closest('.has-submenu');
-    if (parentLi) {
-      parentLi.classList.add('open');
-    }
-  });
-});
-</script>
+<!-- DO NOT include duplicate JavaScript here - it will conflict with the main js file -->
