@@ -1,228 +1,308 @@
 <?php
 /**
- * Admin Analytics System
- * Tracks admin activity and provides analytics data
+ * Activity tracking and analytics
+ * Logs page views and user actions for analytics dashboard
  */
 
-// Database connection
-$db = null;
-try {
-    // Include database configuration
-    if (file_exists('config.php')) {
-        require_once 'config.php';
-        
-        // Establish database connection if the config file doesn't already do it
-        // Make sure these variables match those in your config.php
-        if (!isset($db) && isset($db_host) && isset($db_name) && isset($db_user) && isset($db_pass)) {
-            $db = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
-            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        }
-    }
-} catch (PDOException $e) {
-    // Silently fail - we don't want to break the entire admin panel if DB connection fails
-    // But we'll log it for debugging
-    error_log("Database connection failed in admin-analytics.php: " . $e->getMessage());
-}
-
 /**
- * Logs page view to analytics
+ * Log page view for analytics
+ * 
  * @param string $page_name Name of the page being viewed
  * @return bool Success status
  */
-function log_page_view($page_name = null) {
-    // If no page name specified, get from current file
-    if ($page_name === null) {
-        $page_name = basename($_SERVER['PHP_SELF']);
+function log_page_view($page_name) {
+    // Check if session is started
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
     }
     
-    // Log the activity safely
-    return log_admin_activity('page_view', $page_name);
+    // Get current user information
+    $user_id = $_SESSION['admin_user_id'] ?? 0;
+    $username = $_SESSION['admin_username'] ?? 'Guest';
+    
+    // Get request information
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
+    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $timestamp = date('Y-m-d H:i:s');
+    
+    // TODO: Implement actual database logging
+    // Example SQL:
+    // INSERT INTO admin_page_views (user_id, username, page_name, ip_address, user_agent, timestamp) 
+    // VALUES (?, ?, ?, ?, ?, ?)
+    
+    // For now, we'll just return true as a placeholder
+    return true;
 }
 
 /**
- * Logs admin activity to database
- * @param string $action_type Type of action (e.g., 'login', 'edit', 'delete')
- * @param string $action_details Additional details about the action
+ * Log admin action for analytics
+ * 
+ * @param string $action_type Type of action (create, update, delete, etc.)
+ * @param string $resource Type of resource affected (user, page, post, etc.)
+ * @param int $resource_id ID of the resource
+ * @param string $details Additional details about the action
  * @return bool Success status
  */
-function log_admin_activity($action_type = '', $action_details = '') {
-    global $db;
-    
-    // Skip if no database connection
-    if (!$db) {
-        return false;
+function log_admin_action($action_type, $resource, $resource_id, $details = '') {
+    // Check if session is started
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
     }
     
-    try {
-        // Get current admin ID
-        $admin_id = 1; // Default fallback
-        if (function_exists('get_admin_user')) {
-            $admin = get_admin_user();
-            if (isset($admin['id'])) {
-                $admin_id = $admin['id'];
+    // Get current user information
+    $user_id = $_SESSION['admin_user_id'] ?? 0;
+    $username = $_SESSION['admin_username'] ?? 'Guest';
+    
+    // Get request information
+    $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
+    $timestamp = date('Y-m-d H:i:s');
+    
+    // TODO: Implement actual database logging
+    // Example SQL:
+    // INSERT INTO admin_activity_log (user_id, username, action_type, resource, resource_id, details, ip_address, timestamp) 
+    // VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    
+    // For now, we'll just return true as a placeholder
+    return true;
+}
+
+/**
+ * Get page view statistics for a specific period
+ * 
+ * @param string $period Period type (daily, weekly, monthly, yearly)
+ * @param int $limit Number of data points to return
+ * @return array Statistics data
+ */
+function get_page_view_stats($period = 'weekly', $limit = 7) {
+    // TODO: Implement actual database query
+    // For now, return sample data for testing
+    
+    $sample_data = [];
+    
+    switch ($period) {
+        case 'daily':
+            // Last 24 hours by hour
+            for ($i = 0; $i < $limit; $i++) {
+                $hour = date('ga', strtotime('-' . $i . ' hours'));
+                $sample_data[] = [
+                    'label' => $hour,
+                    'value' => rand(10, 150)
+                ];
             }
-        }
-        
-        // Get IP address
-        $ip_address = $_SERVER['REMOTE_ADDR'] ?? '';
-        
-        // Prepare and execute query
-        $stmt = $db->prepare("INSERT INTO admin_activity_log 
-                             (admin_id, action_type, action_details, ip_address, created_at) 
-                             VALUES (?, ?, ?, ?, NOW())");
-        
-        return $stmt->execute([$admin_id, $action_type, $action_details, $ip_address]);
-    } catch (Exception $e) {
-        error_log("Error logging admin activity: " . $e->getMessage());
-        return false;
+            break;
+            
+        case 'weekly':
+            // Last X days
+            for ($i = $limit - 1; $i >= 0; $i--) {
+                $day = date('D', strtotime('-' . $i . ' days'));
+                $sample_data[] = [
+                    'label' => $day,
+                    'value' => rand(200, 500)
+                ];
+            }
+            break;
+            
+        case 'monthly':
+            // Last X weeks
+            for ($i = $limit - 1; $i >= 0; $i--) {
+                $week = 'Week ' . ($limit - $i);
+                $sample_data[] = [
+                    'label' => $week,
+                    'value' => rand(1000, 3000)
+                ];
+            }
+            break;
+            
+        case 'yearly':
+            // Last X months
+            $months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            $current_month = date('n') - 1; // 0-based
+            
+            for ($i = 0; $i < $limit; $i++) {
+                $month_index = ($current_month - $i + 12) % 12;
+                $sample_data[] = [
+                    'label' => $months[$month_index],
+                    'value' => rand(5000, 15000)
+                ];
+            }
+            break;
     }
+    
+    // Reverse to get chronological order
+    return array_reverse($sample_data);
 }
 
 /**
- * Gets recent activity for the admin dashboard
- * IMPORTANT: This was causing the function redeclaration error
- * Renamed to get_admin_recent_activity to avoid conflict
- * @param int $limit Number of entries to return
- * @return array Recent activity data
+ * Get traffic source statistics
+ * 
+ * @return array Traffic source data
  */
-function get_admin_recent_activity($limit = 10) {
-    global $db;
+function get_traffic_sources() {
+    // TODO: Implement actual database query
+    // For now, return sample data for testing
     
-    // Return empty array if no database connection
-    if (!$db) {
-        return [
-            ['action_type' => 'page_view', 'action_details' => 'Sample Activity', 'created_at' => date('Y-m-d H:i:s')]
-        ];
-    }
-    
-    try {
-        $stmt = $db->prepare("SELECT a.action_type, a.action_details, a.created_at, u.username
-                             FROM admin_activity_log a
-                             LEFT JOIN admin_users u ON a.admin_id = u.id
-                             ORDER BY a.created_at DESC
-                             LIMIT ?");
-        $stmt->execute([$limit]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (Exception $e) {
-        error_log("Error getting recent activity: " . $e->getMessage());
-        return [];
-    }
+    return [
+        [
+            'name' => 'Direct',
+            'value' => 45,
+            'color' => '#4e73df'
+        ],
+        [
+            'name' => 'Organic Search',
+            'value' => 30,
+            'color' => '#1cc88a'
+        ],
+        [
+            'name' => 'Social Media',
+            'value' => 15,
+            'color' => '#36b9cc'
+        ],
+        [
+            'name' => 'Referral',
+            'value' => 10,
+            'color' => '#f6c23e'
+        ]
+    ];
 }
 
 /**
- * Gets page view analytics
- * @param int $days Number of days to include
- * @return array Page view data
- */
-function get_page_view_analytics($days = 7) {
-    global $db;
-    
-    // Return sample data if no database connection
-    if (!$db) {
-        return [
-            ['date' => date('Y-m-d'), 'count' => 15],
-            ['date' => date('Y-m-d', strtotime('-1 day')), 'count' => 22],
-            ['date' => date('Y-m-d', strtotime('-2 day')), 'count' => 18],
-            ['date' => date('Y-m-d', strtotime('-3 day')), 'count' => 20],
-            ['date' => date('Y-m-d', strtotime('-4 day')), 'count' => 12],
-            ['date' => date('Y-m-d', strtotime('-5 day')), 'count' => 15],
-            ['date' => date('Y-m-d', strtotime('-6 day')), 'count' => 10]
-        ];
-    }
-    
-    try {
-        $stmt = $db->prepare("SELECT DATE(created_at) as date, COUNT(*) as count
-                             FROM admin_activity_log
-                             WHERE action_type = 'page_view'
-                             AND created_at >= DATE_SUB(CURDATE(), INTERVAL ? DAY)
-                             GROUP BY DATE(created_at)
-                             ORDER BY date ASC");
-        $stmt->execute([$days]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (Exception $e) {
-        error_log("Error getting page view analytics: " . $e->getMessage());
-        return [];
-    }
-}
-
-/**
- * Gets most viewed pages
+ * Get top performing pages
+ * 
  * @param int $limit Number of pages to return
- * @return array Most viewed pages data
+ * @return array Top pages data
  */
-function get_most_viewed_pages($limit = 5) {
-    global $db;
+function get_top_pages($limit = 5) {
+    // TODO: Implement actual database query
+    // For now, return sample data for testing
     
-    // Return sample data if no database connection
-    if (!$db) {
-        return [
-            ['page' => 'admin-dashboard.php', 'count' => 45],
-            ['page' => 'admin-users.php', 'count' => 30],
-            ['page' => 'admin-blog.php', 'count' => 25],
-            ['page' => 'admin-settings.php', 'count' => 20],
-            ['page' => 'admin-inquiries.php', 'count' => 15]
-        ];
-    }
-    
-    try {
-        $stmt = $db->prepare("SELECT action_details as page, COUNT(*) as count
-                             FROM admin_activity_log
-                             WHERE action_type = 'page_view'
-                             GROUP BY action_details
-                             ORDER BY count DESC
-                             LIMIT ?");
-        $stmt->execute([$limit]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (Exception $e) {
-        error_log("Error getting most viewed pages: " . $e->getMessage());
-        return [];
-    }
+    return [
+        [
+            'name' => 'Home',
+            'views' => 1245
+        ],
+        [
+            'name' => 'Finance & Accounting',
+            'views' => 842
+        ],
+        [
+            'name' => 'Contact Us',
+            'views' => 625
+        ],
+        [
+            'name' => 'Dedicated Teams',
+            'views' => 418
+        ],
+        [
+            'name' => 'About Us',
+            'views' => 385
+        ]
+    ];
 }
 
-// Function to check if analytics tables exist
-function check_analytics_tables() {
-    global $db;
+/**
+ * Get recent admin activities
+ * 
+ * @param int $limit Number of activities to return
+ * @return array Recent activities data
+ */
+function get_recent_activities($limit = 5) {
+    // TODO: Implement actual database query
+    // For now, return sample data for testing
     
-    if (!$db) {
-        return false;
-    }
+    $activities = [
+        [
+            'type' => 'inquiry',
+            'title' => 'New Inquiry Received',
+            'description' => 'John Smith submitted a contact form inquiry about Dedicated Teams.',
+            'time' => '2 hours ago',
+            'link' => 'admin-inquiries.php',
+            'action_text' => 'View Details'
+        ],
+        [
+            'type' => 'user',
+            'title' => 'New Admin User Added',
+            'description' => 'Sarah Johnson was added as a Marketing Admin.',
+            'time' => 'Yesterday',
+            'link' => 'admin-users.php',
+            'action_text' => 'View User'
+        ],
+        [
+            'type' => 'content',
+            'title' => 'Page Content Updated',
+            'description' => 'The Home page content was updated by Mark Wilson.',
+            'time' => '2 days ago',
+            'link' => 'index.php',
+            'action_text' => 'View Page'
+        ],
+        [
+            'type' => 'testimonial',
+            'title' => 'New Testimonial Added',
+            'description' => 'A new testimonial from ABC Company was published.',
+            'time' => '3 days ago',
+            'link' => 'admin-testimonials.php',
+            'action_text' => 'View Testimonial'
+        ],
+        [
+            'type' => 'system',
+            'title' => 'System Backup Completed',
+            'description' => 'Automatic weekly backup completed successfully.',
+            'time' => '4 days ago',
+            'link' => 'admin-backup.php',
+            'action_text' => 'View Backups'
+        ],
+        [
+            'type' => 'lead',
+            'title' => 'New Lead Created',
+            'description' => 'New sales lead from XYZ Corporation was created.',
+            'time' => '5 days ago',
+            'link' => 'admin-leads.php',
+            'action_text' => 'View Lead'
+        ]
+    ];
     
-    try {
-        $stmt = $db->query("SHOW TABLES LIKE 'admin_activity_log'");
-        return $stmt->rowCount() > 0;
-    } catch (Exception $e) {
-        return false;
-    }
+    return array_slice($activities, 0, $limit);
 }
 
-// Function to create analytics tables if they don't exist
-function create_analytics_tables() {
-    global $db;
+/**
+ * Format analytics data for Chart.js
+ * 
+ * @param array $data Raw data
+ * @param string $label Chart label
+ * @param string $color Chart color (hex)
+ * @return array Formatted data for Chart.js
+ */
+function format_chart_data($data, $label, $color = '#4e73df') {
+    $labels = [];
+    $values = [];
     
-    if (!$db) {
-        return false;
+    foreach ($data as $item) {
+        $labels[] = $item['label'];
+        $values[] = $item['value'];
     }
     
-    try {
-        $db->exec("CREATE TABLE IF NOT EXISTS admin_activity_log (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            admin_id INT NOT NULL,
-            action_type VARCHAR(50) NOT NULL,
-            action_details TEXT,
-            ip_address VARCHAR(45),
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            INDEX (admin_id),
-            INDEX (action_type),
-            INDEX (created_at)
-        )");
-        return true;
-    } catch (Exception $e) {
-        error_log("Error creating analytics tables: " . $e->getMessage());
-        return false;
-    }
+    return [
+        'labels' => $labels,
+        'datasets' => [
+            [
+                'label' => $label,
+                'data' => $values,
+                'backgroundColor' => 'rgba(' . hex_to_rgb($color) . ', 0.1)',
+                'borderColor' => $color,
+                'borderWidth' => 2,
+                'tension' => 0.3,
+                'fill' => true
+            ]
+        ]
+    ];
 }
 
-// Auto-create tables if they don't exist
-if ($db && !check_analytics_tables()) {
-    create_analytics_tables();
-}
+/**
+ * Format analytics data for donut/pie chart
+ * 
+ * @param array $data Raw data
+ * @param string $label Chart label
+ * @return array Formatted data for Chart.js
+ */
+function format_donut_chart_data($data, $label) {
+    $labels = [];
+    $values = [];
