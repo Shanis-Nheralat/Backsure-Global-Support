@@ -1,42 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="default">
 <head>
-<!-- Keep your existing inline styles -->
-<style>
-  .admin-sidebar {
-    width: 250px;
-    background-color: #062767;
-    color: white;
-    height: 100vh;
-    overflow-y: auto;
-    position: fixed;
-    left: 0;
-    top: 0;
-  }
-  
-  .admin-main {
-    margin-left: 250px;
-  }
-  
-  /* Basic menu styling */
-  .sidebar-nav ul {
-    list-style: none;
-    padding: 0;
-  }
-  
-  .sidebar-nav ul li a {
-    display: block;
-    padding: 10px 20px;
-    color: white;
-    text-decoration: none;
-  }
-  
-  .sidebar-nav ul li a:hover {
-    background-color: rgba(255,255,255,0.1);
-  }
-</style>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
   <title><?php echo isset($page_title) ? htmlspecialchars($page_title) : 'Admin Panel'; ?> | Backsure Global Support</title>
   
   <!-- Get the base URL dynamically -->
@@ -61,9 +28,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   
-  <!-- Core styles - DYNAMIC PATHS -->
-  <link rel="stylesheet" href="admin-core.css">
-  <link rel="stylesheet" href="admin-themes.css">
+  <!-- Core styles -->
+  <link rel="stylesheet" href="<?php echo $baseUrl; ?>admin-core.css">
+  <link rel="stylesheet" href="<?php echo $baseUrl; ?>admin-themes.css">
   
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
@@ -71,19 +38,29 @@
   <!-- Extra CSS files -->
   <?php if (isset($extra_css) && is_array($extra_css)): ?>
     <?php foreach ($extra_css as $css_file): ?>
-      <link rel="stylesheet" href="<?php echo ltrim($css_file, '/'); ?>">
+      <link rel="stylesheet" href="<?php echo $baseUrl . ltrim($css_file, '/'); ?>">
     <?php endforeach; ?>
   <?php endif; ?>
   
-  <!-- Core JavaScript - DYNAMIC PATHS -->
-  <script src="admin-core.js" defer></script>
-  <script src="admin-theme-switcher.js" defer></script>
+  <!-- Core JavaScript -->
+  <script src="<?php echo $baseUrl; ?>admin-core.js" defer></script>
+  <script src="<?php echo $baseUrl; ?>admin-theme-switcher.js" defer></script>
   
   <!-- Extra JavaScript files -->
   <?php if (isset($extra_js) && is_array($extra_js)): ?>
     <?php foreach ($extra_js as $js_file): ?>
-      <script src="<?php echo ltrim($js_file, '/'); ?>" defer></script>
+      <script src="<?php echo $baseUrl . ltrim($js_file, '/'); ?>" defer></script>
     <?php endforeach; ?>
+  <?php endif; ?>
+  
+  <!-- Page-specific CSS -->
+  <?php if (isset($page_specific_css) && !empty($page_specific_css)): ?>
+    <link rel="stylesheet" href="<?php echo $baseUrl . ltrim($page_specific_css, '/'); ?>">
+  <?php endif; ?>
+  
+  <!-- Page-specific JavaScript -->
+  <?php if (isset($page_specific_js) && !empty($page_specific_js)): ?>
+    <script src="<?php echo $baseUrl . ltrim($page_specific_js, '/'); ?>" defer></script>
   <?php endif; ?>
 </head>
 <body class="admin-body">
