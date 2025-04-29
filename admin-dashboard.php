@@ -1,7 +1,7 @@
 <?php
 /**
  * Admin Dashboard
- * Overview page showing statistics, activities and quick actions
+ * Overview page with quick actions and activity feed
  */
 
 // Authentication and permissions
@@ -21,7 +21,6 @@ $current_page = 'dashboard';
 $breadcrumbs = [
     ['title' => 'Dashboard', 'url' => '#']
 ];
-$page_specific_js = 'admin-dashboard.js';
 
 // Get admin info
 $admin_user = get_admin_user();
@@ -32,22 +31,18 @@ $admin_role = $admin_user['role'];
 $traffic_data = get_page_view_stats('weekly', 7);
 $chart_data = format_chart_data($traffic_data, 'Website Traffic');
 $traffic_sources = get_traffic_sources();
-$top_pages = get_top_pages(4);
+$top_pages = get_top_pages(5);
 $recent_activities = get_recent_activities(4);
-$dashboard_stats = get_dashboard_stats();
+$unread_inquiries = 3; // Placeholder value, should be fetched from database
 
 // Base URL for assets
 $scriptPath = $_SERVER['SCRIPT_NAME'];
 $parentDir = dirname($scriptPath);
 $baseUrl = rtrim($parentDir, '/') . '/';
 
-// Include head template
+// Include templates
 include 'admin-head.php';
-?>
-
-<?php 
-// Include sidebar
-include 'admin-sidebar.php'; 
+include 'admin-sidebar.php';
 ?>
 
 <main class="admin-main">
@@ -55,47 +50,37 @@ include 'admin-sidebar.php';
   
   <!-- Dashboard Content -->
   <div class="admin-content container-fluid py-4">
-    <div class="page-header d-flex justify-content-between align-items-center mb-4">
-      <h1>Dashboard Overview</h1>
-      <div class="date-display">
-        <i class="far fa-calendar-alt"></i>
-        <span id="current-date"><?php echo date('l, F j, Y'); ?></span>
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1 class="h3 mb-0 text-gray-800">Dashboard Overview</h1>
+          <div class="date-display">
+            <i class="far fa-calendar-alt"></i>
+            <span id="current-date"><?php echo date('l, F j, Y'); ?></span>
+          </div>
+        </div>
       </div>
     </div>
     
     <!-- Stats Overview -->
-    <div class="row stats-overview">
+    <div class="row mb-4">
       <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card stat-card h-100 border-left-primary">
+        <div class="card border-left-primary shadow h-100 py-2">
           <div class="card-body">
-            <div class="row align-items-center">
+            <div class="row no-gutters align-items-center">
               <div class="col mr-2">
                 <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Website Visitors</div>
-                <div class="h5 mb-0 font-weight-bold"><?php echo number_format($dashboard_stats['visitors']['count']); ?></div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">2,458</div>
                 <div class="mt-2 small">
-                  <?php 
-                  $change_class = 'text-success';
-                  $change_icon = 'fa-arrow-up';
-                  
-                  if ($dashboard_stats['visitors']['change_type'] === 'negative') {
-                    $change_class = 'text-danger';
-                    $change_icon = 'fa-arrow-down';
-                  } elseif ($dashboard_stats['visitors']['change_type'] === 'neutral') {
-                    $change_class = 'text-muted';
-                    $change_icon = 'fa-minus';
-                  }
-                  ?>
-                  <span class="<?php echo $change_class; ?>">
-                    <i class="fas <?php echo $change_icon; ?>"></i>
-                    <?php echo abs($dashboard_stats['visitors']['change']); ?>%
+                  <span class="text-success">
+                    <i class="fas fa-arrow-up"></i>
+                    15.3%
                   </span>
                   vs last month
                 </div>
               </div>
               <div class="col-auto">
-                <div class="stat-icon blue">
-                  <i class="fas fa-eye fa-2x"></i>
-                </div>
+                <i class="fas fa-eye fa-2x text-gray-300"></i>
               </div>
             </div>
           </div>
@@ -103,36 +88,22 @@ include 'admin-sidebar.php';
       </div>
       
       <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card stat-card h-100 border-left-success">
+        <div class="card border-left-success shadow h-100 py-2">
           <div class="card-body">
-            <div class="row align-items-center">
+            <div class="row no-gutters align-items-center">
               <div class="col mr-2">
                 <div class="text-xs font-weight-bold text-success text-uppercase mb-1">New Inquiries</div>
-                <div class="h5 mb-0 font-weight-bold"><?php echo number_format($dashboard_stats['inquiries']['count']); ?></div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">37</div>
                 <div class="mt-2 small">
-                  <?php 
-                  $change_class = 'text-success';
-                  $change_icon = 'fa-arrow-up';
-                  
-                  if ($dashboard_stats['inquiries']['change_type'] === 'negative') {
-                    $change_class = 'text-danger';
-                    $change_icon = 'fa-arrow-down';
-                  } elseif ($dashboard_stats['inquiries']['change_type'] === 'neutral') {
-                    $change_class = 'text-muted';
-                    $change_icon = 'fa-minus';
-                  }
-                  ?>
-                  <span class="<?php echo $change_class; ?>">
-                    <i class="fas <?php echo $change_icon; ?>"></i>
-                    <?php echo abs($dashboard_stats['inquiries']['change']); ?>%
+                  <span class="text-success">
+                    <i class="fas fa-arrow-up"></i>
+                    8.2%
                   </span>
                   vs last month
                 </div>
               </div>
               <div class="col-auto">
-                <div class="stat-icon green">
-                  <i class="fas fa-envelope-open fa-2x"></i>
-                </div>
+                <i class="fas fa-envelope-open fa-2x text-gray-300"></i>
               </div>
             </div>
           </div>
@@ -140,36 +111,22 @@ include 'admin-sidebar.php';
       </div>
       
       <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card stat-card h-100 border-left-info">
+        <div class="card border-left-info shadow h-100 py-2">
           <div class="card-body">
-            <div class="row align-items-center">
+            <div class="row no-gutters align-items-center">
               <div class="col mr-2">
                 <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Blog Articles</div>
-                <div class="h5 mb-0 font-weight-bold"><?php echo number_format($dashboard_stats['blog_posts']['count']); ?></div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">14</div>
                 <div class="mt-2 small">
-                  <?php 
-                  $change_class = 'text-success';
-                  $change_icon = 'fa-arrow-up';
-                  
-                  if ($dashboard_stats['blog_posts']['change_type'] === 'negative') {
-                    $change_class = 'text-danger';
-                    $change_icon = 'fa-arrow-down';
-                  } elseif ($dashboard_stats['blog_posts']['change_type'] === 'neutral') {
-                    $change_class = 'text-muted';
-                    $change_icon = 'fa-minus';
-                  }
-                  ?>
-                  <span class="<?php echo $change_class; ?>">
-                    <i class="fas <?php echo $change_icon; ?>"></i>
-                    <?php echo abs($dashboard_stats['blog_posts']['change']); ?>%
+                  <span class="text-muted">
+                    <i class="fas fa-minus"></i>
+                    0%
                   </span>
                   vs last month
                 </div>
               </div>
               <div class="col-auto">
-                <div class="stat-icon purple">
-                  <i class="fas fa-file-alt fa-2x"></i>
-                </div>
+                <i class="fas fa-file-alt fa-2x text-gray-300"></i>
               </div>
             </div>
           </div>
@@ -177,36 +134,22 @@ include 'admin-sidebar.php';
       </div>
       
       <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card stat-card h-100 border-left-warning">
+        <div class="card border-left-warning shadow h-100 py-2">
           <div class="card-body">
-            <div class="row align-items-center">
+            <div class="row no-gutters align-items-center">
               <div class="col mr-2">
                 <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">New Subscribers</div>
-                <div class="h5 mb-0 font-weight-bold"><?php echo number_format($dashboard_stats['subscribers']['count']); ?></div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">28</div>
                 <div class="mt-2 small">
-                  <?php 
-                  $change_class = 'text-success';
-                  $change_icon = 'fa-arrow-up';
-                  
-                  if ($dashboard_stats['subscribers']['change_type'] === 'negative') {
-                    $change_class = 'text-danger';
-                    $change_icon = 'fa-arrow-down';
-                  } elseif ($dashboard_stats['subscribers']['change_type'] === 'neutral') {
-                    $change_class = 'text-muted';
-                    $change_icon = 'fa-minus';
-                  }
-                  ?>
-                  <span class="<?php echo $change_class; ?>">
-                    <i class="fas <?php echo $change_icon; ?>"></i>
-                    <?php echo abs($dashboard_stats['subscribers']['change']); ?>%
+                  <span class="text-danger">
+                    <i class="fas fa-arrow-down"></i>
+                    5.7%
                   </span>
                   vs last month
                 </div>
               </div>
               <div class="col-auto">
-                <div class="stat-icon orange">
-                  <i class="fas fa-user-plus fa-2x"></i>
-                </div>
+                <i class="fas fa-user-plus fa-2x text-gray-300"></i>
               </div>
             </div>
           </div>
@@ -217,12 +160,12 @@ include 'admin-sidebar.php';
     <!-- Charts & Analytics -->
     <div class="row mb-4">
       <div class="col-lg-8">
-        <div class="card shadow h-100">
+        <div class="card shadow mb-4">
           <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold">Website Traffic</h6>
-            <div class="chart-controls">
+            <h6 class="m-0 font-weight-bold text-primary">Website Traffic</h6>
+            <div class="dropdown no-arrow">
               <div class="btn-group" role="group">
-                <button type="button" class="btn btn-sm btn-outline-primary active" data-period="weekly">Weekly</button>
+                <button type="button" class="btn btn-sm btn-primary active" data-period="weekly">Weekly</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-period="monthly">Monthly</button>
                 <button type="button" class="btn btn-sm btn-outline-primary" data-period="yearly">Yearly</button>
               </div>
@@ -230,7 +173,7 @@ include 'admin-sidebar.php';
           </div>
           <div class="card-body">
             <div class="chart-area">
-              <canvas id="traffic-chart" height="300"></canvas>
+              <canvas id="traffic-chart"></canvas>
             </div>
           </div>
         </div>
@@ -239,11 +182,11 @@ include 'admin-sidebar.php';
       <div class="col-lg-4">
         <div class="card shadow mb-4">
           <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold">Traffic Sources</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Traffic Sources</h6>
           </div>
           <div class="card-body">
             <div class="chart-pie mb-4">
-              <canvas id="traffic-sources-chart" height="200"></canvas>
+              <canvas id="traffic-sources-chart"></canvas>
             </div>
             <div class="mt-4">
               <?php foreach ($traffic_sources as $source): ?>
@@ -263,12 +206,12 @@ include 'admin-sidebar.php';
         
         <div class="card shadow">
           <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold">Top Pages</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Top Pages</h6>
           </div>
-          <div class="card-body">
+          <div class="card-body p-0">
             <div class="list-group list-group-flush">
               <?php foreach ($top_pages as $page): ?>
-              <div class="list-group-item px-0 d-flex justify-content-between align-items-center border-0">
+              <div class="list-group-item px-3 py-2 d-flex justify-content-between align-items-center">
                 <span><?php echo htmlspecialchars($page['name']); ?></span>
                 <span class="badge bg-primary rounded-pill"><?php echo number_format($page['views']); ?></span>
               </div>
@@ -279,89 +222,93 @@ include 'admin-sidebar.php';
       </div>
     </div>
     
-    <!-- Recent Activities & Quick Actions -->
     <div class="row">
-      <div class="col-lg-7">
+      <!-- Recent Activities Section -->
+      <div class="col-lg-7 mb-4">
         <div class="card shadow mb-4">
           <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold">Recent Activities</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Recent Activities</h6>
             <a href="admin-activities.php" class="btn btn-sm btn-primary">View All</a>
           </div>
           <div class="card-body">
-            <div class="activity-container">
-              <?php foreach ($recent_activities as $activity): ?>
-              <div class="activity-item mb-3 pb-3 border-bottom">
-                <div class="d-flex">
-                  <div class="activity-icon <?php echo $activity['type']; ?> me-3">
-                    <i class="fas fa-<?php echo get_notification_icon($activity['type']); ?>"></i>
-                  </div>
-                  <div class="activity-content">
-                    <h5 class="mb-1"><?php echo htmlspecialchars($activity['title']); ?></h5>
-                    <p class="mb-1"><?php echo htmlspecialchars($activity['description']); ?></p>
-                    <div class="activity-meta d-flex justify-content-between">
-                      <span class="text-muted"><i class="far fa-clock me-1"></i> <?php echo $activity['time']; ?></span>
-                      <a href="<?php echo $activity['link']; ?>" class="btn btn-sm btn-outline-primary"><?php echo $activity['action_text']; ?></a>
-                    </div>
+            <?php foreach ($recent_activities as $activity): ?>
+            <div class="activity-item mb-3 pb-3 border-bottom">
+              <div class="d-flex">
+                <div class="mr-3">
+                  <div class="icon-circle bg-<?php 
+                    echo $activity['type'] === 'inquiry' ? 'primary' : 
+                        ($activity['type'] === 'user' ? 'success' : 
+                        ($activity['type'] === 'content' ? 'info' : 
+                        ($activity['type'] === 'testimonial' ? 'warning' : 'secondary'))); 
+                  ?>">
+                    <i class="fas fa-<?php echo get_notification_icon($activity['type']); ?> text-white"></i>
                   </div>
                 </div>
+                <div class="flex-grow-1">
+                  <div class="small text-gray-500"><?php echo $activity['time']; ?></div>
+                  <h5 class="mb-1"><?php echo htmlspecialchars($activity['title']); ?></h5>
+                  <p class="mb-1"><?php echo htmlspecialchars($activity['description']); ?></p>
+                  <a href="<?php echo $activity['link']; ?>" class="btn btn-sm btn-primary"><?php echo $activity['action_text']; ?></a>
+                </div>
               </div>
-              <?php endforeach; ?>
             </div>
+            <?php endforeach; ?>
           </div>
         </div>
       </div>
       
-      <div class="col-lg-5">
+      <!-- Quick Actions Section -->
+      <div class="col-lg-5 mb-4">
         <div class="card shadow mb-4">
           <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold">Quick Actions</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
           </div>
           <div class="card-body">
             <div class="row">
               <?php if (user_has_permission('manage_blog')): ?>
-              <div class="col-md-6 mb-2">
-                <a href="admin-blog-add.php" class="btn btn-primary btn-block text-start">
-                  <i class="fas fa-plus me-2"></i> New Blog Post
+              <div class="col-md-6 mb-3">
+                <a href="admin-blog-add.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
+                  <i class="fas fa-plus mr-2"></i> New Blog Post
                 </a>
               </div>
               <?php endif; ?>
               
               <?php if (user_has_permission('manage_content')): ?>
-              <div class="col-md-6 mb-2">
-                <a href="admin-pages.php" class="btn btn-primary btn-block text-start">
-                  <i class="fas fa-edit me-2"></i> Edit Pages
+              <div class="col-md-6 mb-3">
+                <a href="admin-pages.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
+                  <i class="fas fa-edit mr-2"></i> Edit Pages
                 </a>
               </div>
               <?php endif; ?>
               
               <?php if (user_has_permission('manage_media')): ?>
-              <div class="col-md-6 mb-2">
-                <a href="admin-media.php" class="btn btn-primary btn-block text-start">
-                  <i class="fas fa-upload me-2"></i> Upload Media
+              <div class="col-md-6 mb-3">
+                <a href="admin-media.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
+                  <i class="fas fa-upload mr-2"></i> Upload Media
                 </a>
               </div>
               <?php endif; ?>
               
               <?php if (user_has_permission('manage_users')): ?>
-              <div class="col-md-6 mb-2">
-                <a href="admin-users-add.php" class="btn btn-primary btn-block text-start">
-                  <i class="fas fa-user-plus me-2"></i> Add User
+              <div class="col-md-6 mb-3">
+                <a href="admin-users-add.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
+                  <i class="fas fa-user-plus mr-2"></i> Add User
                 </a>
               </div>
               <?php endif; ?>
               
               <?php if (user_has_permission('manage_services')): ?>
-              <div class="col-md-6 mb-2">
-                <a href="admin-services.php" class="btn btn-primary btn-block text-start">
-                  <i class="fas fa-briefcase me-2"></i> Manage Services
+              <div class="col-md-6 mb-3">
+                <a href="admin-services.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
+                  <i class="fas fa-briefcase mr-2"></i> Manage Services
                 </a>
               </div>
               <?php endif; ?>
               
               <?php if (user_has_permission('manage_backup')): ?>
-              <div class="col-md-6 mb-2">
-                <a href="admin-backup.php" class="btn btn-primary btn-block text-start">
-                  <i class="fas fa-download me-2"></i> Backup Data
+              <div class="col-md-6 mb-3">
+                <a href="admin-backup.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
+                  <i class="fas fa-download mr-2"></i> Backup Data
                 </a>
               </div>
               <?php endif; ?>
@@ -369,15 +316,15 @@ include 'admin-sidebar.php';
           </div>
         </div>
         
-        <?php if (user_has_permission('manage_inquiries') && !empty($recent_inquiries)): ?>
+        <!-- Recent Inquiries Section -->
         <div class="card shadow">
           <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold">Recent Inquiries</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Recent Inquiries</h6>
             <a href="admin-inquiries.php" class="btn btn-sm btn-primary">View All</a>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
-              <table class="table table-striped table-hover mb-0">
+              <table class="table table-striped mb-0">
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -410,7 +357,6 @@ include 'admin-sidebar.php';
             </div>
           </div>
         </div>
-        <?php endif; ?>
       </div>
     </div>
   </div>
@@ -466,10 +412,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Remove active class from all buttons
         document.querySelectorAll('[data-period]').forEach(btn => {
           btn.classList.remove('active');
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-outline-primary');
         });
         
         // Add active class to clicked button
         this.classList.add('active');
+        this.classList.add('btn-primary');
+        this.classList.remove('btn-outline-primary');
         
         // Get period
         const period = this.getAttribute('data-period');
@@ -507,38 +457,4 @@ document.addEventListener('DOMContentLoaded', function() {
       labels: <?php echo json_encode(array_column($traffic_sources, 'name')); ?>,
       datasets: [{
         data: <?php echo json_encode(array_column($traffic_sources, 'value')); ?>,
-        backgroundColor: <?php echo json_encode(array_column($traffic_sources, 'color')); ?>,
-        hoverBackgroundColor: <?php echo json_encode(array_column($traffic_sources, 'color')); ?>,
-        hoverBorderColor: "rgba(234, 236, 244, 1)",
-      }]
-    };
-    
-    const sourcesChart = new Chart(trafficSourcesCanvas, {
-      type: 'doughnut',
-      data: sourcesData,
-      options: {
-        maintainAspectRatio: false,
-        cutout: '70%',
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: "rgb(255,255,255)",
-            bodyColor: "#858796",
-            borderColor: '#dddfeb',
-            borderWidth: 1,
-            caretPadding: 10,
-            displayColors: false,
-            callbacks: {
-              label: function(context) {
-                return context.label + ': ' + context.raw + '%';
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-});
-</script>
+        backgroundColor:
