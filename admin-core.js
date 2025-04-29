@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update current date in dashboard
     updateCurrentDate();
+    
+    // Setup theme switcher
+    setupThemeSwitcher();
 });
 
 /**
@@ -85,17 +88,46 @@ function setupSidebar() {
 
 /**
  * Fix sidebar dropdown toggle functionality
+ * This function is improved to ensure dropdowns work properly
  */
 function fixSidebarDropdowns() {
     // Handle submenu toggles
     const submenuToggles = document.querySelectorAll('.has-submenu > a');
     
     submenuToggles.forEach(function(toggle) {
-        // Remove any existing event listeners to prevent duplicates
-        toggle.removeEventListener('click', handleSubmenuToggle);
+        // First remove existing event listeners to prevent duplicates
+        const clonedToggle = toggle.cloneNode(true);
+        toggle.parentNode.replaceChild(clonedToggle, toggle);
         
-        // Add the click event listener
-        toggle.addEventListener('click', handleSubmenuToggle);
+        // Add event listener to the new element
+        clonedToggle.addEventListener('click', function(e) {
+            if (this.getAttribute('href') === 'javascript:void(0)' || this.getAttribute('href') === '#') {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const parentLi = this.parentElement;
+                const submenu = parentLi.querySelector('.submenu');
+                
+                // Toggle open class
+                parentLi.classList.toggle('open');
+                
+                // Toggle submenu visibility
+                if (submenu) {
+                    if (parentLi.classList.contains('open')) {
+                        submenu.style.display = 'block';
+                        submenu.style.maxHeight = submenu.scrollHeight + 'px';
+                    } else {
+                        submenu.style.maxHeight = '0px';
+                        // Use setTimeout to allow the transition to complete
+                        setTimeout(function() {
+                            if (!parentLi.classList.contains('open')) {
+                                submenu.style.display = 'none';
+                            }
+                        }, 300);
+                    }
+                }
+            }
+        });
     });
     
     // Auto-open submenu if it contains active item
@@ -108,45 +140,10 @@ function fixSidebarDropdowns() {
             const submenu = parentLi.querySelector('.submenu');
             if (submenu) {
                 submenu.style.display = 'block';
+                submenu.style.maxHeight = submenu.scrollHeight + 'px';
             }
         }
     });
-}
-
-/**
- * Handle submenu toggle click
- * 
- * @param {Event} e Click event
- */
-function handleSubmenuToggle(e) {
-    if (this.getAttribute('href') === 'javascript:void(0)' || this.getAttribute('href') === '#') {
-        e.preventDefault();
-        
-        const parentLi = this.parentElement;
-        const submenu = parentLi.querySelector('.submenu');
-        
-        // Toggle open class
-        parentLi.classList.toggle('open');
-        
-        // Toggle submenu visibility
-        if (submenu) {
-            if (parentLi.classList.contains('open')) {
-                submenu.style.display = 'block';
-                // Use setTimeout to ensure the transition works
-                setTimeout(function() {
-                    submenu.style.maxHeight = submenu.scrollHeight + 'px';
-                }, 10);
-            } else {
-                submenu.style.maxHeight = '0px';
-                // Hide the submenu after transition
-                setTimeout(function() {
-                    if (!parentLi.classList.contains('open')) {
-                        submenu.style.display = 'none';
-                    }
-                }, 300); // Transition duration
-            }
-        }
-    }
 }
 
 /**
@@ -159,6 +156,7 @@ function setupUserDropdown() {
     if (userDropdownToggle && userDropdown) {
         userDropdownToggle.addEventListener('click', function(e) {
             e.preventDefault();
+            e.stopPropagation();
             userDropdown.classList.toggle('show');
         });
         
@@ -168,6 +166,78 @@ function setupUserDropdown() {
                 userDropdown.classList.remove('show');
             }
         });
+    }
+}
+
+/**
+ * Setup theme switcher functionality
+ */
+function setupThemeSwitcher() {
+    const themeSelect = document.getElementById('theme-select');
+    const autoDarkMode = document.getElementById('auto-dark-mode');
+    
+    if (themeSelect) {
+        // Load saved theme
+        const savedTheme = localStorage.getItem('admin-theme') || 'default';
+        const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const autoDarkEnabled = localStorage.getItem('auto-dark-mode') === 'true';
+        
+        // Set the select value
+        themeSelect.value = savedTheme;
+        
+        // Set auto dark mode checkbox
+        if (autoDarkMode) {
+            autoDarkMode.checked = autoDarkEnabled;
+        }
+        
+        // Apply theme
+        if (autoDarkEnabled && prefersDarkMode) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            themeSelect.value = 'dark';
+        } else {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+        
+        // Handle theme selection
+        themeSelect.addEventListener('change', function() {
+            const theme = this.value;
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('admin-theme', theme);
+            
+            // If auto dark mode is enabled and user manually selects a theme, disable auto dark mode
+            if (autoDarkMode && autoDarkMode.checked) {
+                autoDarkMode.checked = false;
+                localStorage.setItem('auto-dark-mode', 'false');
+            }
+        });
+        
+        // Handle auto dark mode toggle
+        if (autoDarkMode) {
+            autoDarkMode.addEventListener('change', function() {
+                localStorage.setItem('auto-dark-mode', this.checked);
+                
+                if (this.checked) {
+                    const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (prefersDarkMode) {
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                        themeSelect.value = 'dark';
+                    }
+                    
+                    // Add listener for system theme changes
+                    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                        if (autoDarkMode.checked) {
+                            const theme = e.matches ? 'dark' : 'default';
+                            document.documentElement.setAttribute('data-theme', theme);
+                            themeSelect.value = theme;
+                        }
+                    });
+                } else {
+                    // Apply the selected theme
+                    const theme = themeSelect.value;
+                    document.documentElement.setAttribute('data-theme', theme);
+                }
+            });
+        }
     }
 }
 
@@ -394,15 +464,14 @@ function formatDate(date, format = 'full') {
     const style = document.createElement('style');
     style.textContent = `
         .sidebar-nav .submenu {
-            display: none;
-            overflow: hidden;
             max-height: 0;
+            overflow: hidden;
             transition: max-height 0.3s ease;
         }
         
         .sidebar-nav .has-submenu.open > .submenu {
             display: block;
-            max-height: 1000px; /* Large enough to contain all submenus */
+            max-height: 1000px;
         }
         
         .sidebar-nav .has-submenu > a {
