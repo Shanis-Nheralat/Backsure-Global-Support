@@ -1,7 +1,7 @@
 <?php
 /**
  * Admin Dashboard
- * Overview page with quick actions and activity feed
+ * Overview page with statistics, charts, activities and quick actions
  */
 
 // Authentication and permissions
@@ -265,53 +265,36 @@ include 'admin-sidebar.php';
           </div>
           <div class="card-body">
             <div class="row">
-              <?php if (user_has_permission('manage_blog')): ?>
               <div class="col-md-6 mb-3">
                 <a href="admin-blog-add.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
                   <i class="fas fa-plus mr-2"></i> New Blog Post
                 </a>
               </div>
-              <?php endif; ?>
-              
-              <?php if (user_has_permission('manage_content')): ?>
               <div class="col-md-6 mb-3">
                 <a href="admin-pages.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
                   <i class="fas fa-edit mr-2"></i> Edit Pages
                 </a>
               </div>
-              <?php endif; ?>
-              
-              <?php if (user_has_permission('manage_media')): ?>
               <div class="col-md-6 mb-3">
                 <a href="admin-media.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
                   <i class="fas fa-upload mr-2"></i> Upload Media
                 </a>
               </div>
-              <?php endif; ?>
-              
-              <?php if (user_has_permission('manage_users')): ?>
               <div class="col-md-6 mb-3">
                 <a href="admin-users-add.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
                   <i class="fas fa-user-plus mr-2"></i> Add User
                 </a>
               </div>
-              <?php endif; ?>
-              
-              <?php if (user_has_permission('manage_services')): ?>
               <div class="col-md-6 mb-3">
                 <a href="admin-services.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
                   <i class="fas fa-briefcase mr-2"></i> Manage Services
                 </a>
               </div>
-              <?php endif; ?>
-              
-              <?php if (user_has_permission('manage_backup')): ?>
               <div class="col-md-6 mb-3">
                 <a href="admin-backup.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
                   <i class="fas fa-download mr-2"></i> Backup Data
                 </a>
               </div>
-              <?php endif; ?>
             </div>
           </div>
         </div>
@@ -425,9 +408,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const period = this.getAttribute('data-period');
         
         // Update chart data based on period
-        let url = `admin-ajax.php?action=get_traffic_data&period=${period}`;
-        
-        // For demo, we'll use pre-generated data
         let newData;
         switch(period) {
           case 'weekly':
@@ -457,4 +437,105 @@ document.addEventListener('DOMContentLoaded', function() {
       labels: <?php echo json_encode(array_column($traffic_sources, 'name')); ?>,
       datasets: [{
         data: <?php echo json_encode(array_column($traffic_sources, 'value')); ?>,
-        backgroundColor:
+        backgroundColor: <?php echo json_encode(array_column($traffic_sources, 'color')); ?>,
+        hoverBackgroundColor: <?php echo json_encode(array_column($traffic_sources, 'color')); ?>,
+        hoverBorderColor: "rgba(234, 236, 244, 1)",
+      }]
+    };
+    
+    const sourcesChart = new Chart(trafficSourcesCanvas, {
+      type: 'doughnut',
+      data: sourcesData,
+      options: {
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: "rgb(255,255,255)",
+            bodyColor: "#858796",
+            borderColor: '#dddfeb',
+            borderWidth: 1,
+            caretPadding: 10,
+            displayColors: false,
+            callbacks: {
+              label: function(context) {
+                return context.label + ': ' + context.raw + '%';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  // Update current date
+  const currentDateElement = document.getElementById('current-date');
+  if (currentDateElement) {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    currentDateElement.textContent = now.toLocaleDateString(undefined, options);
+  }
+  
+  // Fix sidebar dropdown functionality
+  fixSidebarDropdowns();
+});
+
+/**
+ * Fix sidebar dropdown toggle functionality
+ */
+function fixSidebarDropdowns() {
+  // Handle submenu toggles
+  const submenuToggles = document.querySelectorAll('.has-submenu > a');
+  
+  submenuToggles.forEach(function(toggle) {
+    // Remove any existing event listeners to prevent duplicates
+    toggle.removeEventListener('click', handleSubmenuToggle);
+    
+    // Add the click event listener
+    toggle.addEventListener('click', handleSubmenuToggle);
+  });
+  
+  // Auto-open submenu if it contains active item
+  document.querySelectorAll('.sidebar-nav .submenu .active').forEach(function(activeItem) {
+    const parentLi = activeItem.closest('.has-submenu');
+    if (parentLi) {
+      parentLi.classList.add('open');
+      
+      // Make sure the submenu is visible
+      const submenu = parentLi.querySelector('.submenu');
+      if (submenu) {
+        submenu.style.display = 'block';
+      }
+    }
+  });
+}
+
+/**
+ * Handle submenu toggle click
+ * 
+ * @param {Event} e Click event
+ */
+function handleSubmenuToggle(e) {
+  if (this.getAttribute('href') === 'javascript:void(0)' || this.getAttribute('href') === '#') {
+    e.preventDefault();
+    
+    const parentLi = this.parentElement;
+    const submenu = parentLi.querySelector('.submenu');
+    
+    // Toggle open class
+    parentLi.classList.toggle('open');
+    
+    // Toggle submenu visibility
+    if (submenu) {
+      if (parentLi.classList.contains('open')) {
+        submenu.style.display = 'block';
+      } else {
+        submenu.style.display = 'none';
+      }
+    }
+  }
+}
+</script>
