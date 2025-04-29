@@ -51,215 +51,301 @@ include 'admin-sidebar.php';
   <!-- Dashboard Content -->
   <div class="admin-content container-fluid py-4">
     <div class="row mb-4">
-      <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center">
-          <h1 class="h3 mb-0 text-gray-800">Dashboard Overview</h1>
-          <div class="date-display">
-            <i class="far fa-calendar-alt"></i>
-            <span id="current-date"><?php echo date('l, F j, Y'); ?></span>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Stats Overview -->
-    <div class="row mb-4">
-      <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-          <div class="card-body">
-            <div class="row no-gutters align-items-center">
-              <div class="col mr-2">
-                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Website Visitors</div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">2,458</div>
-                <div class="mt-2 small">
-                  <span class="text-success">
-                    <i class="fas fa-arrow-up"></i>
-                    15.3%
-                  </span>
-                  vs last month
-                </div>
-              </div>
-              <div class="col-auto">
-                <i class="fas fa-eye fa-2x text-gray-300"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-          <div class="card-body">
-            <div class="row no-gutters align-items-center">
-              <div class="col mr-2">
-                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">New Inquiries</div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">37</div>
-                <div class="mt-2 small">
-                  <span class="text-success">
-                    <i class="fas fa-arrow-up"></i>
-                    8.2%
-                  </span>
-                  vs last month
-                </div>
-              </div>
-              <div class="col-auto">
-                <i class="fas fa-envelope-open fa-2x text-gray-300"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-          <div class="card-body">
-            <div class="row no-gutters align-items-center">
-              <div class="col mr-2">
-                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Blog Articles</div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">14</div>
-                <div class="mt-2 small">
-                  <span class="text-muted">
-                    <i class="fas fa-minus"></i>
-                    0%
-                  </span>
-                  vs last month
-                </div>
-              </div>
-              <div class="col-auto">
-                <i class="fas fa-file-alt fa-2x text-gray-300"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-          <div class="card-body">
-            <div class="row no-gutters align-items-center">
-              <div class="col mr-2">
-                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">New Subscribers</div>
-                <div class="h5 mb-0 font-weight-bold text-gray-800">28</div>
-                <div class="mt-2 small">
-                  <span class="text-danger">
-                    <i class="fas fa-arrow-down"></i>
-                    5.7%
-                  </span>
-                  vs last month
-                </div>
-              </div>
-              <div class="col-auto">
-                <i class="fas fa-user-plus fa-2x text-gray-300"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Charts & Analytics -->
-    <div class="row mb-4">
-      <div class="col-lg-8">
-        <div class="card shadow mb-4">
-          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">Website Traffic</h6>
-            <div class="dropdown no-arrow">
-              <div class="btn-group" role="group">
-                <button type="button" class="btn btn-sm btn-primary active" data-period="weekly">Weekly</button>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-period="monthly">Monthly</button>
-                <button type="button" class="btn btn-sm btn-outline-primary" data-period="yearly">Yearly</button>
-              </div>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="chart-area">
-              <canvas id="traffic-chart"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div class="col-lg-4">
-        <div class="card shadow mb-4">
-          <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Traffic Sources</h6>
-          </div>
-          <div class="card-body">
-            <div class="chart-pie mb-4">
-              <canvas id="traffic-sources-chart"></canvas>
-            </div>
-            <div class="mt-4">
-              <?php foreach ($traffic_sources as $source): ?>
-              <div class="mb-2">
-                <div class="d-flex justify-content-between mb-1">
-                  <span><?php echo htmlspecialchars($source['name']); ?></span>
-                  <span><?php echo $source['value']; ?>%</span>
-                </div>
-                <div class="progress" style="height: 6px;">
-                  <div class="progress-bar" style="width: <?php echo $source['value']; ?>%; background-color: <?php echo $source['color']; ?>;"></div>
-                </div>
-              </div>
-              <?php endforeach; ?>
-            </div>
-          </div>
-        </div>
-        
+      <div class="col-lg-5 mb-4">
         <div class="card shadow">
-          <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Top Pages</h6>
+          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Recent Inquiries</h6>
+            <a href="admin-inquiries.php" class="btn btn-sm btn-primary">View All</a>
           </div>
           <div class="card-body p-0">
-            <div class="list-group list-group-flush">
-              <?php foreach ($top_pages as $page): ?>
-              <div class="list-group-item px-3 py-2 d-flex justify-content-between align-items-center">
-                <span><?php echo htmlspecialchars($page['name']); ?></span>
-                <span class="badge bg-primary rounded-pill"><?php echo number_format($page['views']); ?></span>
-              </div>
-              <?php endforeach; ?>
+            <div class="table-responsive">
+              <table class="table mb-0">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>John Smith</td>
+                    <td>GlobalSure Finance Inquiry</td>
+                    <td>Apr 17, 2025</td>
+                    <td><span class="badge bg-primary">New</span></td>
+                    <td class="text-center">
+                      <a href="#" class="btn btn-sm btn-primary rounded-circle"><i class="fas fa-eye"></i></a>
+                      <a href="#" class="btn btn-sm btn-info rounded-circle"><i class="fas fa-reply"></i></a>
+                      <a href="#" class="btn btn-sm btn-danger rounded-circle"><i class="fas fa-trash"></i></a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Emma Johnson</td>
+                    <td>Business Loan Query</td>
+                    <td>Apr 16, 2025</td>
+                    <td><span class="badge bg-primary">New</span></td>
+                    <td class="text-center">
+                      <a href="#" class="btn btn-sm btn-primary rounded-circle"><i class="fas fa-eye"></i></a>
+                      <a href="#" class="btn btn-sm btn-info rounded-circle"><i class="fas fa-reply"></i></a>
+                      <a href="#" class="btn btn-sm btn-danger rounded-circle"><i class="fas fa-trash"></i></a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Michael Chen</td>
+                    <td>Insurance Support</td>
+                    <td>Apr 15, 2025</td>
+                    <td><span class="badge bg-success">Replied</span></td>
+                    <td class="text-center">
+                      <a href="#" class="btn btn-sm btn-primary rounded-circle"><i class="fas fa-eye"></i></a>
+                      <a href="#" class="btn btn-sm btn-info rounded-circle"><i class="fas fa-reply"></i></a>
+                      <a href="#" class="btn btn-sm btn-danger rounded-circle"><i class="fas fa-trash"></i></a>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Sarah Jones</td>
+                    <td>Finance & Accounting</td>
+                    <td>Apr 14, 2025</td>
+                    <td><span class="badge bg-secondary">Closed</span></td>
+                    <td class="text-center">
+                      <a href="#" class="btn btn-sm btn-primary rounded-circle"><i class="fas fa-eye"></i></a>
+                      <a href="#" class="btn btn-sm btn-info rounded-circle"><i class="fas fa-reply"></i></a>
+                      <a href="#" class="btn btn-sm btn-danger rounded-circle"><i class="fas fa-trash"></i></a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
+  
+  <?php include 'admin-footer.php'; ?>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Traffic Chart
+  const trafficChartCanvas = document.getElementById('traffic-chart');
+  if (trafficChartCanvas) {
+    const ctx = trafficChartCanvas.getContext('2d');
     
-    <div class="row">
-      <!-- Recent Activities Section -->
-      <div class="col-lg-7 mb-4">
-        <div class="card shadow mb-4">
-          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">Recent Activities</h6>
-            <a href="admin-activities.php" class="btn btn-sm btn-primary">View All</a>
-          </div>
-          <div class="card-body">
-            <?php foreach ($recent_activities as $activity): ?>
-            <div class="activity-item mb-3 pb-3 border-bottom">
-              <div class="d-flex">
-                <div class="mr-3">
-                  <div class="icon-circle bg-<?php 
-                    echo $activity['type'] === 'inquiry' ? 'primary' : 
-                        ($activity['type'] === 'user' ? 'success' : 
-                        ($activity['type'] === 'content' ? 'info' : 
-                        ($activity['type'] === 'testimonial' ? 'warning' : 'secondary'))); 
-                  ?>">
-                    <i class="fas fa-<?php echo get_notification_icon($activity['type']); ?> text-white"></i>
-                  </div>
-                </div>
-                <div class="flex-grow-1">
-                  <div class="small text-gray-500"><?php echo $activity['time']; ?></div>
-                  <h5 class="mb-1"><?php echo htmlspecialchars($activity['title']); ?></h5>
-                  <p class="mb-1"><?php echo htmlspecialchars($activity['description']); ?></p>
-                  <a href="<?php echo $activity['link']; ?>" class="btn btn-sm btn-primary"><?php echo $activity['action_text']; ?></a>
-                </div>
-              </div>
-            </div>
-            <?php endforeach; ?>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Quick Actions Section -->
-      <div class="col-lg-5 mb-4">
-        <div class="card shadow mb-4">
+    // Sample data for daily traffic
+    const dailyTrafficData = {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [{
+        label: 'Daily Traffic',
+        lineTension: 0.3,
+        backgroundColor: "rgba(78, 115, 223, 0.05)",
+        borderColor: "rgba(78, 115, 223, 1)",
+        pointRadius: 3,
+        pointBackgroundColor: "rgba(78, 115, 223, 1)",
+        pointBorderColor: "rgba(78, 115, 223, 1)",
+        pointHoverRadius: 3,
+        pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+        pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+        pointHitRadius: 10,
+        pointBorderWidth: 2,
+        data: [305, 350, 320, 380, 350, 330, 390]
+      }]
+    };
+    
+    // Sample data for weekly traffic
+    const weeklyTrafficData = {
+      labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+      datasets: [{
+        label: 'Weekly Traffic',
+        lineTension: 0.3,
+        backgroundColor: "rgba(78, 115, 223, 0.05)",
+        borderColor: "rgba(78, 115, 223, 1)",
+        pointRadius: 3,
+        pointBackgroundColor: "rgba(78, 115, 223, 1)",
+        pointBorderColor: "rgba(78, 115, 223, 1)",
+        pointHoverRadius: 3,
+        pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+        pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+        pointHitRadius: 10,
+        pointBorderWidth: 2,
+        data: [2100, 2400, 2200, 2500]
+      }]
+    };
+    
+    // Sample data for monthly traffic
+    const monthlyTrafficData = {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [{
+        label: 'Monthly Traffic',
+        lineTension: 0.3,
+        backgroundColor: "rgba(78, 115, 223, 0.05)",
+        borderColor: "rgba(78, 115, 223, 1)",
+        pointRadius: 3,
+        pointBackgroundColor: "rgba(78, 115, 223, 1)",
+        pointBorderColor: "rgba(78, 115, 223, 1)",
+        pointHoverRadius: 3,
+        pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+        pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+        pointHitRadius: 10,
+        pointBorderWidth: 2,
+        data: [8500, 9200, 8700, 9500, 10200, 10800]
+      }]
+    };
+    
+    // Chart configuration
+    const config = {
+      type: 'line',
+      data: dailyTrafficData,
+      options: {
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            left: 10,
+            right: 25,
+            top: 25,
+            bottom: 0
+          }
+        },
+        scales: {
+          y: {
+            ticks: {
+              beginAtZero: true,
+              maxTicksLimit: 5,
+              padding: 10
+            },
+            grid: {
+              color: "rgba(0, 0, 0, 0.05)"
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: "rgb(255,255,255)",
+            bodyColor: "#858796",
+            titleMarginBottom: 10,
+            titleColor: '#6e707e',
+            titleFont: {
+              size: 14
+            },
+            borderColor: '#dddfeb',
+            borderWidth: 1,
+            xPadding: 15,
+            yPadding: 15,
+            displayColors: false,
+            intersect: false,
+            mode: 'index',
+            caretPadding: 10
+          }
+        }
+      }
+    };
+    
+    // Create the chart
+    const trafficChart = new Chart(trafficChartCanvas, config);
+    
+    // Period buttons
+    document.querySelectorAll('[data-period]').forEach(button => {
+      button.addEventListener('click', function() {
+        // Remove active class from all buttons
+        document.querySelectorAll('[data-period]').forEach(btn => {
+          btn.classList.remove('active');
+          btn.classList.remove('btn-primary');
+          btn.classList.add('btn-outline-primary');
+        });
+        
+        // Add active class to clicked button
+        this.classList.add('active');
+        this.classList.add('btn-primary');
+        this.classList.remove('btn-outline-primary');
+        
+        // Get period
+        const period = this.getAttribute('data-period');
+        
+        // Update chart data based on period
+        let newData;
+        switch(period) {
+          case 'daily':
+            newData = dailyTrafficData;
+            break;
+          case 'weekly':
+            newData = weeklyTrafficData;
+            break;
+          case 'monthly':
+            newData = monthlyTrafficData;
+            break;
+        }
+        
+        // Update chart
+        trafficChart.data.labels = newData.labels;
+        trafficChart.data.datasets[0].data = newData.datasets[0].data;
+        trafficChart.data.datasets[0].label = newData.datasets[0].label;
+        trafficChart.update();
+      });
+    });
+  }
+  
+  // Traffic Sources Chart
+  const trafficSourcesCanvas = document.getElementById('traffic-sources-chart');
+  if (trafficSourcesCanvas) {
+    const sourcesData = {
+      labels: ['Direct', 'Organic Search', 'Social Media', 'Referral', 'Others'],
+      datasets: [{
+        data: [40, 30, 15, 10, 5],
+        backgroundColor: ['#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'],
+        hoverBackgroundColor: ['#2e59d9', '#17a673', '#2c9faf', '#dda20a', '#be2617'],
+        hoverBorderColor: "rgba(234, 236, 244, 1)",
+      }]
+    };
+    
+    const sourcesChart = new Chart(trafficSourcesCanvas, {
+      type: 'doughnut',
+      data: sourcesData,
+      options: {
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: "rgb(255,255,255)",
+            bodyColor: "#858796",
+            borderColor: '#dddfeb',
+            borderWidth: 1,
+            xPadding: 15,
+            yPadding: 15,
+            displayColors: false,
+            caretPadding: 10,
+            callbacks: {
+              label: function(context) {
+                return context.label + ': ' + context.raw + '%';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  // Update current date
+  const currentDateElement = document.getElementById('current-date');
+  if (currentDateElement) {
+    const now = new Date();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    currentDateElement.textContent = now.toLocaleDateString(undefined, options);
+  }
+});
+</script>
+="card shadow mb-4">
           <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
           </div>
@@ -286,13 +372,13 @@ include 'admin-sidebar.php';
                 </a>
               </div>
               <div class="col-md-6 mb-3">
-                <a href="admin-services.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
-                  <i class="fas fa-briefcase mr-2"></i> Manage Services
+                <a href="admin-settings.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
+                  <i class="fas fa-cog mr-2"></i> Settings
                 </a>
               </div>
               <div class="col-md-6 mb-3">
                 <a href="admin-backup.php" class="btn btn-primary btn-block d-flex align-items-center justify-content-center">
-                  <i class="fas fa-download mr-2"></i> Backup Data
+                  <i class="fas fa-download mr-2"></i> Backup
                 </a>
               </div>
             </div>
@@ -300,242 +386,300 @@ include 'admin-sidebar.php';
         </div>
         
         <!-- Recent Inquiries Section -->
+        <div class="col-12">
         <div class="card shadow">
-          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">Recent Inquiries</h6>
-            <a href="admin-inquiries.php" class="btn btn-sm btn-primary">View All</a>
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Top Pages</h6>
           </div>
           <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-striped mb-0">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Subject</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>John Smith</td>
-                    <td>Dedicated Teams</td>
-                    <td><?php echo date('M d', strtotime('-1 day')); ?></td>
-                    <td><span class="badge bg-primary">New</span></td>
-                  </tr>
-                  <tr>
-                    <td>Emma Johnson</td>
-                    <td>Business Care Plans</td>
-                    <td><?php echo date('M d', strtotime('-2 days')); ?></td>
-                    <td><span class="badge bg-primary">New</span></td>
-                  </tr>
-                  <tr>
-                    <td>Michael Chen</td>
-                    <td>Insurance Support</td>
-                    <td><?php echo date('M d', strtotime('-3 days')); ?></td>
-                    <td><span class="badge bg-success">Replied</span></td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="list-group list-group-flush">
+              <div class="list-group-item px-3 py-2 d-flex justify-content-between align-items-center">
+                <span>Homepage</span>
+                <span class="badge bg-primary rounded-pill">1,245</span>
+              </div>
+              <div class="list-group-item px-3 py-2 d-flex justify-content-between align-items-center">
+                <span>Services</span>
+                <span class="badge bg-primary rounded-pill">856</span>
+              </div>
+              <div class="list-group-item px-3 py-2 d-flex justify-content-between align-items-center">
+                <span>About Us</span>
+                <span class="badge bg-primary rounded-pill">621</span>
+              </div>
+              <div class="list-group-item px-3 py-2 d-flex justify-content-between align-items-center">
+                <span>Blog</span>
+                <span class="badge bg-primary rounded-pill">487</span>
+              </div>
+              <div class="list-group-item px-3 py-2 d-flex justify-content-between align-items-center">
+                <span>Contact</span>
+                <span class="badge bg-primary rounded-pill">329</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  
-  <?php include 'admin-footer.php'; ?>
-</main>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Traffic Chart
-  const trafficChartCanvas = document.getElementById('traffic-chart');
-  if (trafficChartCanvas) {
-    const initialData = <?php echo json_encode($chart_data); ?>;
-    const trafficChart = new Chart(trafficChartCanvas, {
-      type: 'line',
-      data: initialData,
-      options: {
-        maintainAspectRatio: false,
-        layout: {
-          padding: {
-            left: 10,
-            right: 25,
-            top: 25,
-            bottom: 0
-          }
-        },
-        scales: {
-          y: {
-            ticks: {
-              beginAtZero: true
-            },
-            grid: {
-              color: "rgba(0, 0, 0, 0.05)"
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            display: false
-          }
-        }
-      }
-    });
     
-    // Period buttons
-    document.querySelectorAll('[data-period]').forEach(button => {
-      button.addEventListener('click', function() {
-        // Remove active class from all buttons
-        document.querySelectorAll('[data-period]').forEach(btn => {
-          btn.classList.remove('active');
-          btn.classList.remove('btn-primary');
-          btn.classList.add('btn-outline-primary');
-        });
-        
-        // Add active class to clicked button
-        this.classList.add('active');
-        this.classList.add('btn-primary');
-        this.classList.remove('btn-outline-primary');
-        
-        // Get period
-        const period = this.getAttribute('data-period');
-        
-        // Update chart data based on period
-        let newData;
-        switch(period) {
-          case 'weekly':
-            newData = <?php echo json_encode(format_chart_data(get_page_view_stats('weekly', 7), 'Weekly Traffic')); ?>;
-            break;
-          case 'monthly':
-            newData = <?php echo json_encode(format_chart_data(get_page_view_stats('monthly', 6), 'Monthly Traffic')); ?>;
-            break;
-          case 'yearly':
-            newData = <?php echo json_encode(format_chart_data(get_page_view_stats('yearly', 12), 'Yearly Traffic')); ?>;
-            break;
-        }
-        
-        // Update chart
-        trafficChart.data.labels = newData.labels;
-        trafficChart.data.datasets[0].data = newData.datasets[0].data;
-        trafficChart.data.datasets[0].label = newData.datasets[0].label;
-        trafficChart.update();
-      });
-    });
-  }
-  
-  // Traffic Sources Chart
-  const trafficSourcesCanvas = document.getElementById('traffic-sources-chart');
-  if (trafficSourcesCanvas) {
-    const sourcesData = {
-      labels: <?php echo json_encode(array_column($traffic_sources, 'name')); ?>,
-      datasets: [{
-        data: <?php echo json_encode(array_column($traffic_sources, 'value')); ?>,
-        backgroundColor: <?php echo json_encode(array_column($traffic_sources, 'color')); ?>,
-        hoverBackgroundColor: <?php echo json_encode(array_column($traffic_sources, 'color')); ?>,
-        hoverBorderColor: "rgba(234, 236, 244, 1)",
-      }]
-    };
-    
-    const sourcesChart = new Chart(trafficSourcesCanvas, {
-      type: 'doughnut',
-      data: sourcesData,
-      options: {
-        maintainAspectRatio: false,
-        cutout: '70%',
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            backgroundColor: "rgb(255,255,255)",
-            bodyColor: "#858796",
-            borderColor: '#dddfeb',
-            borderWidth: 1,
-            caretPadding: 10,
-            displayColors: false,
-            callbacks: {
-              label: function(context) {
-                return context.label + ': ' + context.raw + '%';
-              }
-            }
-          }
-        }
-      }
-    });
-  }
-  
-  // Update current date
-  const currentDateElement = document.getElementById('current-date');
-  if (currentDateElement) {
-    const now = new Date();
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    currentDateElement.textContent = now.toLocaleDateString(undefined, options);
-  }
-  
-  // Fix sidebar dropdown functionality
-  fixSidebarDropdowns();
-});
-
-/**
- * Fix sidebar dropdown toggle functionality
- */
-function fixSidebarDropdowns() {
-  // Handle submenu toggles
-  const submenuToggles = document.querySelectorAll('.has-submenu > a');
-  
-  submenuToggles.forEach(function(toggle) {
-    // Remove any existing event listeners to prevent duplicates
-    toggle.removeEventListener('click', handleSubmenuToggle);
-    
-    // Add the click event listener
-    toggle.addEventListener('click', handleSubmenuToggle);
-  });
-  
-  // Auto-open submenu if it contains active item
-  document.querySelectorAll('.sidebar-nav .submenu .active').forEach(function(activeItem) {
-    const parentLi = activeItem.closest('.has-submenu');
-    if (parentLi) {
-      parentLi.classList.add('open');
+    <div class="row">
+      <!-- Recent Activities Section -->
+      <div class="col-lg-7 mb-4">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Recent Activities</h6>
+            <a href="admin-activities.php" class="btn btn-sm btn-primary">View All</a>
+          </div>
+          <div class="card-body">
+            <div class="activity-item mb-3 pb-3 border-bottom">
+              <div class="d-flex">
+                <div class="mr-3">
+                  <div class="icon-circle bg-primary">
+                    <i class="fas fa-envelope text-white"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="small text-gray-500">Today at 10:30 AM</div>
+                  <h5 class="mb-1">New Client Inquiry</h5>
+                  <p class="mb-1">John Smith from GlobalSure Finance submitted a new inquiry about Dedicated Teams.</p>
+                  <a href="admin-inquiries.php" class="btn btn-sm btn-primary">View Inquiry</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="activity-item mb-3 pb-3 border-bottom">
+              <div class="d-flex">
+                <div class="mr-3">
+                  <div class="icon-circle bg-success">
+                    <i class="fas fa-user-plus text-white"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="small text-gray-500">Yesterday at 2:45 PM</div>
+                  <h5 class="mb-1">New User Registration</h5>
+                  <p class="mb-1">Emma Johnson created a new account and subscribed to the newsletter.</p>
+                  <a href="admin-subscribers.php" class="btn btn-sm btn-primary">View Subscriber</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="activity-item mb-3 pb-3 border-bottom">
+              <div class="d-flex">
+                <div class="mr-3">
+                  <div class="icon-circle bg-info">
+                    <i class="fas fa-file-alt text-white"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="small text-gray-500">Apr 15, 2025</div>
+                  <h5 class="mb-1">Article Published</h5>
+                  <p class="mb-1">New blog post "Top 10 IT Security Practices" was published by Admin.</p>
+                  <a href="admin-blog.php" class="btn btn-sm btn-primary">View Post</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="activity-item">
+              <div class="d-flex">
+                <div class="mr-3">
+                  <div class="icon-circle bg-warning">
+                    <i class="fas fa-star text-white"></i>
+                  </div>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="small text-gray-500">Apr 14, 2025</div>
+                  <h5 class="mb-1">New Testimonial</h5>
+                  <p class="mb-1">Michael Chen from TechSolutions added a 5-star testimonial for our services.</p>
+                  <a href="admin-testimonials.php" class="btn btn-sm btn-primary">View Testimonial</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
       
-      // Make sure the submenu is visible
-      const submenu = parentLi.querySelector('.submenu');
-      if (submenu) {
-        submenu.style.display = 'block';
-      }
-    }
-  });
-}
-
-/**
- * Handle submenu toggle click
- * 
- * @param {Event} e Click event
- */
-function handleSubmenuToggle(e) {
-  if (this.getAttribute('href') === 'javascript:void(0)' || this.getAttribute('href') === '#') {
-    e.preventDefault();
+      <!-- Quick Actions Section -->
+      <div class="d-flex justify-content-between align-items-center">
+          <h1 class="h3 mb-0 text-gray-800">Dashboard Overview</h1>
+          <div class="date-display">
+            <i class="far fa-calendar-alt"></i>
+            <span id="current-date"><?php echo date('l, F j, Y'); ?></span>
+          </div>
+        </div>
+      </div>
+    </div>
     
-    const parentLi = this.parentElement;
-    const submenu = parentLi.querySelector('.submenu');
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">New Subscribers</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">24</div>
+                <div class="mt-2 small">
+                  <span class="text-success">
+                    <i class="fas fa-arrow-up"></i>
+                    5.7%
+                  </span>
+                  <span class="ml-1">vs last month</span>
+                </div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-user-plus fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     
-    // Toggle open class
-    parentLi.classList.toggle('open');
-    
-    // Toggle submenu visibility
-    if (submenu) {
-      if (parentLi.classList.contains('open')) {
-        submenu.style.display = 'block';
-      } else {
-        submenu.style.display = 'none';
-      }
-    }
-  }
-}
-</script>
+    <!-- Charts & Analytics -->
+    <div class="row mb-4">
+      <div class="col-lg-8">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Website Traffic</h6>
+            <div class="dropdown no-arrow">
+              <div class="btn-group" role="group">
+                <button type="button" class="btn btn-sm btn-primary active" data-period="daily">Daily</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-period="weekly">Weekly</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" data-period="monthly">Monthly</button>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-area">
+              <canvas id="traffic-chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-lg-4">
+        <div class="card shadow mb-4">
+          <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Traffic Sources</h6>
+          </div>
+          <div class="card-body">
+            <div class="chart-pie mb-4">
+              <canvas id="traffic-sources-chart"></canvas>
+            </div>
+            <div class="mt-4">
+              <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>Direct</span>
+                  <span>40%</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar" style="width: 40%; background-color: #4e73df;"></div>
+                </div>
+              </div>
+              <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>Organic Search</span>
+                  <span>30%</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar" style="width: 30%; background-color: #1cc88a;"></div>
+                </div>
+              </div>
+              <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>Social Media</span>
+                  <span>15%</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar" style="width: 15%; background-color: #36b9cc;"></div>
+                </div>
+              </div>
+              <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>Referral</span>
+                  <span>10%</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar" style="width: 10%; background-color: #f6c23e;"></div>
+                </div>
+              </div>
+              <div class="mb-2">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>Others</span>
+                  <span>5%</span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar" style="width: 5%; background-color: #e74a3b;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card border-left-success shadow h-100 py-2">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">New Inquiries</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">53</div>
+                <div class="mt-2 small">
+                  <span class="text-success">
+                    <i class="fas fa-arrow-up"></i>
+                    8.2%
+                  </span>
+                  <span class="ml-1">vs last month</span>
+                </div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-envelope-open fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Blog Articles</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">-11</div>
+                <div class="mt-2 small">
+                  <span class="text-danger">
+                    <i class="fas fa-arrow-down"></i>
+                    3.7%
+                  </span>
+                  <span class="ml-1">vs last month</span>
+                </div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+          <div class="card-body">
+            <div class="row no-gutters align-items-center">
+              <div class="col mr-2">
+                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Website Visitors</div>
+                <div class="h5 mb-0 font-weight-bold text-gray-800">2,478</div>
+                <div class="mt-2 small">
+                  <span class="text-success">
+                    <i class="fas fa-arrow-up"></i>
+                    12.3%
+                  </span>
+                  <span class="ml-1">vs last month</span>
+                </div>
+              </div>
+              <div class="col-auto">
+                <i class="fas fa-eye fa-2x text-gray-300"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="col-xl-3 col-md-6 mb-4">
+        <div class
