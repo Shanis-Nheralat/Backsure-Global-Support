@@ -306,3 +306,198 @@ function format_chart_data($data, $label, $color = '#4e73df') {
 function format_donut_chart_data($data, $label) {
     $labels = [];
     $values = [];
+    $colors = [];
+    
+    foreach ($data as $item) {
+        $labels[] = $item['name'];
+        $values[] = $item['value'];
+        $colors[] = $item['color'] ?? '#' . substr(md5($item['name']), 0, 6);
+    }
+    
+    return [
+        'labels' => $labels,
+        'datasets' => [
+            [
+                'label' => $label,
+                'data' => $values,
+                'backgroundColor' => $colors,
+                'borderWidth' => 1,
+                'hoverOffset' => 4
+            ]
+        ]
+    ];
+}
+
+/**
+ * Convert hex color to RGB
+ * 
+ * @param string $hex Hex color code
+ * @return string RGB values as comma-separated string
+ */
+function hex_to_rgb($hex) {
+    // Remove # if present
+    $hex = ltrim($hex, '#');
+    
+    // Parse hex color
+    if (strlen($hex) == 3) {
+        $r = hexdec(substr($hex, 0, 1) . substr($hex, 0, 1));
+        $g = hexdec(substr($hex, 1, 1) . substr($hex, 1, 1));
+        $b = hexdec(substr($hex, 2, 1) . substr($hex, 2, 1));
+    } else {
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+    }
+    
+    return "{$r}, {$g}, {$b}";
+}
+
+/**
+ * Get statistics for dashboard cards
+ * 
+ * @return array Statistics data
+ */
+function get_dashboard_stats() {
+    // TODO: Implement actual database query
+    // For now, return sample data for testing
+    
+    return [
+        'visitors' => [
+            'count' => 2458,
+            'change' => 15.3,
+            'change_type' => 'positive' // positive, negative, neutral
+        ],
+        'inquiries' => [
+            'count' => 37,
+            'change' => 8.2,
+            'change_type' => 'positive'
+        ],
+        'blog_posts' => [
+            'count' => 14,
+            'change' => 0,
+            'change_type' => 'neutral'
+        ],
+        'subscribers' => [
+            'count' => 28,
+            'change' => -5.7,
+            'change_type' => 'negative'
+        ]
+    ];
+}
+
+/**
+ * Get visitor data per device type
+ * 
+ * @return array Device data
+ */
+function get_device_stats() {
+    // TODO: Implement actual database query
+    // For now, return sample data for testing
+    
+    return [
+        [
+            'name' => 'Desktop',
+            'value' => 58,
+            'color' => '#4e73df'
+        ],
+        [
+            'name' => 'Mobile',
+            'value' => 35,
+            'color' => '#1cc88a'
+        ],
+        [
+            'name' => 'Tablet',
+            'value' => 7,
+            'color' => '#36b9cc'
+        ]
+    ];
+}
+
+/**
+ * Get browser usage statistics
+ * 
+ * @return array Browser data
+ */
+function get_browser_stats() {
+    // TODO: Implement actual database query
+    // For now, return sample data for testing
+    
+    return [
+        [
+            'name' => 'Chrome',
+            'value' => 62,
+            'color' => '#4e73df'
+        ],
+        [
+            'name' => 'Safari',
+            'value' => 18,
+            'color' => '#1cc88a'
+        ],
+        [
+            'name' => 'Firefox',
+            'value' => 10,
+            'color' => '#36b9cc'
+        ],
+        [
+            'name' => 'Edge',
+            'value' => 8,
+            'color' => '#f6c23e'
+        ],
+        [
+            'name' => 'Others',
+            'value' => 2,
+            'color' => '#e74a3b'
+        ]
+    ];
+}
+
+/**
+ * Get geographic distribution of visitors
+ * 
+ * @param int $limit Number of countries to return
+ * @return array Country data
+ */
+function get_country_stats($limit = 5) {
+    // TODO: Implement actual database query
+    // For now, return sample data for testing
+    
+    $countries = [
+        [
+            'name' => 'United States',
+            'value' => 45,
+            'code' => 'us'
+        ],
+        [
+            'name' => 'United Kingdom',
+            'value' => 15,
+            'code' => 'gb'
+        ],
+        [
+            'name' => 'Australia',
+            'value' => 12,
+            'code' => 'au'
+        ],
+        [
+            'name' => 'Canada',
+            'value' => 10,
+            'code' => 'ca'
+        ],
+        [
+            'name' => 'Germany',
+            'value' => 8,
+            'code' => 'de'
+        ],
+        [
+            'name' => 'India',
+            'value' => 5,
+            'code' => 'in'
+        ],
+        [
+            'name' => 'Other',
+            'value' => 5,
+            'code' => 'globe'
+        ]
+    ];
+    
+    return array_slice($countries, 0, $limit);
+}
