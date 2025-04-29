@@ -1,281 +1,334 @@
 <?php
 /**
- * Dynamic Menu Configuration System
- * 
- * This file provides functionality for dynamically generating the admin menu
- * based on user roles and permissions.
- * 
- * File: admin-menu-config.php
+ * Dynamic menu configuration
+ * Defines the structure of the admin navigation menu
  */
 
-// Menu structure with role permissions
-$admin_menu = [
-    [
-        'id' => 'dashboard',
-        'title' => 'Dashboard',
-        'url' => 'admin-dashboard.php',
-        'icon' => 'dashboard', // Icons could be class names or image paths
-        'roles' => ['admin', 'editor', 'author', 'contributor'], // All roles can access
-        'order' => 1, // Lower numbers appear first
-        'badge' => '', // Optional badge (can be populated dynamically)
-        'children' => [] // No sub-items
-    ],
-    [
-        'id' => 'users',
-        'title' => 'User Management',
-        'url' => 'admin-users.php',
-        'icon' => 'users',
-        'roles' => ['admin', 'superadmin'], // Only admin and superadmin can access
-        'order' => 2,
-        'badge' => '',
-        'children' => []
-    ],
-    [
-        'id' => 'content',
-        'title' => 'Content',
-        'url' => '#', // # means it's a parent menu with submenu items
-        'icon' => 'file-text',
-        'roles' => ['admin', 'editor', 'author'],
-        'order' => 3,
-        'badge' => '',
-        'children' => [
-            [
-                'id' => 'services',
-                'title' => 'Services Editor',
-                'url' => 'admin-services.php',
-                'roles' => ['admin', 'editor'],
-                'order' => 1,
-                'badge' => ''
-            ],
-            [
-                'id' => 'blog',
-                'title' => 'Blog Management',
-                'url' => 'admin-blog.php',
-                'roles' => ['admin', 'editor', 'author'],
-                'order' => 2,
-                'badge' => ''
-            ]
+// Initialize menu array if not already defined
+if (!isset($admin_menu)) {
+    $admin_menu = [];
+}
+
+// Dashboard
+$admin_menu[] = [
+    'id' => 'dashboard',
+    'title' => 'Dashboard',
+    'url' => 'admin-dashboard.php',
+    'icon' => 'tachometer-alt',
+    'roles' => ['admin', 'editor', 'author', 'user'],
+    'order' => 1,
+    'badge' => '',
+    'children' => []
+];
+
+// Content Management
+$admin_menu[] = [
+    'id' => 'content',
+    'title' => 'Content Management',
+    'url' => 'javascript:void(0)',
+    'icon' => 'edit',
+    'roles' => ['admin', 'editor', 'author'],
+    'order' => 2,
+    'badge' => '',
+    'children' => [
+        [
+            'id' => 'blog',
+            'title' => 'Blog Management',
+            'url' => 'admin-blog.php',
+            'icon' => 'blog',
+            'roles' => ['admin', 'editor', 'author'],
+            'order' => 1,
+            'badge' => ''
+        ],
+        [
+            'id' => 'services',
+            'title' => 'Services Editor',
+            'url' => 'admin-services.php',
+            'icon' => 'briefcase',
+            'roles' => ['admin', 'editor'],
+            'order' => 2,
+            'badge' => ''
+        ],
+        [
+            'id' => 'solutions',
+            'title' => 'Solutions',
+            'url' => 'admin-solutions.php',
+            'icon' => 'project-diagram',
+            'roles' => ['admin', 'editor'],
+            'order' => 3,
+            'badge' => ''
+        ],
+        [
+            'id' => 'media',
+            'title' => 'Media Library',
+            'url' => 'admin-media.php',
+            'icon' => 'images',
+            'roles' => ['admin', 'editor', 'author'],
+            'order' => 4,
+            'badge' => ''
+        ],
+        [
+            'id' => 'testimonials',
+            'title' => 'Testimonials & Logos',
+            'url' => 'admin-testimonials.php',
+            'icon' => 'star',
+            'roles' => ['admin', 'editor'],
+            'order' => 5,
+            'badge' => ''
+        ],
+        [
+            'id' => 'faq',
+            'title' => 'FAQ Management',
+            'url' => 'admin-faq.php',
+            'icon' => 'question-circle',
+            'roles' => ['admin', 'editor'],
+            'order' => 6,
+            'badge' => ''
         ]
-    ],
-    [
-        'id' => 'communication',
-        'title' => 'Communication',
-        'url' => '#',
-        'icon' => 'message-circle',
-        'roles' => ['admin', 'editor'],
-        'order' => 4,
-        'badge' => '',
-        'children' => [
-            [
-                'id' => 'inquiries',
-                'title' => 'Inquiries',
-                'url' => 'admin-inquiries.php',
-                'roles' => ['admin', 'editor'],
-                'order' => 1,
-                'badge' => 'get_unread_inquiries_count' // Function that returns the badge number
-            ],
-            [
-                'id' => 'subscribers',
-                'title' => 'Subscribers',
-                'url' => 'admin-subscribers.php',
-                'roles' => ['admin', 'editor'],
-                'order' => 2,
-                'badge' => ''
-            ]
+    ]
+];
+
+// CRM
+$admin_menu[] = [
+    'id' => 'crm',
+    'title' => 'CRM',
+    'url' => 'javascript:void(0)',
+    'icon' => 'users',
+    'roles' => ['admin', 'editor'],
+    'order' => 3,
+    'badge' => '',
+    'children' => [
+        [
+            'id' => 'clients',
+            'title' => 'Clients',
+            'url' => 'admin-clients.php',
+            'icon' => 'user-tie',
+            'roles' => ['admin', 'editor'],
+            'order' => 1,
+            'badge' => ''
+        ],
+        [
+            'id' => 'subscribers',
+            'title' => 'Subscribers',
+            'url' => 'admin-subscribers.php',
+            'icon' => 'envelope-open-text',
+            'roles' => ['admin', 'editor'],
+            'order' => 2,
+            'badge' => ''
+        ],
+        [
+            'id' => 'inquiries',
+            'title' => 'Client Inquiries',
+            'url' => 'admin-inquiries.php',
+            'icon' => 'envelope',
+            'roles' => ['admin', 'editor'],
+            'order' => 3,
+            'badge' => '3'
+        ],
+        [
+            'id' => 'leads',
+            'title' => 'Lead Management',
+            'url' => 'admin-leads.php',
+            'icon' => 'funnel-dollar',
+            'roles' => ['admin', 'editor'],
+            'order' => 4,
+            'badge' => ''
         ]
-    ],
-    [
-        'id' => 'settings',
-        'title' => 'Settings',
-        'url' => 'admin-settings.php',
-        'icon' => 'settings',
-        'roles' => ['admin', 'superadmin'],
-        'order' => 5,
-        'badge' => '',
-        'children' => []
+    ]
+];
+
+// User Management
+$admin_menu[] = [
+    'id' => 'users',
+    'title' => 'User Management',
+    'url' => 'javascript:void(0)',
+    'icon' => 'user-shield',
+    'roles' => ['admin'],
+    'order' => 4,
+    'badge' => '',
+    'children' => [
+        [
+            'id' => 'all_users',
+            'title' => 'All Users',
+            'url' => 'admin-users.php',
+            'icon' => 'user-friends',
+            'roles' => ['admin'],
+            'order' => 1,
+            'badge' => ''
+        ],
+        [
+            'id' => 'roles',
+            'title' => 'Roles & Permissions',
+            'url' => 'admin-roles.php',
+            'icon' => 'user-tag',
+            'roles' => ['admin'],
+            'order' => 2,
+            'badge' => ''
+        ]
+    ]
+];
+
+// Site Settings
+$admin_menu[] = [
+    'id' => 'settings',
+    'title' => 'Site Settings',
+    'url' => 'javascript:void(0)',
+    'icon' => 'cogs',
+    'roles' => ['admin'],
+    'order' => 5,
+    'badge' => '',
+    'children' => [
+        [
+            'id' => 'general',
+            'title' => 'General Settings',
+            'url' => 'admin-settings.php',
+            'icon' => 'sliders-h',
+            'roles' => ['admin'],
+            'order' => 1,
+            'badge' => ''
+        ],
+        [
+            'id' => 'appearance',
+            'title' => 'Appearance',
+            'url' => 'admin-appearance.php',
+            'icon' => 'palette',
+            'roles' => ['admin'],
+            'order' => 2,
+            'badge' => ''
+        ],
+        [
+            'id' => 'seo',
+            'title' => 'SEO Settings',
+            'url' => 'admin-seo.php',
+            'icon' => 'search',
+            'roles' => ['admin'],
+            'order' => 3,
+            'badge' => ''
+        ],
+        [
+            'id' => 'integrations',
+            'title' => 'Integrations',
+            'url' => 'admin-integrations.php',
+            'icon' => 'plug',
+            'roles' => ['admin'],
+            'order' => 4,
+            'badge' => ''
+        ],
+        [
+            'id' => 'backup',
+            'title' => 'Backup & Restore',
+            'url' => 'admin-backup.php',
+            'icon' => 'database',
+            'roles' => ['admin'],
+            'order' => 5,
+            'badge' => ''
+        ]
     ]
 ];
 
 /**
- * Get menu items filtered by user role
- *
- * @param string $role The role to filter by
- * @return array Filtered menu items
+ * Function to render admin menu
+ * 
+ * @param array $menu Menu structure
+ * @param string $current_page Current page identifier
+ * @param string $user_role Current user role
+ * @return string HTML output of menu
  */
-function get_menu_by_role($role) {
-    global $admin_menu;
+function render_admin_menu($menu, $current_page, $user_role) {
+    $output = '';
     
-    $filtered_menu = [];
-    
-    foreach ($admin_menu as $item) {
-        // Check if user has permission for this menu item
-        if (in_array($role, $item['roles'])) {
-            $menu_item = $item;
-            
-            // Filter children by role as well
-            if (!empty($item['children'])) {
-                $filtered_children = [];
-                
-                foreach ($item['children'] as $child) {
-                    if (in_array($role, $child['roles'])) {
-                        // Process badge if it's a function name
-                        if (!empty($child['badge']) && function_exists($child['badge'])) {
-                            $badge_function = $child['badge'];
-                            $child['badge'] = $badge_function();
-                        }
-                        
-                        $filtered_children[] = $child;
-                    }
-                }
-                
-                // Sort children by order
-                usort($filtered_children, function($a, $b) {
-                    return $a['order'] <=> $b['order'];
-                });
-                
-                $menu_item['children'] = $filtered_children;
-            }
-            
-            // Process badge if it's a function name
-            if (!empty($menu_item['badge']) && function_exists($menu_item['badge'])) {
-                $badge_function = $menu_item['badge'];
-                $menu_item['badge'] = $badge_function();
-            }
-            
-            $filtered_menu[] = $menu_item;
-        }
-    }
-    
-    // Sort by order
-    usort($filtered_menu, function($a, $b) {
-        return $a['order'] <=> $b['order'];
+    // Sort menu items by order
+    usort($menu, function($a, $b) {
+        return $a['order'] - $b['order'];
     });
     
-    return $filtered_menu;
-}
-
-/**
- * Check if a menu item should be marked as active
- *
- * @param array $item Menu item
- * @param string $current_page Current page identifier
- * @return bool True if active
- */
-function is_menu_item_active($item, $current_page) {
-    // Direct match
-    if ($item['id'] === $current_page) {
-        return true;
-    }
-    
-    // Check children for matches
-    if (!empty($item['children'])) {
-        foreach ($item['children'] as $child) {
-            if ($child['id'] === $current_page) {
-                return true;
+    foreach ($menu as $item) {
+        // Check if user has permission to see this menu item
+        if (!in_array($user_role, $item['roles'])) {
+            continue;
+        }
+        
+        $has_children = !empty($item['children']);
+        $is_active = ($current_page == $item['id']);
+        $is_parent_of_active = false;
+        
+        // Check if this item is a parent of the current page
+        if ($has_children) {
+            foreach ($item['children'] as $child) {
+                if ($current_page == $child['id'] && in_array($user_role, $child['roles'])) {
+                    $is_parent_of_active = true;
+                    break;
+                }
             }
         }
-    }
-    
-    return false;
-}
-
-/**
- * Render the menu HTML
- *
- * @param string $role User role
- * @param string $current_page Current page identifier
- * @return string HTML for the menu
- */
-function render_admin_menu($role, $current_page) {
-    $menu_items = get_menu_by_role($role);
-    $html = '<ul class="admin-sidebar-nav">';
-    
-    foreach ($menu_items as $item) {
-        $is_active = is_menu_item_active($item, $current_page);
-        $has_children = !empty($item['children']);
         
-        $html .= '<li class="' . ($is_active ? 'active' : '') . ($has_children ? ' has-children' : '') . '">';
+        // Create CSS classes
+        $classes = [];
+        if ($has_children) {
+            $classes[] = 'has-submenu';
+        }
+        if ($is_active || $is_parent_of_active) {
+            $classes[] = 'active';
+        }
         
-        // Item link
-        $html .= '<a href="' . $item['url'] . '" class="nav-link">';
+        $class_attr = !empty($classes) ? ' class="' . implode(' ', $classes) . '"' : '';
         
-        // Icon
-        $html .= '<span class="nav-icon"><i class="icon-' . $item['icon'] . '"></i></span>';
+        // Start menu item
+        $output .= '<li' . $class_attr . '>';
         
-        // Title
-        $html .= '<span class="nav-title">' . $item['title'] . '</span>';
+        // Menu item link
+        $output .= '<a href="' . $item['url'] . '">';
+        $output .= '<i class="fas fa-' . $item['icon'] . '"></i>';
+        $output .= '<span>' . $item['title'] . '</span>';
         
-        // Badge
+        // Badge if any
         if (!empty($item['badge'])) {
-            $html .= '<span class="nav-badge">' . $item['badge'] . '</span>';
+            $output .= '<span class="badge">' . $item['badge'] . '</span>';
         }
         
-        // Dropdown arrow for items with children
+        // Arrow for submenu
         if ($has_children) {
-            $html .= '<span class="nav-arrow"></span>';
+            $output .= '<i class="fas fa-chevron-right submenu-icon"></i>';
         }
         
-        $html .= '</a>';
+        $output .= '</a>';
         
-        // Submenu
+        // Submenu if any
         if ($has_children) {
-            $html .= '<ul class="submenu' . ($is_active ? ' submenu-open' : '') . '">';
+            // Sort children by order
+            usort($item['children'], function($a, $b) {
+                return $a['order'] - $b['order'];
+            });
+            
+            $output .= '<ul class="submenu' . ($is_parent_of_active ? ' open' : '') . '">';
             
             foreach ($item['children'] as $child) {
-                $child_is_active = ($child['id'] === $current_page);
-                
-                $html .= '<li class="' . ($child_is_active ? 'active' : '') . '">';
-                $html .= '<a href="' . $child['url'] . '">';
-                $html .= '<span class="nav-title">' . $child['title'] . '</span>';
-                
-                // Badge for child item
-                if (!empty($child['badge'])) {
-                    $html .= '<span class="nav-badge">' . $child['badge'] . '</span>';
+                // Check if user has permission to see this submenu item
+                if (!in_array($user_role, $child['roles'])) {
+                    continue;
                 }
                 
-                $html .= '</a></li>';
+                $child_is_active = ($current_page == $child['id']);
+                $child_class = $child_is_active ? ' class="active"' : '';
+                
+                $output .= '<li' . $child_class . '>';
+                $output .= '<a href="' . $child['url'] . '">';
+                $output .= '<i class="fas fa-' . (isset($child['icon']) ? $child['icon'] : 'circle') . '"></i>';
+                $output .= $child['title'];
+                
+                // Badge if any
+                if (!empty($child['badge'])) {
+                    $output .= '<span class="badge">' . $child['badge'] . '</span>';
+                }
+                
+                $output .= '</a></li>';
             }
             
-            $html .= '</ul>';
+            $output .= '</ul>';
         }
         
-        $html .= '</li>';
+        $output .= '</li>';
     }
     
-    $html .= '</ul>';
-    return $html;
+    return $output;
 }
-
-/**
- * Example function to get unread inquiries count
- * This would typically query your database
- *
- * @return int|string Count of unread inquiries
- */
-function get_unread_inquiries_count() {
-    // This would be a database query in practice
-    // Example: SELECT COUNT(*) FROM inquiries WHERE read = 0
-    
-    $count = 5; // Hardcoded for example, replace with actual query
-    
-    if ($count > 0) {
-        return (string)$count;
-    }
-    
-    return '';
-}
-
-/**
- * Usage in admin-sidebar.php:
- * 
- * <?php
- * // Include the menu configuration
- * require_once 'admin-menu-config.php';
- * 
- * // Get admin role from session or authentication system
- * $admin_role = $admin_user['role'];
- * 
- * // Render the menu
- * echo render_admin_menu($admin_role, $current_page);
- * ?>
- */
