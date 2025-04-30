@@ -1,7 +1,7 @@
 <?php
 /**
- * Settings Test Adapter
- * A simplified version that works with existing database structure
+ * Settings Test Adapter (Improved)
+ * Works with your existing database configuration
  */
 
 // Enable error reporting for debugging
@@ -11,31 +11,8 @@ error_reporting(E_ALL);
 // Define constant to prevent direct access error
 define('ADMIN_PANEL', true);
 
-// Set up database connection - UPDATE THESE WITH YOUR ACTUAL DATABASE CREDENTIALS
-$db_host = 'localhost';
-$db_name = 'backzvsg_yourdbname'; // Change to your actual database name
-$db_user = 'backzvsg_dbuser';     // Change to your actual database username
-$db_pass = 'your_db_password';    // Change to your actual database password
-
-// Create database connection - using mysqli
-$db = new mysqli($db_host, $db_user, $db_pass, $db_name);
-
-// Check connection
-if ($db->connect_error) {
-    die("Database connection failed: " . $db->connect_error);
-}
-
-// Define upload directory constants if not already defined
-if (!defined('UPLOAD_DIR')) {
-    define('UPLOAD_DIR', dirname(__FILE__) . '/uploads/');
-}
-
-if (!defined('UPLOAD_URL')) {
-    // Calculate relative URL
-    $current_dir = dirname($_SERVER['PHP_SELF']);
-    $upload_url = $current_dir . '/uploads/';
-    define('UPLOAD_URL', $upload_url);
-}
+// Load configuration (will try to find your existing db connection)
+require_once 'config-loader.php';
 
 // Function to output a message with styling
 function display_message($message, $type = 'info') {
@@ -75,7 +52,7 @@ function create_upload_directories() {
             $results[] = [
                 'dir' => $dir,
                 'created' => $created,
-                'writable' => is_writable($dir)
+                'writable' => is_dir($dir) && is_writable($dir)
             ];
         } else {
             $results[] = [
@@ -89,8 +66,61 @@ function create_upload_directories() {
     return $results;
 }
 
-// Include the settings functions file
-require_once 'settings-functions.php';
+// Check if we need to create a custom database connection
+$db_connected = false;
+$connection_message = "";
+
+if (!isset($db) || !is_object($db)) {
+    // We need the user to provide database credentials
+    if ($_POST && isset($_POST['action']) && $_POST['action'] === 'connect_db') {
+        $db_host = $_POST['db_host'];
+        $db_user = $_POST['db_user'];
+        $db_pass = $_POST['db_pass'];
+        $db_name = $_POST['db_name'];
+        
+        // Try to connect
+        try {
+            $db = new mysqli($db_host, $db_user, $db_pass, $db_name);
+            
+            if ($db->connect_error) {
+                $connection_message = "Connection failed: " . $db->connect_error;
+            } else {
+                $db_connected = true;
+                $connection_message = "Connection successful!";
+                
+                // Save connection to session for future page loads
+                session_start();
+                $_SESSION['db_credentials'] = [
+                    'host' => $db_host,
+                    'user' => $db_user,
+                    'pass' => $db_pass,
+                    'name' => $db_name
+                ];
+            }
+        } catch (Exception $e) {
+            $connection_message = "Connection error: " . $e->getMessage();
+        }
+    } else {
+        // Check if we have credentials in session
+        session_start();
+        if (isset($_SESSION['db_credentials'])) {
+            $creds = $_SESSION['db_credentials'];
+            try {
+                $db = new mysqli($creds['host'], $creds['user'], $creds['pass'], $creds['name']);
+                if (!$db->connect_error) {
+                    $db_connected = true;
+                    $connection_message = "Connected using saved credentials.";
+                }
+            } catch (Exception $e) {
+                // Ignore, we'll just show the connection form
+            }
+        }
+    }
+} else {
+    // We already have a database connection from config-loader.php
+    $db_connected = true;
+    $connection_message = "Using existing database connection from your configuration.";
+}
 
 // Create upload directories
 $dir_results = create_upload_directories();
@@ -99,9 +129,14 @@ $dir_results = create_upload_directories();
 $creation_result = null;
 $test_result = null;
 
-if ($_POST && isset($_POST['action'])) {
+if ($db_connected && $_POST && isset($_POST['action'])) {
     switch ($_POST['action']) {
         case 'create_tables':
+            // Include settings functions
+            if (!function_exists('create_settings_table_if_needed')) {
+                require_once 'settings-functions.php';
+            }
+            
             // Create tables
             $settings_table = create_settings_table_if_needed();
             $chatbot_tables = create_chatbot_tables_if_needed();
@@ -120,6 +155,11 @@ if ($_POST && isset($_POST['action'])) {
             break;
             
         case 'insert_defaults':
+            // Include settings functions
+            if (!function_exists('insert_default_settings')) {
+                require_once 'settings-functions.php';
+            }
+            
             // Insert default settings
             $result = insert_default_settings();
             
@@ -137,6 +177,11 @@ if ($_POST && isset($_POST['action'])) {
             break;
             
         case 'test_setting':
+            // Include settings functions
+            if (!function_exists('set_setting')) {
+                require_once 'settings-functions.php';
+            }
+            
             // Test setting functions
             $test_group = 'test_group';
             $test_key = 'test_key';
@@ -169,32 +214,34 @@ if ($_POST && isset($_POST['action'])) {
 $settings_table_exists = false;
 $settings_count = 0;
 
-try {
-    $result = $db->query("SHOW TABLES LIKE 'settings'");
-    $settings_table_exists = ($result && $result->num_rows > 0);
-    
-    if ($settings_table_exists) {
-        $result = $db->query("SELECT COUNT(*) as count FROM settings");
-        if ($result && $row = $result->fetch_assoc()) {
-            $settings_count = $row['count'];
+if ($db_connected) {
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'settings'");
+        $settings_table_exists = ($result && $result->num_rows > 0);
+        
+        if ($settings_table_exists) {
+            $result = $db->query("SELECT COUNT(*) as count FROM settings");
+            if ($result && $row = $result->fetch_assoc()) {
+                $settings_count = $row['count'];
+            }
         }
+    } catch (Exception $e) {
+        // Ignore errors
     }
-} catch (Exception $e) {
-    // Ignore errors
-}
 
-// Check if chat tables exist
-$chat_sessions_exists = false;
-$chat_logs_exists = false;
+    // Check if chat tables exist
+    $chat_sessions_exists = false;
+    $chat_logs_exists = false;
 
-try {
-    $result = $db->query("SHOW TABLES LIKE 'chat_sessions'");
-    $chat_sessions_exists = ($result && $result->num_rows > 0);
-    
-    $result = $db->query("SHOW TABLES LIKE 'chat_logs'");
-    $chat_logs_exists = ($result && $result->num_rows > 0);
-} catch (Exception $e) {
-    // Ignore errors
+    try {
+        $result = $db->query("SHOW TABLES LIKE 'chat_sessions'");
+        $chat_sessions_exists = ($result && $result->num_rows > 0);
+        
+        $result = $db->query("SHOW TABLES LIKE 'chat_logs'");
+        $chat_logs_exists = ($result && $result->num_rows > 0);
+    } catch (Exception $e) {
+        // Ignore errors
+    }
 }
 
 ?>
@@ -295,12 +342,31 @@ try {
         .indicator-danger {
             background-color: #e74c3c;
         }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Settings System Adapter</h1>
         <p>This tool will help you set up the Settings System to work with your existing database.</p>
+        
+        <?php if ($connection_message): ?>
+            <?php display_message($connection_message, $db_connected ? 'success' : 'error'); ?>
+        <?php endif; ?>
         
         <?php if ($creation_result): ?>
             <?php display_message($creation_result['message'], $creation_result['success'] ? 'success' : 'error'); ?>
@@ -313,14 +379,41 @@ try {
             <?php endif; ?>
         <?php endif; ?>
         
+        <?php if (!$db_connected): ?>
         <div class="card">
             <h2>1. Database Connection</h2>
-            <?php if ($db->connect_error): ?>
-                <?php display_message("Database connection failed: " . $db->connect_error, 'error'); ?>
-            <?php else: ?>
-                <?php display_message("Database connection successful!", 'success'); ?>
-                <p>Connected to: <?php echo $db_name; ?> at <?php echo $db_host; ?></p>
-            <?php endif; ?>
+            <p>We couldn't find an existing database connection. Please provide your database credentials:</p>
+            
+            <form method="post">
+                <input type="hidden" name="action" value="connect_db">
+                
+                <div class="form-group">
+                    <label for="db_host">Database Host:</label>
+                    <input type="text" id="db_host" name="db_host" value="localhost" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="db_user">Database Username:</label>
+                    <input type="text" id="db_user" name="db_user" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="db_pass">Database Password:</label>
+                    <input type="password" id="db_pass" name="db_pass" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="db_name">Database Name:</label>
+                    <input type="text" id="db_name" name="db_name" required>
+                </div>
+                
+                <button type="submit" class="btn btn-success">Connect to Database</button>
+            </form>
+        </div>
+        <?php else: ?>
+        <div class="card">
+            <h2>1. Database Connection</h2>
+            <?php display_message("Database connection successful!", 'success'); ?>
         </div>
         
         <div class="card">
@@ -455,6 +548,7 @@ try {
                 <a href="admin-notification-settings.php" class="btn">Notification Settings</a>
             </div>
         </div>
+        <?php endif; ?>
     </div>
 </body>
 </html>
