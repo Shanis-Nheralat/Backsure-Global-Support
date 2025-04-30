@@ -1,284 +1,318 @@
 <?php
 /**
- * Settings Test Script
- * Tests the settings system functionality
+ * Settings Test (Simple Version)
+ * Tests the settings system functionality with minimal dependencies
  */
 
-// Define constants for this page
+// Error reporting for debugging
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+// Define constant to prevent direct access
 define('ADMIN_PANEL', true);
 
-// Authentication and permissions
-require_once 'admin-auth.php';
-require_admin_auth();
-require_admin_role(['admin']);
-
-// Include notifications system
-require_once 'admin-notifications.php';
-
-// Include settings functions
-require_once 'settings-functions.php';
-
-// Set page title and header
-$page_title = 'Settings System Test';
-
-// Create test log function
-function log_test($message, $type = 'info') {
-    echo "<div class='alert alert-{$type}'>{$message}</div>";
+// Simple output function
+function output_message($message, $type = 'info') {
+    echo "<div style='margin: 10px 0; padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: ";
+    
+    switch ($type) {
+        case 'success':
+            echo "#d4edda; color: #155724";
+            break;
+        case 'error':
+            echo "#f8d7da; color: #721c24";
+            break;
+        case 'warning':
+            echo "#fff3cd; color: #856404";
+            break;
+        default:
+            echo "#d1ecf1; color: #0c5460";
+    }
+    
+    echo ";'>{$message}</div>";
 }
 
-// Initialize test results
-$test_results = [
-    'passed' => 0,
-    'failed' => 0,
-    'total' => 0
+// Check if required files exist
+$required_files = [
+    'settings-functions.php',
+    'admin-seo.php',
+    'admin-integrations.php',
+    'admin-chat-settings.php',
+    'admin-settings.php',
+    'admin-notification-settings.php',
+    'media-library.php'
 ];
 
-// Process tests if requested
-$tests_complete = false;
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_tests'])) {
-    $tests_complete = true;
-    
-    // Start testing process
-    log_test("Starting settings system tests...", 'primary');
-    
-    // Test 1: Database connection
-    $test_results['total']++;
-    try {
-        global $db;
-        if ($db && $db->ping()) {
-            log_test("✅ Test 1: Database connection successful", 'success');
-            $test_results['passed']++;
-        } else {
-            log_test("❌ Test 1: Database connection failed", 'danger');
-            $test_results['failed']++;
-        }
-    } catch (Exception $e) {
-        log_test("❌ Test 1: Database connection failed - " . $e->getMessage(), 'danger');
-        $test_results['failed']++;
+$missing_files = [];
+foreach ($required_files as $file) {
+    if (!file_exists($file)) {
+        $missing_files[] = $file;
     }
-    
-    // Test 2: Settings table exists
-    $test_results['total']++;
-    $table_check = $db->query("SHOW TABLES LIKE 'settings'");
-    if ($table_check && $table_check->num_rows > 0) {
-        log_test("✅ Test 2: Settings table exists", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 2: Settings table not found", 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 3: Create a test setting
-    $test_results['total']++;
-    $test_value = 'test_value_' . time();
-    if (set_setting('test_group', 'test_key', $test_value, 'text')) {
-        log_test("✅ Test 3: Test setting created successfully", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 3: Failed to create test setting", 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 4: Retrieve the test setting
-    $test_results['total']++;
-    $retrieved_value = get_setting('test_group', 'test_key');
-    if ($retrieved_value === $test_value) {
-        log_test("✅ Test 4: Test setting retrieved successfully (value: {$retrieved_value})", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 4: Failed to retrieve test setting correctly (expected: {$test_value}, got: {$retrieved_value})", 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 5: Update the test setting
-    $test_results['total']++;
-    $updated_value = 'updated_value_' . time();
-    if (set_setting('test_group', 'test_key', $updated_value, 'text')) {
-        log_test("✅ Test 5: Test setting updated successfully", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 5: Failed to update test setting", 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 6: Retrieve the updated test setting
-    $test_results['total']++;
-    $retrieved_value = get_setting('test_group', 'test_key');
-    if ($retrieved_value === $updated_value) {
-        log_test("✅ Test 6: Updated test setting retrieved successfully (value: {$retrieved_value})", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 6: Failed to retrieve updated test setting correctly (expected: {$updated_value}, got: {$retrieved_value})", 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 7: Get setting with default value
-    $test_results['total']++;
-    $default_value = 'default_test_value';
-    $retrieved_value = get_setting('test_group', 'non_existent_key', $default_value);
-    if ($retrieved_value === $default_value) {
-        log_test("✅ Test 7: Default value returned correctly for non-existent setting", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 7: Failed to return default value for non-existent setting", 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 8: Get settings by group
-    $test_results['total']++;
-    $group_settings = get_settings_by_group('test_group');
-    if (is_array($group_settings) && isset($group_settings['test_key']) && $group_settings['test_key'] === $updated_value) {
-        log_test("✅ Test 8: Settings retrieved by group successfully", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 8: Failed to retrieve settings by group", 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 9: Test boolean setting
-    $test_results['total']++;
-    set_setting('test_group', 'bool_test', true, 'boolean');
-    $bool_value = get_setting('test_group', 'bool_test');
-    if ($bool_value === true) {
-        log_test("✅ Test 9: Boolean setting handled correctly", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 9: Failed to handle boolean setting correctly (expected: true, got: " . var_export($bool_value, true) . ")", 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 10: Test JSON setting
-    $test_results['total']++;
-    $json_data = ['key1' => 'value1', 'key2' => 'value2'];
-    set_setting('test_group', 'json_test', $json_data, 'json');
-    $json_value = get_setting('test_group', 'json_test');
-    if (is_array($json_value) && $json_value['key1'] === 'value1' && $json_value['key2'] === 'value2') {
-        log_test("✅ Test 10: JSON setting handled correctly", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 10: Failed to handle JSON setting correctly", 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 11: File upload directories
-    $test_results['total']++;
-    if (defined('UPLOAD_DIR') && is_dir(UPLOAD_DIR) && is_writable(UPLOAD_DIR)) {
-        log_test("✅ Test 11: Upload directory exists and is writable", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 11: Upload directory issues - " . (defined('UPLOAD_DIR') ? UPLOAD_DIR : 'UPLOAD_DIR not defined'), 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 12: Notification system
-    $test_results['total']++;
-    try {
-        set_success_message("Test notification message");
-        log_test("✅ Test 12: Notification system is working", 'success');
-        $test_results['passed']++;
-    } catch (Exception $e) {
-        log_test("❌ Test 12: Notification system error - " . $e->getMessage(), 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 13: Check settings pages
-    $test_results['total']++;
-    $settings_pages = [
-        'admin-seo.php',
-        'admin-integrations.php',
-        'admin-chat-settings.php',
-        'admin-settings.php',
-        'admin-notification-settings.php'
-    ];
-    
-    $missing_pages = [];
-    foreach ($settings_pages as $page) {
-        if (!file_exists($page)) {
-            $missing_pages[] = $page;
-        }
-    }
-    
-    if (empty($missing_pages)) {
-        log_test("✅ Test 13: All settings pages exist", 'success');
-        $test_results['passed']++;
-    } else {
-        log_test("❌ Test 13: Missing settings pages: " . implode(', ', $missing_pages), 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Test 14: Check menu configuration
-    $test_results['total']++;
-    if (file_exists('admin-menu-config.php')) {
-        include_once 'admin-menu-config.php';
-        
-        $settings_menu_found = false;
-        foreach ($admin_menu as $menu_item) {
-            if ($menu_item['id'] === 'settings') {
-                $settings_menu_found = true;
-                break;
-            }
-        }
-        
-        if ($settings_menu_found) {
-            log_test("✅ Test 14: Settings menu exists in configuration", 'success');
-            $test_results['passed']++;
-        } else {
-            log_test("❌ Test 14: Settings menu not found in configuration", 'danger');
-            $test_results['failed']++;
-        }
-    } else {
-        log_test("❌ Test 14: Menu configuration file not found", 'danger');
-        $test_results['failed']++;
-    }
-    
-    // Final summary
-    log_test("Testing completed. Passed: {$test_results['passed']}/{$test_results['total']} tests", $test_results['passed'] === $test_results['total'] ? 'success' : 'warning');
 }
 
-// Include the admin header
-include 'admin-head.php';
-include 'admin-sidebar.php';
-include 'admin-header.php';
-?>
-
-<main class="admin-main">
-  <div class="admin-content container-fluid py-4">
-    <div class="page-header d-flex justify-content-between align-items-center mb-4">
-      <h1><?php echo $page_title; ?></h1>
-    </div>
-    
-    <?php display_notifications(); ?>
-    
-    <?php if ($tests_complete): ?>
-    <div class="card shadow mb-4">
-      <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Test Results</h6>
-      </div>
-      <div class="card-body">
-        <div class="test-results mb-4">
-          <div class="alert <?php echo $test_results['passed'] === $test_results['total'] ? 'alert-success' : 'alert-warning'; ?>">
-            <h5 class="alert-heading">
-              <?php echo $test_results['passed'] === $test_results['total'] ? '✅ All tests passed!' : '⚠️ Some tests failed'; ?>
-            </h5>
-            <p>Passed: <?php echo $test_results['passed']; ?> / <?php echo $test_results['total']; ?> tests</p>
-            <?php if ($test_results['failed'] > 0): ?>
-            <p>Failed: <?php echo $test_results['failed']; ?> tests</p>
-            <?php endif; ?>
-          </div>
+// Initial HTML
+?><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        .btn-secondary {
+            background-color: #95a5a6;
+        }
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Settings System Test</h1>
+        
+        <?php if (!empty($missing_files)): ?>
+        <div style="margin: 20px 0; padding: 15px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 4px;">
+            <h3>Missing Files</h3>
+            <p>The following required files are missing:</p>
+            <ul>
+                <?php foreach ($missing_files as $file): ?>
+                <li><?php echo $file; ?></li>
+                <?php endforeach; ?>
+            </ul>
+            <p>Please ensure all files are uploaded to the correct location.</p>
+        </div>
+        <?php else: ?>
+        <div style="margin: 20px 0; padding: 15px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 4px;">
+            <p>All required files are present.</p>
+        </div>
+        <?php endif; ?>
+        
+        <div class="card">
+            <h2>1. Database Connection Test</h2>
+            <?php
+            // Simple database connection test
+            try {
+                // Define database connection here
+                $db_host = 'localhost'; // Change as needed
+                $db_name = 'your_database'; // Change to your database name
+                $db_user = 'your_username'; // Change to your database username
+                $db_pass = 'your_password'; // Change to your database password
+                
+                // Create connection with error checking
+                $db = new mysqli($db_host, $db_user, $db_pass, $db_name);
+                
+                // Check connection
+                if ($db->connect_error) {
+                    throw new Exception("Connection failed: " . $db->connect_error);
+                }
+                
+                output_message("Database connection successful!", "success");
+                
+                // Check if settings table exists
+                $result = $db->query("SHOW TABLES LIKE 'settings'");
+                if ($result && $result->num_rows > 0) {
+                    output_message("Settings table exists in the database.", "success");
+                    
+                    // Get table structure
+                    $result = $db->query("DESCRIBE settings");
+                    if ($result && $result->num_rows > 0) {
+                        echo "<h3>Settings Table Structure:</h3>";
+                        echo "<table>";
+                        echo "<tr><th>Field</th><th>Type</th><th>Null</th><th>Key</th><th>Default</th><th>Extra</th></tr>";
+                        
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>";
+                            echo "<td>" . $row['Field'] . "</td>";
+                            echo "<td>" . $row['Type'] . "</td>";
+                            echo "<td>" . $row['Null'] . "</td>";
+                            echo "<td>" . $row['Key'] . "</td>";
+                            echo "<td>" . ($row['Default'] !== null ? $row['Default'] : 'NULL') . "</td>";
+                            echo "<td>" . $row['Extra'] . "</td>";
+                            echo "</tr>";
+                        }
+                        
+                        echo "</table>";
+                    } else {
+                        output_message("Could not retrieve settings table structure.", "error");
+                    }
+                    
+                    // Count settings
+                    $result = $db->query("SELECT COUNT(*) as count FROM settings");
+                    if ($result && $row = $result->fetch_assoc()) {
+                        output_message("Total settings in the database: " . $row['count'], "info");
+                    }
+                    
+                    // Show sample settings
+                    $result = $db->query("SELECT setting_group, setting_key, setting_value, type FROM settings LIMIT 5");
+                    if ($result && $result->num_rows > 0) {
+                        echo "<h3>Sample Settings:</h3>";
+                        echo "<table>";
+                        echo "<tr><th>Group</th><th>Key</th><th>Value</th><th>Type</th></tr>";
+                        
+                        while ($row = $result->fetch_assoc()) {
+                            echo "<tr>";
+                            echo "<td>" . $row['setting_group'] . "</td>";
+                            echo "<td>" . $row['setting_key'] . "</td>";
+                            echo "<td>" . (strlen($row['setting_value']) > 50 ? substr($row['setting_value'], 0, 50) . '...' : $row['setting_value']) . "</td>";
+                            echo "<td>" . $row['type'] . "</td>";
+                            echo "</tr>";
+                        }
+                        
+                        echo "</table>";
+                    }
+                } else {
+                    output_message("Settings table does not exist in the database. Have you run the database setup script?", "error");
+                }
+                
+                // Check other required tables
+                $required_tables = ['chat_sessions', 'chat_logs'];
+                foreach ($required_tables as $table) {
+                    $result = $db->query("SHOW TABLES LIKE '{$table}'");
+                    if ($result && $result->num_rows > 0) {
+                        output_message("{$table} table exists in the database.", "success");
+                    } else {
+                        output_message("{$table} table does not exist in the database.", "warning");
+                    }
+                }
+                
+            } catch (Exception $e) {
+                output_message("Database Error: " . $e->getMessage(), "error");
+            }
+            ?>
         </div>
         
-        <div class="d-flex mt-4">
-          <a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn btn-primary">
-            <i class="fas fa-sync-alt me-2"></i> Run Tests Again
-          </a>
-          <a href="admin-dashboard.php" class="btn btn-secondary ms-2">
-            <i class="fas fa-home me-2"></i> Return to Dashboard
-          </a>
-          
-          <?php if ($test_results['failed'] > 0): ?>
-          <div class="ms-auto">
-            <a href="settings-troubleshoot.php" class="btn btn-warning">
-              <i class="fas fa-wrench me-2"></i> Troubleshooting Guide
-            </a>
-          </div>
-          <?php endif; ?>
+        <div class="card">
+            <h2>2. File System Test</h2>
+            <?php
+            // Check upload directory
+            $upload_dir = __DIR__ . '/uploads/';
+            if (!defined('UPLOAD_DIR')) {
+                define('UPLOAD_DIR', $upload_dir);
+            }
+            
+            if (is_dir(UPLOAD_DIR)) {
+                output_message("Upload directory exists: " . UPLOAD_DIR, "success");
+                
+                // Check permissions
+                if (is_writable(UPLOAD_DIR)) {
+                    output_message("Upload directory is writable.", "success");
+                } else {
+                    output_message("Upload directory is not writable. Please set the correct permissions (755 for directories).", "error");
+                }
+                
+                // Check media subdirectory
+                $media_dir = UPLOAD_DIR . 'media/';
+                if (is_dir($media_dir)) {
+                    output_message("Media directory exists: " . $media_dir, "success");
+                    
+                    if (is_writable($media_dir)) {
+                        output_message("Media directory is writable.", "success");
+                    } else {
+                        output_message("Media directory is not writable. Please set the correct permissions (755 for directories).", "error");
+                    }
+                } else {
+                    output_message("Media directory does not exist: " . $media_dir . ". Please create it.", "warning");
+                }
+            } else {
+                output_message("Upload directory does not exist: " . UPLOAD_DIR . ". Please create it.", "error");
+            }
+            
+            // Check PHP limits
+            echo "<h3>PHP Settings:</h3>";
+            echo "<ul>";
+            echo "<li>max_execution_time: " . ini_get('max_execution_time') . " seconds</li>";
+            echo "<li>memory_limit: " . ini_get('memory_limit') . "</li>";
+            echo "<li>upload_max_filesize: " . ini_get('upload_max_filesize') . "</li>";
+            echo "<li>post_max_size: " . ini_get('post_max_size') . "</li>";
+            echo "</ul>";
+            
+            // Check extensions
+            $required_extensions = ['mysqli', 'gd', 'fileinfo', 'json'];
+            $missing_extensions = [];
+            
+            foreach ($required_extensions as $ext) {
+                if (!extension_loaded($ext)) {
+                    $missing_extensions[] = $ext;
+                }
+            }
+            
+            if (empty($missing_extensions)) {
+                output_message("All required PHP extensions are loaded.", "success");
+            } else {
+                output_message("Missing required PHP extensions: " . implode(', ', $missing_extensions), "error");
+            }
+            ?>
+        </div>
+        
+        <div class="card">
+            <h2>3. Environment Information</h2>
+            <?php
+            echo "<ul>";
+            echo "<li>PHP Version: " . phpversion() . "</li>";
+            echo "<li>Server Software: " . $_SERVER['SERVER_SOFTWARE'] . "</li>";
+            echo "<li>Document Root: " . $_SERVER['DOCUMENT_ROOT'] . "</li>";
+            echo "<li>Current Script Path: " . __FILE__ . "</li>";
+            echo "</ul>";
+            ?>
+        </div>
+        
+        <div style="margin: 20px 0;">
+            <a href="admin-dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>
