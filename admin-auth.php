@@ -95,14 +95,6 @@ function get_admin_user() {
         'id' => isset($_SESSION['admin_id']) ? $_SESSION['admin_id'] : 0
     ];
     
-    // Get additional user info from database if logged in
-    if (is_admin_logged_in() && isset($_SESSION['admin_id'])) {
-        $db_profile = get_admin_profile($_SESSION['admin_id']);
-        if ($db_profile && is_array($db_profile)) {
-            $admin_info = array_merge($admin_info, $db_profile);
-        }
-    }
-    
     return $admin_info;
 }
 
@@ -123,94 +115,6 @@ function has_admin_permission($permission) {
     }
     
     return false;
-}
-
-/**
- * Get database connection
- * 
- * @return PDO Database connection
- */
-function get_db_connection() {
-    static $db = null;
-    
-    if ($db === null) {
-        $host = 'localhost'; // Replace with your database host
-        $dbname = 'admin_dashboard'; // Replace with your database name
-        $username = 'root'; // Replace with your database username
-        $password = ''; // Replace with your database password
-        
-        try {
-            $db = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
-            $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-            $db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-        } catch (PDOException $e) {
-            error_log("Database connection error: " . $e->getMessage());
-            die("Database connection failed. Please try again later.");
-        }
-    }
-    
-    return $db;
-}
-
-/**
- * Log admin action
- * 
- * @param string $action_type Type of action
- * @param string $resource Resource affected
- * @param int $resource_id ID of the resource
- * @param string $details Additional details
- * @return bool Success status
- */
-function log_admin_action($action_type, $resource, $resource_id, $details = '') {
-    try {
-        $db = get_db_connection();
-        
-        $stmt = $db->prepare("INSERT INTO admin_activity_log 
-            (user_id, username, action_type, resource, resource_id, details, ip_address, timestamp)
-            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
-            
-        $stmt->execute([
-            $_SESSION['admin_id'] ?? 0,
-            $_SESSION['admin_username'] ?? 'unknown',
-            $action_type,
-            $resource,
-            $resource_id,
-            $details,
-            $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0'
-        ]);
-        
-        return true;
-    } catch (PDOException $e) {
-        error_log("Error logging admin action: " . $e->getMessage());
-        return false;
-    }
-}
-
-/**
- * Get admin database profile
- * 
- * @param int $admin_id Admin ID
- * @return array Admin profile data
- */
-function get_admin_profile($admin_id = null) {
-    if ($admin_id === null) {
-        $admin_id = $_SESSION['admin_id'] ?? 0;
-    }
-    
-    if ($admin_id <= 0) {
-        return [];
-    }
-    
-    try {
-        $db = get_db_connection();
-        $stmt = $db->prepare("SELECT * FROM admins WHERE id = ?");
-        $stmt->execute([$admin_id]);
-        return $stmt->fetch();
-    } catch (PDOException $e) {
-        error_log("Error fetching admin profile: " . $e->getMessage());
-        return [];
-    }
 }
 
 // Global variables for admin pages
