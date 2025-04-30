@@ -91,4 +91,112 @@ include 'admin-header.php';
                                 'required' => true
                             ]); ?>
                             
-                            <?php echo render_setting_field('site_general', 'site_tagline', 'Site Tagline', 'text', [
+                            <?php echo render_setting_field('site_general', 'site_tagline', 'Site Tagline', 'text', [<?php echo render_setting_field('site_general', 'site_tagline', 'Site Tagline', 'text', [
+                                'placeholder' => 'Enter your website tagline',
+                                'description' => 'A short description of your website'
+                            ]); ?>
+                            
+                            <?php echo render_setting_field('site_general', 'admin_email', 'Admin Email', 'email', [
+                                'placeholder' => 'Enter admin email address',
+                                'required' => true,
+                                'description' => 'Used for system notifications and alerts'
+                            ]); ?>
+                            
+                            <?php echo render_setting_field('site_general', 'timezone', 'Timezone', 'text', [
+                                'placeholder' => 'e.g., America/New_York',
+                                'description' => 'Website timezone (default: UTC)'
+                            ]); ?>
+                            
+                            <?php echo render_setting_field('site_general', 'default_language', 'Default Language', 'text', [
+                                'placeholder' => 'e.g., en-US',
+                                'description' => 'ISO language code for your website'
+                            ]); ?>
+                        </div>
+                        <div class="col-md-6">
+                            <?php echo render_setting_field('site_general', 'site_logo', 'Site Logo', 'image', [
+                                'description' => 'Main logo for your website (recommended: 200×50 pixels)'
+                            ]); ?>
+                            
+                            <?php echo render_setting_field('site_general', 'favicon', 'Favicon', 'image', [
+                                'description' => 'Small icon shown in browser tabs (recommended: 32×32 pixels)'
+                            ]); ?>
+                            
+                            <?php echo render_setting_field('site_general', 'maintenance_mode', 'Maintenance Mode', 'boolean', [
+                                'description' => 'Enable to show a maintenance page to visitors'
+                            ]); ?>
+                            
+                            <?php echo render_setting_field('site_general', 'registration_enabled', 'Enable Registration', 'boolean', [
+                                'description' => 'Allow new user registrations'
+                            ]); ?>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Save Site Settings
+                        </button>
+                        <button type="reset" class="btn btn-secondary ms-2">
+                            <i class="fas fa-undo me-2"></i> Reset Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Environment Information</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th>PHP Version</th>
+                                    <td><?php echo phpversion(); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Server Software</th>
+                                    <td><?php echo $_SERVER['SERVER_SOFTWARE']; ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Database Type</th>
+                                    <td>MySQL</td>
+                                </tr>
+                                <tr>
+                                    <th>Max Upload Size</th>
+                                    <td><?php echo ini_get('upload_max_filesize'); ?></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th>Post Max Size</th>
+                                    <td><?php echo ini_get('post_max_size'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Memory Limit</th>
+                                    <td><?php echo ini_get('memory_limit'); ?></td>
+                                </tr>
+                                <tr>
+                                    <th>Max Execution Time</th>
+                                    <td><?php echo ini_get('max_execution_time'); ?> seconds</td>
+                                </tr>
+                                <tr>
+                                    <th>Current Time</th>
+                                    <td><?php echo date('Y-m-d H:i:s'); ?></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<?php include 'admin-footer.php'; ?>
