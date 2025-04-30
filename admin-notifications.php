@@ -1,323 +1,198 @@
 <?php
 /**
- * Standardized message/alert system
- * Handles session-based notifications
+ * Admin Notifications Component
+ * Handles system notifications and alerts
  */
 
 // Start session if not already started
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 
-// Initialize notifications array in session if not exists
-if (!isset($_SESSION['notifications'])) {
-    $_SESSION['notifications'] = [];
-}
-
 /**
- * Add a success message to be displayed
- * 
- * @param string $message The message to display
- * @param bool $dismissible Whether the message can be dismissed (default: true)
- * @param int $timeout Automatic dismissal timeout in milliseconds, 0 for no timeout (default: 0)
- * @return void
+ * Set a notification message
+ * @param string $type Notification type (success, error, warning, info)
+ * @param string $message Notification message
+ * @param string $link Optional link related to notification
+ * @param int $user_id User ID (null for session-only notifications)
+ * @return bool True on success, false on failure
  */
-function set_success_message($message, $dismissible = true, $timeout = 0) {
-    $_SESSION['notifications'][] = [
-        'type' => 'success',
-        'message' => $message,
-        'dismissible' => $dismissible,
-        'timeout' => $timeout
-    ];
-}
-
-/**
- * Add an error message to be displayed
- * 
- * @param string $message The message to display
- * @param bool $dismissible Whether the message can be dismissed (default: true)
- * @param int $timeout Automatic dismissal timeout in milliseconds, 0 for no timeout (default: 0)
- * @return void
- */
-function set_error_message($message, $dismissible = true, $timeout = 0) {
-    $_SESSION['notifications'][] = [
-        'type' => 'error',
-        'message' => $message,
-        'dismissible' => $dismissible,
-        'timeout' => $timeout
-    ];
-}
-
-/**
- * Add a warning message to be displayed
- * 
- * @param string $message The message to display
- * @param bool $dismissible Whether the message can be dismissed (default: true)
- * @param int $timeout Automatic dismissal timeout in milliseconds, 0 for no timeout (default: 0)
- * @return void
- */
-function set_warning_message($message, $dismissible = true, $timeout = 0) {
-    $_SESSION['notifications'][] = [
-        'type' => 'warning',
-        'message' => $message,
-        'dismissible' => $dismissible,
-        'timeout' => $timeout
-    ];
-}
-
-/**
- * Add an info message to be displayed
- * 
- * @param string $message The message to display
- * @param bool $dismissible Whether the message can be dismissed (default: true)
- * @param int $timeout Automatic dismissal timeout in milliseconds, 0 for no timeout (default: 0)
- * @return void
- */
-function set_info_message($message, $dismissible = true, $timeout = 0) {
-    $_SESSION['notifications'][] = [
-        'type' => 'info',
-        'message' => $message,
-        'dismissible' => $dismissible,
-        'timeout' => $timeout
-    ];
-}
-
-/**
- * Display all notifications and clear them from session
- * Compatible with Bootstrap 5 alerts
- * 
- * @return void
- */
-function display_notifications() {
-    if (empty($_SESSION['notifications'])) {
-        return;
+function set_admin_notification($type, $message, $link = null, $user_id = null) {
+    global $db;
+    
+    // Always store in session for current request
+    if (!isset($_SESSION['admin_notifications'])) {
+        $_SESSION['admin_notifications'] = [];
     }
     
-    echo '<div class="admin-notifications container-fluid py-2">';
+    $_SESSION['admin_notifications'][] = [
+        'type' => $type,
+        'message' => $message,
+        'link' => $link,
+        'time' => time()
+    ];
     
-    foreach ($_SESSION['notifications'] as $notification) {
-        // Convert notification type to Bootstrap alert type
-        $type = $notification['type'];
-        if ($type === 'error') {
-            $type = 'danger';
+    // If user_id is provided, store in database
+    if ($user_id && $db) {
+        try {
+            $stmt = $db->prepare("INSERT INTO admin_notifications (user_id, type, message, link, created_at) VALUES (?, ?, ?, ?, NOW())");
+            return $stmt->execute([$user_id, $type, $message, $link]);
+        } catch (PDOException $e) {
+            error_log("Error storing notification: " . $e->getMessage());
+            return false;
         }
-        
-        $dismissible_class = $notification['dismissible'] ? ' alert-dismissible fade show' : '';
-        $data_timeout = $notification['timeout'] > 0 ? ' data-timeout="' . $notification['timeout'] . '"' : '';
-        
-        echo '<div class="alert alert-' . $type . $dismissible_class . '"' . $data_timeout . ' role="alert">';
-        
-        // Add icon based on notification type
-        switch ($notification['type']) {
-            case 'success':
-                echo '<i class="fas fa-check-circle me-2"></i>';
-                break;
-            case 'error':
-                echo '<i class="fas fa-times-circle me-2"></i>';
-                break;
-            case 'warning':
-                echo '<i class="fas fa-exclamation-triangle me-2"></i>';
-                break;
-            case 'info':
-                echo '<i class="fas fa-info-circle me-2"></i>';
-                break;
-        }
-        
-        echo $notification['message'];
-        
-        if ($notification['dismissible']) {
-            echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-        }
-        
-        echo '</div>';
     }
     
-    echo '</div>';
-    
-    // Add script for auto-dismissing notifications
-    if (hasTimeoutNotifications($_SESSION['notifications'])) {
-        ?>
-        <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const notifications = document.querySelectorAll('[data-timeout]');
-            notifications.forEach(notification => {
-                const timeout = notification.getAttribute('data-timeout');
-                if (timeout && !isNaN(parseInt(timeout))) {
-                    setTimeout(() => {
-                        const closeBtn = notification.querySelector('.btn-close');
-                        if (closeBtn) {
-                            closeBtn.click();
-                        } else {
-                            notification.remove();
-                        }
-                    }, parseInt(timeout));
-                }
-            });
-        });
-        </script>
-        <?php
-    }
-    
-    // Clear notifications
-    $_SESSION['notifications'] = [];
+    return true;
 }
 
 /**
- * Check if any notifications have a timeout
- * 
- * @param array $notifications Notifications array
- * @return bool True if any notification has a timeout
+ * Set success notification
+ * @param string $message Notification message
+ * @param string $link Optional link
+ * @param int $user_id User ID (optional)
+ * @return bool Success status
  */
-function hasTimeoutNotifications($notifications) {
-    foreach ($notifications as $notification) {
-        if ($notification['timeout'] > 0) {
-            return true;
+function set_success_message($message, $link = null, $user_id = null) {
+    return set_admin_notification('success', $message, $link, $user_id);
+}
+
+/**
+ * Set error notification
+ * @param string $message Notification message
+ * @param string $link Optional link
+ * @param int $user_id User ID (optional)
+ * @return bool Success status
+ */
+function set_error_message($message, $link = null, $user_id = null) {
+    return set_admin_notification('error', $message, $link, $user_id);
+}
+
+/**
+ * Set warning notification
+ * @param string $message Notification message
+ * @param string $link Optional link
+ * @param int $user_id User ID (optional)
+ * @return bool Success status
+ */
+function set_warning_message($message, $link = null, $user_id = null) {
+    return set_admin_notification('warning', $message, $link, $user_id);
+}
+
+/**
+ * Set info notification
+ * @param string $message Notification message
+ * @param string $link Optional link
+ * @param int $user_id User ID (optional)
+ * @return bool Success status
+ */
+function set_info_message($message, $link = null, $user_id = null) {
+    return set_admin_notification('info', $message, $link, $user_id);
+}
+
+/**
+ * Get user's notifications from database
+ * @param int $user_id User ID
+ * @param int $limit Maximum number of notifications to retrieve
+ * @param bool $unread_only Get only unread notifications
+ * @return array Notifications
+ */
+function get_admin_notifications($user_id, $limit = 10, $unread_only = false) {
+    global $db;
+    
+    if (!$db) return [];
+    
+    try {
+        $query = "SELECT * FROM admin_notifications WHERE user_id = ?";
+        
+        if ($unread_only) {
+            $query .= " AND `read` = 0";
         }
+        
+        $query .= " ORDER BY created_at DESC LIMIT ?";
+        
+        $stmt = $db->prepare($query);
+        $stmt->execute([$user_id, $limit]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error getting notifications: " . $e->getMessage());
+        return [];
     }
-    return false;
+}
+
+/**
+ * Mark notification as read
+ * @param int $notification_id Notification ID
+ * @return bool Success status
+ */
+function mark_notification_read($notification_id) {
+    global $db;
+    
+    if (!$db) return false;
+    
+    try {
+        $stmt = $db->prepare("UPDATE admin_notifications SET `read` = 1 WHERE id = ?");
+        return $stmt->execute([$notification_id]);
+    } catch (PDOException $e) {
+        error_log("Error marking notification read: " . $e->getMessage());
+        return false;
+    }
 }
 
 /**
  * Get notification icon class based on type
- * 
  * @param string $type Notification type
- * @return string Font Awesome icon name
+ * @return string FontAwesome icon class
  */
 function get_notification_icon($type) {
     switch ($type) {
-        case 'inquiry':
-            return 'envelope';
-        case 'user':
-            return 'user-plus';
-        case 'system':
-            return 'server';
-        case 'content':
-            return 'edit';
-        case 'testimonial':
-            return 'star';
-        case 'lead':
-            return 'funnel-dollar';
+        case 'success':
+            return 'fa-check-circle text-success';
+        case 'error':
+            return 'fa-times-circle text-danger';
+        case 'warning':
+            return 'fa-exclamation-triangle text-warning';
+        case 'info':
         default:
-            return 'info-circle';
+            return 'fa-info-circle text-info';
     }
 }
 
 /**
- * Get unread notifications count (placeholder function)
- * 
- * @return int Count of unread notifications
+ * Display flash notifications
+ * Shows and clears session notifications
  */
-function get_unread_notifications_count() {
-    // TODO: Implement actual database query
-    return 5; // Placeholder
-}
-
-/**
- * Get recent notifications (placeholder function)
- * 
- * @param int $limit Max number of notifications to return
- * @return array Recent notifications
- */
-function get_recent_notifications($limit = 5) {
-    // TODO: Implement actual database query
-    // For now, return sample notifications for testing
-    $notifications = [
-        [
-            'read' => false,
-            'link' => 'admin-inquiries.php',
-            'type' => 'inquiry',
-            'message' => 'New inquiry received from John Smith',
-            'time' => '2 hours ago'
-        ],
-        [
-            'read' => false,
-            'link' => 'admin-users.php',
-            'type' => 'user',
-            'message' => 'New user registered: Sarah Johnson',
-            'time' => 'Yesterday'
-        ],
-        [
-            'read' => true,
-            'link' => 'admin-backup.php',
-            'type' => 'system',
-            'message' => 'System backup completed successfully',
-            'time' => '2 days ago'
-        ],
-        [
-            'read' => true,
-            'link' => 'admin-blog.php',
-            'type' => 'content',
-            'message' => 'New blog post published',
-            'time' => '3 days ago'
-        ],
-        [
-            'read' => true,
-            'link' => 'admin-testimonials.php',
-            'type' => 'testimonial',
-            'message' => 'New testimonial added',
-            'time' => '4 days ago'
-        ],
-        [
-            'read' => true,
-            'link' => 'admin-leads.php',
-            'type' => 'lead',
-            'message' => 'New lead assigned to you',
-            'time' => '5 days ago'
-        ]
-    ];
-    
-    return array_slice($notifications, 0, $limit);
-}
-
-/**
- * Get pending tasks (placeholder function)
- * 
- * @param int $limit Max number of tasks to return
- * @return array Pending tasks
- */
-function get_pending_tasks($limit = 3) {
-    // TODO: Implement actual database query
-    // For now, return sample tasks for testing
-    $tasks = [
-        [
-            'id' => 1,
-            'link' => 'admin-tasks.php?task=1',
-            'title' => 'Update homepage banner',
-            'priority' => 'high',
-            'due' => 'Today'
-        ],
-        [
-            'id' => 2,
-            'link' => 'admin-tasks.php?task=2',
-            'title' => 'Review new testimonials',
-            'priority' => 'medium',
-            'due' => 'Tomorrow'
-        ],
-        [
-            'id' => 3,
-            'link' => 'admin-tasks.php?task=3',
-            'title' => 'Prepare monthly report',
-            'priority' => 'medium',
-            'due' => 'In 2 days'
-        ],
-        [
-            'id' => 4,
-            'link' => 'admin-tasks.php?task=4',
-            'title' => 'Update team page content',
-            'priority' => 'low',
-            'due' => 'Next week'
-        ]
-    ];
-    
-    return array_slice($tasks, 0, $limit);
-}
-
-/**
- * Get pending tasks count (placeholder function)
- * 
- * @return int Count of pending tasks
- */
-function get_pending_tasks_count() {
-    // TODO: Implement actual database query
-    return 4; // Placeholder
+function display_notifications() {
+    if (isset($_SESSION['admin_notifications']) && !empty($_SESSION['admin_notifications'])) {
+        foreach ($_SESSION['admin_notifications'] as $notification) {
+            // Map type to Bootstrap alert class
+            $alertClass = 'info';
+            switch ($notification['type']) {
+                case 'success':
+                    $alertClass = 'success';
+                    break;
+                case 'error':
+                    $alertClass = 'danger';
+                    break;
+                case 'warning':
+                    $alertClass = 'warning';
+                    break;
+            }
+            
+            $icon = get_notification_icon($notification['type']);
+            
+            echo '<div class="alert alert-' . $alertClass . ' alert-dismissible fade show" role="alert">';
+            echo '<i class="fas ' . $icon . ' me-2"></i> ' . $notification['message'];
+            
+            if (!empty($notification['link'])) {
+                echo ' <a href="' . $notification['link'] . '" class="alert-link">Learn more</a>';
+            }
+            
+            echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+            echo '</div>';
+        }
+        
+        // Clear the session notifications
+        $_SESSION['admin_notifications'] = [];
+    }
 }
