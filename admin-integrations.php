@@ -279,4 +279,275 @@ include 'admin-header.php';
                                     <div class="upload-buttons">
                                         <div class="btn-group" role="group">
                                             <button type="button" class="btn btn-primary upload-btn" data-type="image" data-target="logo">
-                                                <i class="fas fa-upload"></i> Upload Logo
+                                                <i class="fas fa-upload"></i> Upload Logo<i class="fas fa-upload"></i> Upload Logo
+                                            </button>
+                                            <button type="button" class="btn btn-secondary media-library-btn" data-type="image" data-target="logo">
+                                                <i class="fas fa-photo-video"></i> Media Library
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <input type="file" class="hidden-file-input" id="file_logo" data-target="logo" style="display: none;">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="og_image" class="form-label">Social Sharing Image</label>
+                                <div class="upload-field-container">
+                                    <input type="hidden" id="og_image" name="settings[og_image]" value="<?php echo $current_integration['og_image']; ?>">
+                                    
+                                    <div class="upload-preview mb-3" id="preview_og_image">
+                                        <?php if (!empty($current_integration['og_image'])): ?>
+                                        <img src="<?php echo $current_integration['og_image']; ?>?v=<?php echo time(); ?>" alt="OG Image" class="img-thumbnail" style="max-height: 150px">
+                                        <button type="button" class="btn btn-sm btn-danger remove-file" data-target="og_image">Remove</button>
+                                        <?php else: ?>
+                                        <div class="no-file">No image selected</div>
+                                        <?php endif; ?>
+                                    </div>
+                                    
+                                    <div class="upload-buttons">
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-primary upload-btn" data-type="image" data-target="og_image">
+                                                <i class="fas fa-upload"></i> Upload Image
+                                            </button>
+                                            <button type="button" class="btn btn-secondary media-library-btn" data-type="image" data-target="og_image">
+                                                <i class="fas fa-photo-video"></i> Media Library
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <input type="file" class="hidden-file-input" id="file_og_image" data-target="og_image" style="display: none;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Save Integration
+                        </button>
+                        <a href="admin-integrations.php" class="btn btn-secondary ms-2">
+                            <i class="fas fa-times me-2"></i> Cancel
+                        </a>
+                        
+                        <button type="button" class="btn btn-danger float-end" data-bs-toggle="modal" data-bs-target="#deleteIntegrationModal">
+                            <i class="fas fa-trash-alt me-2"></i> Delete Integration
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div class="modal fade" id="deleteIntegrationModal" tabindex="-1" aria-labelledby="deleteIntegrationModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteIntegrationModalLabel">Confirm Deletion</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete the integration <strong><?php echo $current_integration['display_name']; ?></strong>?</p>
+                        <p class="text-danger">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form action="admin-integrations.php" method="post">
+                            <input type="hidden" name="action" value="delete_integration">
+                            <input type="hidden" name="slug" value="<?php echo $edit_slug; ?>">
+                            <button type="submit" class="btn btn-danger">Delete Integration</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php else: ?>
+        <!-- Integrations List -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Available Integrations</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="integrationsTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Integration</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (count($integrations) > 0): ?>
+                                <?php foreach ($integrations as $slug => $integration): ?>
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <?php if (!empty($integration['logo'])): ?>
+                                            <img src="<?php echo $integration['logo']; ?>" alt="<?php echo $integration['display_name']; ?>" class="integration-logo me-2" style="max-width: 40px; max-height: 40px;">
+                                            <?php else: ?>
+                                            <div class="integration-logo-placeholder me-2"><i class="fas fa-plug"></i></div>
+                                            <?php endif; ?>
+                                            <span><?php echo $integration['display_name']; ?></span>
+                                        </div>
+                                    </td>
+                                    <td><?php echo $integration['description']; ?></td>
+                                    <td><?php echo $integration['category']; ?></td>
+                                    <td>
+                                        <?php if ($integration['is_active']): ?>
+                                        <span class="badge bg-success">Active</span>
+                                        <?php else: ?>
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <a href="admin-integrations.php?edit=<?php echo $slug; ?>" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5" class="text-center">No integrations found. <a href="#" data-bs-toggle="modal" data-bs-target="#addIntegrationModal">Add your first integration</a>.</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+</main>
+
+<!-- Add Integration Modal -->
+<div class="modal fade" id="addIntegrationModal" tabindex="-1" aria-labelledby="addIntegrationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addIntegrationModalLabel">Add New Integration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="admin-integrations.php" method="post">
+                <input type="hidden" name="action" value="add_integration">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="new_display_name" class="form-label">Integration Name</label>
+                        <input type="text" class="form-control" id="new_display_name" name="display_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="new_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="new_is_active" name="is_active" value="1" checked>
+                            <label class="form-check-label" for="new_is_active">Active</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Integration</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Media library integration
+    document.querySelectorAll('.upload-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const targetId = this.dataset.target;
+            const fileInput = document.getElementById('file_' + targetId);
+            if (fileInput) {
+                fileInput.click();
+            }
+        });
+    });
+    
+    document.querySelectorAll('.media-library-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const targetId = this.dataset.target;
+            const type = this.dataset.type;
+            window.open('media-library.php?modal=1&target=' + targetId + '&type=' + type, 'mediaLibrary', 'width=800,height=600');
+        });
+    });
+    
+    document.querySelectorAll('.hidden-file-input').forEach(function(input) {
+        input.addEventListener('change', function() {
+            const targetId = this.dataset.target;
+            const previewId = 'preview_' + targetId;
+            const previewDiv = document.getElementById(previewId);
+            
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    let preview = '';
+                    
+                    if (file.type.startsWith('image/')) {
+                        preview = `<img src="${e.target.result}" alt="Preview" class="img-thumbnail" style="max-height: 150px">`;
+                    } else {
+                        preview = `<div class="file-preview"><i class="fas fa-file"></i> ${file.name}</div>`;
+                    }
+                    
+                    preview += `<button type="button" class="btn btn-sm btn-danger remove-file" data-target="${targetId}">Remove</button>`;
+                    previewDiv.innerHTML = preview;
+                }
+                
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+    
+    // Remove file functionality
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-file')) {
+            const targetId = e.target.dataset.target;
+            const inputField = document.getElementById(targetId);
+            const previewDiv = document.getElementById('preview_' + targetId);
+            
+            if (inputField) {
+                inputField.value = '';
+            }
+            
+            if (previewDiv) {
+                previewDiv.innerHTML = '<div class="no-file">No file selected</div>';
+            }
+        }
+    });
+});
+
+// Function to handle media library selection
+function setMediaFile(targetId, filePath, fileName) {
+    const inputField = document.getElementById(targetId);
+    const previewDiv = document.getElementById('preview_' + targetId);
+    
+    if (inputField) {
+        inputField.value = filePath;
+    }
+    
+    if (previewDiv) {
+        let preview = '';
+        
+        // Check if file is an image
+        if (/\.(jpg|jpeg|png|gif)$/i.test(fileName)) {
+            preview = `<img src="${filePath}?v=${Date.now()}" alt="Preview" class="img-thumbnail" style="max-height: 150px">`;
+        } else {
+            preview = `<div class="file-preview"><i class="fas fa-file"></i> ${fileName}</div>`;
+        }
+        
+        preview += `<button type="button" class="btn btn-sm btn-danger remove-file" data-target="${targetId}">Remove</button>`;
+        previewDiv.innerHTML = preview;
+    }
+}
+</script>
+
+<?php include 'admin-footer.php'; ?>
