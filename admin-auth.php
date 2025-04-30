@@ -121,3 +121,32 @@ function has_admin_permission($permission) {
 $admin_user = get_admin_user();
 $admin_username = $admin_user['username'];
 $admin_role = $admin_user['role'];
+
+
+/**
+ * Get admin database profile
+ * 
+ * @param int $admin_id Admin ID
+ * @return array Admin profile data
+ */
+function get_admin_profile($admin_id = null) {
+    if ($admin_id === null) {
+        $admin_id = $_SESSION['admin_id'] ?? 0;
+    }
+    
+    if ($admin_id <= 0) {
+        return [];
+    }
+    
+    $db = get_db_connection();
+    if (!$db) return []; // Return empty array if connection failed
+    
+    try {
+        $stmt = $db->prepare("SELECT * FROM admins WHERE id = ?");
+        $stmt->execute([$admin_id]);
+        return $stmt->fetch();
+    } catch (PDOException $e) {
+        error_log("Error fetching admin profile: " . $e->getMessage());
+        return [];
+    }
+}
