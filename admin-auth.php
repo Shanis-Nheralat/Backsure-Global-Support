@@ -4,6 +4,9 @@
  * This file handles authentication for all admin panel pages
  */
 
+// Include database configuration
+require_once 'db_config.php';
+
 // Start session if not already started - with header check
 if (session_status() === PHP_SESSION_NONE) {
     // Check if headers have already been sent
@@ -95,6 +98,14 @@ function get_admin_user() {
         'id' => isset($_SESSION['admin_id']) ? $_SESSION['admin_id'] : 0
     ];
     
+    // Get additional user info from database if logged in
+    if (is_admin_logged_in() && isset($_SESSION['admin_id'])) {
+        $db_profile = get_admin_profile($_SESSION['admin_id']);
+        if ($db_profile && is_array($db_profile)) {
+            $admin_info = array_merge($admin_info, $db_profile);
+        }
+    }
+    
     return $admin_info;
 }
 
@@ -117,11 +128,39 @@ function has_admin_permission($permission) {
     return false;
 }
 
-// Global variables for admin pages
-$admin_user = get_admin_user();
-$admin_username = $admin_user['username'];
-$admin_role = $admin_user['role'];
-
+/**
+ * Log admin action
+ * 
+ * @param string $action_type Type of action
+ * @param string $resource Resource affected
+ * @param int $resource_id ID of the resource
+ * @param string $details Additional details
+ * @return bool Success status
+ */
+function log_admin_action($action_type, $resource, $resource_id, $details = '') {
+    try {
+        $db = get_db_connection();
+        
+        $stmt = $db->prepare("INSERT INTO admin_activity_log 
+            (user_id, username, action_type, resource, resource_id, details, ip_address, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+            
+        $stmt->execute([
+            $_SESSION['admin_id'] ?? 0,
+            $_SESSION['admin_username'] ?? 'unknown',
+            $action_type,
+            $resource,
+            $resource_id,
+            $details,
+            $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0'
+        ]);
+        
+        return true;
+    } catch (PDOException $e) {
+        error_log("Error logging admin action: " . $e->getMessage());
+        return false;
+    }
+}
 
 /**
  * Get admin database profile
@@ -138,10 +177,8 @@ function get_admin_profile($admin_id = null) {
         return [];
     }
     
-    $db = get_db_connection();
-    if (!$db) return []; // Return empty array if connection failed
-    
     try {
+        $db = get_db_connection();
         $stmt = $db->prepare("SELECT * FROM admins WHERE id = ?");
         $stmt->execute([$admin_id]);
         return $stmt->fetch();
@@ -150,3 +187,8 @@ function get_admin_profile($admin_id = null) {
         return [];
     }
 }
+
+// Global variables for admin pages
+$admin_user = get_admin_user();
+$admin_username = $admin_user['username'];
+$admin_role = $admin_user['role'];
