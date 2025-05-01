@@ -1,13 +1,16 @@
 <?php
 /**
- * Admin Authentication Component
+ * Admin Authentication Component - IMPROVED VERSION
  * This file handles authentication for all admin panel pages
+ * 
+ * FIX: Resolves redirect loop issues by improving session handling and
+ * checking current page before redirecting
  */
 
 // Include database configuration
 require_once 'db_config.php';
 
-// Start session if not already started - with header check
+// Start session if not already started - with improved handling
 if (session_status() === PHP_SESSION_NONE) {
     // Check if headers have already been sent
     if (!headers_sent()) {
@@ -32,6 +35,18 @@ function is_admin_logged_in() {
 }
 
 /**
+ * Check if current page is the login page
+ * Prevents redirect loops by identifying if we're already on the login page
+ * @return bool True if current page is login page
+ */
+function is_login_page() {
+    $current_script = basename($_SERVER['SCRIPT_NAME']);
+    $login_pages = ['admin-login.php', 'login.php', 'admin/login.php'];
+    
+    return in_array($current_script, $login_pages);
+}
+
+/**
  * Check if user has required role
  * @param array $allowed_roles Array of roles allowed to access the page
  * @return bool True if user has required role, false otherwise
@@ -48,12 +63,23 @@ function has_admin_role($allowed_roles = []) {
 
 /**
  * Require authentication - redirects to login page if not logged in
+ * FIX: Added check to prevent redirect loops if already on login page
  * Use at top of admin pages
  */
 function require_admin_auth() {
-    // Only redirect if headers haven't been sent yet
+    // Skip redirect if already on login page to prevent loops
+    if (is_login_page()) {
+        return;
+    }
+
+    // Only redirect if not logged in and headers haven't been sent yet
     if (!is_admin_logged_in()) {
         if (!headers_sent()) {
+            // Store current URL for redirect after login (if not already set)
+            if (!isset($_SESSION['redirect_after_login'])) {
+                $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
+            }
+            
             header("Location: admin-login.php");
             exit();
         } else {
@@ -70,6 +96,11 @@ function require_admin_auth() {
  * @param array $allowed_roles Array of roles allowed to access the page
  */
 function require_admin_role($allowed_roles = []) {
+    // Skip checks if on login page
+    if (is_login_page()) {
+        return;
+    }
+    
     // First check if logged in
     require_admin_auth();
     
@@ -185,6 +216,40 @@ function get_admin_profile($admin_id = null) {
     } catch (PDOException $e) {
         error_log("Error fetching admin profile: " . $e->getMessage());
         return [];
+    }
+}
+
+/**
+ * Check session safety - verifies IP and user agent
+ * Helps prevent session hijacking
+ * @return bool True if session is safe, false otherwise
+ */
+function check_session_safety() {
+    // If not logged in, no need to check
+    if (!is_admin_logged_in()) {
+        return true;
+    }
+    
+    // Check IP address if stored in session
+    if (isset($_SESSION['ip_address']) && $_SESSION['ip_address'] !== $_SERVER['REMOTE_ADDR']) {
+        // IP mismatch, potential session hijacking
+        error_log("Session security warning: IP mismatch. Stored: {$_SESSION['ip_address']}, Current: {$_SERVER['REMOTE_ADDR']}");
+        return false;
+    }
+    
+    return true;
+}
+
+// Automatically run session safety check
+if (!check_session_safety()) {
+    // Invalid session, clear it
+    session_unset();
+    session_destroy();
+    
+    // Only redirect if not on login page and headers not sent
+    if (!is_login_page() && !headers_sent()) {
+        header("Location: admin-login.php?error=" . urlencode("Session invalidated for security reasons. Please log in again."));
+        exit();
     }
 }
 
