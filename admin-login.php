@@ -3,39 +3,23 @@
  * Admin Login
  * 
  * Handles authentication for admin users
- * IMPROVED VERSION: Enhanced session handling and redirect logic
  */
 
-// Start session first thing - with error handling for better reliability
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// Start session first thing
+session_start();
 
-// Include auth system for consistent session handling
-require_once 'admin-auth.php';
-
-// Check if user is already logged in using the auth system function
-// This ensures consistency with how authentication is checked throughout the system
-if (is_admin_logged_in()) {
-    // Get redirect location - either from session or default to dashboard
-    $redirect_to = isset($_SESSION['redirect_after_login']) ? $_SESSION['redirect_after_login'] : 'admin-dashboard.php';
-    
-    // Clear the redirect URL from session to prevent future issues
-    unset($_SESSION['redirect_after_login']);
-    
-    // Redirect to admin dashboard or saved page
-    header('Location: ' . $redirect_to);
+// Check if user is already logged in
+if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+    // Redirect to admin dashboard
+    header('Location: admin-dashboard.php');
     exit;
 }
-
-// Set page title - same as original but with variable for flexibility
-$page_title = 'Admin Login | Backsure Global Support';
 ?><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $page_title; ?></title>
+    <title>Admin Login | Backsure Global Support</title>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <style>
