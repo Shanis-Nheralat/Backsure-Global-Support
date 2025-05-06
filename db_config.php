@@ -1,76 +1,107 @@
 <?php
 /**
- * Configuration File
- * Central location for all configuration settings
+ * Database Configuration
+ * 
+ * Central configuration file for database connections.
+ * Include this file in any script that needs database access.
  */
 
-// Database configuration - COMMENTED OUT since we're using db_config.php
-// These are kept as reference only
-/*
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'backzvsg_playground');
-define('DB_USER', 'backzvsg_site');  // Changed from 'root' to correct value
-define('DB_PASSWORD', 'Pc*C^y]_ZnzU');
-*/
+// Database credentials from your cPanel
+$db_host = 'localhost';             // Database host
+$db_name = 'backzvsg_playground';   // Your database name
+$db_user = 'backzvsg_site';         // Your database username
+$db_pass = 'Pc*C^y]_ZnzU';          // Your database password
 
-// System settings
-define('TIMEZONE', 'Asia/Dubai');
-define('DEBUG_MODE', true);  // Set to true for development during troubleshooting
+// For backwards compatibility with systems expecting these variables
+define('DB_HOST', $db_host);
+define('DB_NAME', $db_name);
+define('DB_USER', $db_user);
+define('DB_PASSWORD', $db_pass);
 
-// Initialize settings
-date_default_timezone_set(TIMEZONE);
-
-// Error reporting - Enabling this during troubleshooting
-if (DEBUG_MODE) {
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', 1);
-    error_reporting(E_ALL);
-} else {
-    ini_set('display_errors', 0);
-    ini_set('display_startup_errors', 0);
-    error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);
-}
-
-// Session security settings - ONLY IF SESSION NOT STARTED
-if (session_status() === PHP_SESSION_NONE) {
-    // Define session security constants
-    define('SECURE_COOKIES', false);  // Set to false during development
-    define('SESSION_EXPIRY', 7200);  // Session expiry in seconds (2 hours)
+/**
+ * Get database connection
+ * 
+ * @return PDO Database connection
+ * @throws PDOException if connection fails
+ */
+function get_db_connection() {
+    global $db_host, $db_name, $db_user, $db_pass;
     
-    // Apply session settings
-    ini_set('session.cookie_httponly', 1);
-    ini_set('session.use_only_cookies', 1);
-    ini_set('session.cookie_secure', SECURE_COOKIES);
-    ini_set('session.gc_maxlifetime', SESSION_EXPIRY);
-    ini_set('session.cookie_samesite', 'Lax');
+    static $db_connection = null;
+    
+    // Return existing connection if it exists
+    if ($db_connection instanceof PDO) {
+        return $db_connection;
+    }
+    
+    try {
+        $dsn = "mysql:host=" . $db_host . ";dbname=" . $db_name . ";charset=utf8";
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+            // Add connection pooling for better performance
+            PDO::ATTR_PERSISTENT => true
+        ];
+        $db_connection = new PDO($dsn, $db_user, $db_pass, $options);
+        return $db_connection;
+    } catch (PDOException $e) {
+        // Log error - this keeps credentials out of error messages
+        error_log("Database connection error: " . $e->getMessage());
+        throw new PDOException("Database connection failed. Please check the error log for details.");
+    }
 }
 
-// Security settings
-define('REMEMBER_ME_DAYS', 30);  // Remember me cookie expiry in days
-define('PASSWORD_RESET_HOURS', 1);  // Password reset token expiry in hours
-define('VERIFY_TOKEN_HOURS', 24);  // Email verification token expiry in hours
-define('MAX_LOGIN_ATTEMPTS', 5);  // Maximum number of failed login attempts
-define('LOCKOUT_MINUTES', 15);  // Account lockout time in minutes after max failed attempts
+/**
+ * Get mysqli connection (for backward compatibility)
+ * 
+ * @return mysqli Database connection
+ */
+function get_mysqli_connection() {
+    global $db_host, $db_name, $db_user, $db_pass;
+    
+    static $mysqli_connection = null;
+    
+    // Return existing connection if it exists
+    if ($mysqli_connection instanceof mysqli) {
+        return $mysqli_connection;
+    }
+    
+    // Create new connection
+    $mysqli_connection = new mysqli($db_host, $db_user, $db_pass, $db_name);
+    
+    // Check for connection error
+    if ($mysqli_connection->connect_error) {
+        error_log("mysqli connection error: " . $mysqli_connection->connect_error);
+        throw new Exception("Database connection failed. Please check the error log for details.");
+    }
+    
+    // Set charset
+    $mysqli_connection->set_charset("utf8");
+    
+    return $mysqli_connection;
+}
 
-// Email settings
-define('EMAIL_FROM', 'support@backsureglobalsupport.com');
-define('EMAIL_FROM_NAME', 'Backsure Global Support');
-define('EMAIL_REPLY_TO', 'no-reply@backsureglobalsupport.com');
+// For backward compatibility with scripts that expect $pdo directly
+try {
+    $pdo = get_db_connection();
+} catch (PDOException $e) {
+    // Log the error but don't stop execution
+    error_log("Database connection error in db_config.php: " . $e->getMessage());
+    $pdo = null;
+}
 
-// Application URLs
-define('BASE_URL', 'https://backsureglobalsupport.com');  // Update with your domain
-define('ADMIN_URL', BASE_URL . '/admin');
-define('CLIENT_URL', BASE_URL . '/client');
+// Add this to fix potential issues with config-loader.php
+// This prevents other scripts from trying to establish another connection with wrong credentials
+$db = $pdo;
+$mysqli = get_mysqli_connection();
+$dbhost = $db_host;
+$dbuser = $db_user;
+$dbpass = $db_pass;
+$dbname = $db_name;
 
-// Define common status values
-define('STATUS_PENDING', 'pending');
-define('STATUS_ACTIVE', 'active');
-define('STATUS_BLOCKED', 'blocked');
-define('STATUS_SUSPENDED', 'suspended');
-
-// Define roles
-define('ROLE_SUPER_ADMIN', 'super_admin');
-define('ROLE_ADMIN', 'admin');
-define('ROLE_HR_MANAGER', 'hr_manager');
-define('ROLE_CLIENT', 'client');
-define('ROLE_PREMIUM_CLIENT', 'premium_client');
+// Prevent direct script access
+if (basename($_SERVER['PHP_SELF']) == basename(__FILE__)) {
+    header("HTTP/1.0 403 Forbidden");
+    exit("Direct access forbidden.");
+}
