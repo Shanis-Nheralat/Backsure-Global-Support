@@ -31,7 +31,7 @@ if (session_status() === PHP_SESSION_NONE) {
  * @return bool True if user is logged in, false otherwise
  */
 function is_admin_logged_in() {
-    return isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true;
+    return isset($_SESSION['admin_logged_in']) && ($_SESSION['admin_logged_in'] === true || $_SESSION['admin_logged_in'] == 1);
 }
 
 /**
