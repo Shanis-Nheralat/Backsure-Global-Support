@@ -8,9 +8,9 @@
 // These are kept as reference only
 /*
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'backsure_admin');
-define('DB_USER', 'root');
-define('DB_PASSWORD', 'password');
+define('DB_NAME', 'backzvsg_playground');
+define('DB_USER', 'backzvsg_site');  // Changed from 'root' to correct value
+define('DB_PASSWORD', 'Pc*C^y]_ZnzU');
 */
 
 // System settings
