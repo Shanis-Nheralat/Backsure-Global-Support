@@ -9,7 +9,7 @@
 /*
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'backzvsg_playground');
-define('DB_USER', 'root');  // This was causing the original issue
+define('DB_USER', 'root');
 define('DB_PASSWORD', 'password');
 */
 
