@@ -9,8 +9,8 @@
 /*
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'backzvsg_playground');
-define('DB_USER', 'backzvsg_site');  // Changed from 'root' to correct value
-define('DB_PASSWORD', 'Pc*C^y]_ZnzU');
+define('DB_USER', 'root');  // This was causing the original issue
+define('DB_PASSWORD', 'password');
 */
 
 // System settings
