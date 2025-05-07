@@ -1,73 +1,334 @@
 <?php
+/**
+ * Admin Roles Management
+ * Manages roles and permissions for the admin panel
+ */
+
 // Initialize session if not already started
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-// TODO: Add authentication check here
-// if(!isset($_SESSION['admin_id']) || empty($_SESSION['admin_id'])) {
-//     header("Location: admin-login.php");
-//     exit;
-// }
+// Include required files
+require_once 'db_config.php';
+require_once 'admin-auth.php';
 
-// TODO: Check if user has permission to access this page
-// if($_SESSION['admin_role'] != 'Super Admin') {
-//     header("Location: admin-dashboard.php?error=unauthorized");
-//     exit;
-// }
+// Check for authentication
+require_admin_auth();
 
-// Mock data for roles and permissions
-$roles = [
-    [
-        'id' => 1,
-        'name' => 'Super Admin',
-        'description' => 'Full access to all system features and settings',
-        'users_count' => 3,
-        'created_at' => '2023-05-15',
-        'status' => 'active'
-    ],
-    [
-        'id' => 2,
-        'name' => 'HR Admin',
-        'description' => 'Access to leads, inquiries, and HR-related functions',
-        'users_count' => 5,
-        'created_at' => '2023-06-20',
-        'status' => 'active'
-    ],
-    [
-        'id' => 3,
-        'name' => 'Marketing Admin',
-        'description' => 'Manages blog, testimonials, FAQ and marketing content',
-        'users_count' => 4,
-        'created_at' => '2023-07-10',
-        'status' => 'active'
-    ]
-];
+// Only allow superadmin/admin access to this page
+require_admin_role(['superadmin', 'admin']);
 
-// Mock data for permissions matrix
-$permissions = [
-    'dashboard' => ['Super Admin' => ['view'], 'HR Admin' => ['view'], 'Marketing Admin' => ['view']],
-    'users' => ['Super Admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => []],
-    'roles' => ['Super Admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => []],
-    'services' => ['Super Admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
-    'blog' => ['Super Admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
-    'inquiries' => ['Super Admin' => ['view', 'reply', 'delete'], 'HR Admin' => ['view', 'reply'], 'Marketing Admin' => ['view', 'reply']],
-    'testimonials' => ['Super Admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
-    'faq' => ['Super Admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
-    'subscribers' => ['Super Admin' => ['view', 'export', 'delete'], 'HR Admin' => [], 'Marketing Admin' => []],
-    'seo' => ['Super Admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
-    'integrations' => ['Super Admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
-    'general' => ['Super Admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
-    'appearance' => ['Super Admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
-    'backup' => ['Super Admin' => ['view', 'create', 'restore'], 'HR Admin' => [], 'Marketing Admin' => []],
-    'profile' => ['Super Admin' => ['view', 'edit'], 'HR Admin' => ['view', 'edit'], 'Marketing Admin' => ['view', 'edit']]
-];
+// Get database connection
+$db = get_db_connection();
 
-// Handle form submissions (for a real implementation)
+// Function to get roles from database
+function get_roles($db) {
+    try {
+        $stmt = $db->query("SELECT r.*, 
+            (SELECT COUNT(*) FROM admins WHERE role = r.name) as users_count
+            FROM roles r ORDER BY r.id");
+        return $stmt->fetchAll();
+    } catch (PDOException $e) {
+        error_log("Error fetching roles: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Function to get permissions from database
+function get_permissions_matrix($db) {
+    try {
+        // Get all roles
+        $rolesStmt = $db->query("SELECT name FROM roles ORDER BY id");
+        $roles = $rolesStmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        // Get all features/modules
+        $featuresStmt = $db->query("SELECT DISTINCT feature FROM permissions ORDER BY feature");
+        $features = $featuresStmt->fetchAll(PDO::FETCH_COLUMN);
+        
+        // Build permissions matrix
+        $permissions = [];
+        foreach ($features as $feature) {
+            $permissions[$feature] = [];
+            
+            // For each role, get its permissions for this feature
+            foreach ($roles as $role) {
+                $permStmt = $db->prepare("SELECT permission FROM permissions 
+                    WHERE feature = ? AND role = ?");
+                $permStmt->execute([$feature, $role]);
+                $perms = $permStmt->fetchAll(PDO::FETCH_COLUMN);
+                
+                $permissions[$feature][$role] = $perms;
+            }
+        }
+        
+        return $permissions;
+    } catch (PDOException $e) {
+        error_log("Error fetching permissions: " . $e->getMessage());
+        return [];
+    }
+}
+
+// Check if roles table exists, if not create it
+try {
+    $tableCheck = $db->query("SHOW TABLES LIKE 'roles'")->rowCount();
+    if ($tableCheck == 0) {
+        // Create roles table
+        $db->exec("CREATE TABLE roles (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(50) UNIQUE NOT NULL,
+            description TEXT,
+            status ENUM('active', 'inactive') DEFAULT 'active',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP
+        )");
+        
+        // Insert default roles
+        $db->exec("INSERT INTO roles (name, description) VALUES 
+            ('superadmin', 'Full access to all system features and settings'),
+            ('admin', 'General admin with access to most features'),
+            ('HR Admin', 'Access to leads, inquiries, and HR-related functions'),
+            ('Marketing Admin', 'Manages blog, testimonials, FAQ and marketing content')
+        ");
+        
+        // Create permissions table
+        $db->exec("CREATE TABLE permissions (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            role VARCHAR(50) NOT NULL,
+            feature VARCHAR(50) NOT NULL,
+            permission VARCHAR(20) NOT NULL,
+            UNIQUE KEY role_feature_perm (role, feature, permission)
+        )");
+        
+        // Insert default permissions (simplified example)
+        $db->exec("INSERT INTO permissions (role, feature, permission) VALUES 
+            ('superadmin', 'dashboard', 'view'),
+            ('superadmin', 'users', 'view'),
+            ('superadmin', 'users', 'add'),
+            ('superadmin', 'users', 'edit'),
+            ('superadmin', 'users', 'delete'),
+            ('admin', 'dashboard', 'view'),
+            ('admin', 'users', 'view'),
+            ('admin', 'users', 'add'),
+            ('admin', 'users', 'edit'),
+            ('HR Admin', 'dashboard', 'view'),
+            ('HR Admin', 'inquiries', 'view'),
+            ('HR Admin', 'inquiries', 'reply'),
+            ('Marketing Admin', 'dashboard', 'view'),
+            ('Marketing Admin', 'blog', 'view'),
+            ('Marketing Admin', 'blog', 'add'),
+            ('Marketing Admin', 'blog', 'edit'),
+            ('Marketing Admin', 'blog', 'delete')
+        ");
+    }
+} catch (PDOException $e) {
+    error_log("Error checking/creating tables: " . $e->getMessage());
+}
+
+// Get roles and permissions from database or use mock data if tables not yet set up
+try {
+    $roles = get_roles($db);
+    if (empty($roles)) {
+        // Use mock data as fallback
+        $roles = [
+            [
+                'id' => 1,
+                'name' => 'superadmin',
+                'description' => 'Full access to all system features and settings',
+                'users_count' => 1,
+                'created_at' => date('Y-m-d'),
+                'status' => 'active'
+            ],
+            [
+                'id' => 2,
+                'name' => 'admin',
+                'description' => 'General admin with access to most features',
+                'users_count' => 2,
+                'created_at' => date('Y-m-d'),
+                'status' => 'active'
+            ],
+            [
+                'id' => 3,
+                'name' => 'HR Admin',
+                'description' => 'Access to leads, inquiries, and HR-related functions',
+                'users_count' => 5,
+                'created_at' => '2023-06-20',
+                'status' => 'active'
+            ],
+            [
+                'id' => 4,
+                'name' => 'Marketing Admin',
+                'description' => 'Manages blog, testimonials, FAQ and marketing content',
+                'users_count' => 4,
+                'created_at' => '2023-07-10',
+                'status' => 'active'
+            ]
+        ];
+    }
+    
+    $permissions = get_permissions_matrix($db);
+    if (empty($permissions)) {
+        // Use mock data as fallback
+        $permissions = [
+            'dashboard' => ['superadmin' => ['view'], 'admin' => ['view'], 'HR Admin' => ['view'], 'Marketing Admin' => ['view']],
+            'users' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view', 'add', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
+            'roles' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view'], 'HR Admin' => [], 'Marketing Admin' => []],
+            'services' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
+            'blog' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
+            'inquiries' => ['superadmin' => ['view', 'reply', 'delete'], 'admin' => ['view', 'reply', 'delete'], 'HR Admin' => ['view', 'reply'], 'Marketing Admin' => ['view', 'reply']],
+            'testimonials' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
+            'faq' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
+            'subscribers' => ['superadmin' => ['view', 'export', 'delete'], 'admin' => ['view', 'export'], 'HR Admin' => [], 'Marketing Admin' => []],
+            'seo' => ['superadmin' => ['view', 'edit'], 'admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
+            'integrations' => ['superadmin' => ['view', 'edit'], 'admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
+            'general' => ['superadmin' => ['view', 'edit'], 'admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
+            'appearance' => ['superadmin' => ['view', 'edit'], 'admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
+            'backup' => ['superadmin' => ['view', 'create', 'restore'], 'admin' => ['view', 'create'], 'HR Admin' => [], 'Marketing Admin' => []],
+            'profile' => ['superadmin' => ['view', 'edit'], 'admin' => ['view', 'edit'], 'HR Admin' => ['view', 'edit'], 'Marketing Admin' => ['view', 'edit']]
+        ];
+    }
+} catch (PDOException $e) {
+    error_log("Error setting up roles/permissions: " . $e->getMessage());
+    // Use mock data as fallback
+    $roles = [
+        [
+            'id' => 1,
+            'name' => 'superadmin',
+            'description' => 'Full access to all system features and settings',
+            'users_count' => 1,
+            'created_at' => date('Y-m-d'),
+            'status' => 'active'
+        ],
+        [
+            'id' => 2,
+            'name' => 'admin',
+            'description' => 'General admin with access to most features',
+            'users_count' => 2,
+            'created_at' => date('Y-m-d'),
+            'status' => 'active'
+        ],
+        [
+            'id' => 3,
+            'name' => 'HR Admin',
+            'description' => 'Access to leads, inquiries, and HR-related functions',
+            'users_count' => 5,
+            'created_at' => '2023-06-20',
+            'status' => 'active'
+        ],
+        [
+            'id' => 4,
+            'name' => 'Marketing Admin',
+            'description' => 'Manages blog, testimonials, FAQ and marketing content',
+            'users_count' => 4,
+            'created_at' => '2023-07-10',
+            'status' => 'active'
+        ]
+    ];
+    
+    $permissions = [
+        'dashboard' => ['superadmin' => ['view'], 'admin' => ['view'], 'HR Admin' => ['view'], 'Marketing Admin' => ['view']],
+        'users' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view', 'add', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
+        'roles' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view'], 'HR Admin' => [], 'Marketing Admin' => []],
+        'services' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
+        'blog' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
+        'inquiries' => ['superadmin' => ['view', 'reply', 'delete'], 'admin' => ['view', 'reply', 'delete'], 'HR Admin' => ['view', 'reply'], 'Marketing Admin' => ['view', 'reply']],
+        'testimonials' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
+        'faq' => ['superadmin' => ['view', 'add', 'edit', 'delete'], 'admin' => ['view', 'add', 'edit', 'delete'], 'HR Admin' => [], 'Marketing Admin' => ['view', 'add', 'edit', 'delete']],
+        'subscribers' => ['superadmin' => ['view', 'export', 'delete'], 'admin' => ['view', 'export'], 'HR Admin' => [], 'Marketing Admin' => []],
+        'seo' => ['superadmin' => ['view', 'edit'], 'admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
+        'integrations' => ['superadmin' => ['view', 'edit'], 'admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
+        'general' => ['superadmin' => ['view', 'edit'], 'admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
+        'appearance' => ['superadmin' => ['view', 'edit'], 'admin' => ['view', 'edit'], 'HR Admin' => [], 'Marketing Admin' => []],
+        'backup' => ['superadmin' => ['view', 'create', 'restore'], 'admin' => ['view', 'create'], 'HR Admin' => [], 'Marketing Admin' => []],
+        'profile' => ['superadmin' => ['view', 'edit'], 'admin' => ['view', 'edit'], 'HR Admin' => ['view', 'edit'], 'Marketing Admin' => ['view', 'edit']]
+    ];
+}
+
+// Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Process role creation/editing logic here
-    // For now, we'll just redirect back with a success message
-    header('Location: admin-roles.php?success=1');
+    $success = false;
+    $error = "";
+    
+    // Process role creation
+    if (isset($_POST['role_name']) && !empty($_POST['role_name'])) {
+        $role_name = trim($_POST['role_name']);
+        $role_description = trim($_POST['role_description'] ?? '');
+        
+        try {
+            // Check if role already exists
+            $checkStmt = $db->prepare("SELECT id FROM roles WHERE name = ?");
+            $checkStmt->execute([$role_name]);
+            
+            if ($checkStmt->rowCount() > 0) {
+                $error = "Role '{$role_name}' already exists.";
+            } else {
+                // Insert new role
+                $insertStmt = $db->prepare("INSERT INTO roles (name, description) VALUES (?, ?)");
+                $success = $insertStmt->execute([$role_name, $role_description]);
+                
+                // Process permissions
+                if ($success && isset($_POST['permissions']) && is_array($_POST['permissions'])) {
+                    foreach ($_POST['permissions'] as $feature => $perms) {
+                        foreach ($perms as $perm) {
+                            $permStmt = $db->prepare("INSERT INTO permissions (role, feature, permission) VALUES (?, ?, ?)");
+                            $permStmt->execute([$role_name, $feature, $perm]);
+                        }
+                    }
+                }
+                
+                // Log the action
+                if (function_exists('log_admin_action')) {
+                    log_admin_action('create', 'role', $db->lastInsertId(), "Created new role: {$role_name}");
+                }
+            }
+        } catch (PDOException $e) {
+            error_log("Error creating role: " . $e->getMessage());
+            $error = "Database error while creating role.";
+        }
+    }
+    
+    // Process permission matrix update
+    if (isset($_POST['action']) && $_POST['action'] === 'update_permissions' && isset($_POST['matrix'])) {
+        try {
+            // First, clear existing permissions
+            $db->exec("DELETE FROM permissions");
+            
+            // Then insert the new ones
+            foreach ($_POST['matrix'] as $feature => $roles) {
+                foreach ($roles as $role => $perms) {
+                    if (is_array($perms)) {
+                        foreach ($perms as $perm) {
+                            $permStmt = $db->prepare("INSERT INTO permissions (role, feature, permission) VALUES (?, ?, ?)");
+                            $permStmt->execute([$role, $feature, $perm]);
+                        }
+                    }
+                }
+            }
+            
+            $success = true;
+            
+            // Log the action
+            if (function_exists('log_admin_action')) {
+                log_admin_action('update', 'permissions', 0, "Updated permission matrix");
+            }
+        } catch (PDOException $e) {
+            error_log("Error updating permissions: " . $e->getMessage());
+            $error = "Database error while updating permissions.";
+        }
+    }
+    
+    // Redirect with success/error message
+    if ($success) {
+        header('Location: admin-roles.php?success=1');
+    } else {
+        header('Location: admin-roles.php?error=' . urlencode($error));
+    }
     exit;
 }
+
+// Get admin user info for the UI
+$admin_user = get_admin_user();
+$current_page = 'roles';
 ?>
 
 <!DOCTYPE html>
@@ -150,7 +411,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                     <div class="user-profile">
                         <img src="assets/images/admin-avatar.jpg" alt="Admin User">
-                        <span>Admin User</span>
+                        <span><?php echo htmlspecialchars($admin_user['username']); ?></span>
                     </div>
                 </div>
             </div>
@@ -175,7 +436,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <?php if(isset($_GET['error'])): ?>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Error!</strong> There was a problem processing your request.
+                    <strong>Error!</strong> <?php echo htmlspecialchars($_GET['error']); ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 <?php endif; ?>
@@ -209,24 +470,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                         <?php foreach($roles as $role): ?>
                                         <tr>
                                             <td><?php echo $role['id']; ?></td>
-                                            <td><?php echo $role['name']; ?></td>
-                                            <td><?php echo $role['description']; ?></td>
+                                            <td><?php echo htmlspecialchars($role['name']); ?></td>
+                                            <td><?php echo htmlspecialchars($role['description']); ?></td>
                                             <td><?php echo $role['users_count']; ?></td>
-                                            <td><?php echo $role['created_at']; ?></td>
+                                            <td><?php echo isset($role['created_at']) ? $role['created_at'] : 'N/A'; ?></td>
                                             <td>
-                                                <span class="badge bg-<?php echo ($role['status'] == 'active') ? 'success' : 'danger'; ?>">
-                                                    <?php echo ucfirst($role['status']); ?>
+                                                <span class="badge bg-<?php echo (isset($role['status']) && $role['status'] == 'active') ? 'success' : 'danger'; ?>">
+                                                    <?php echo isset($role['status']) ? ucfirst($role['status']) : 'Active'; ?>
                                                 </span>
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
-                                                    <button type="button" class="btn btn-info view-permissions" data-role-id="<?php echo $role['id']; ?>" data-role-name="<?php echo $role['name']; ?>">
+                                                    <button type="button" class="btn btn-info view-permissions" data-role-id="<?php echo $role['id']; ?>" data-role-name="<?php echo htmlspecialchars($role['name']); ?>">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
                                                     <button type="button" class="btn btn-primary edit-role" data-role-id="<?php echo $role['id']; ?>">
                                                         <i class="fas fa-edit"></i>
                                                     </button>
-                                                    <?php if($role['name'] !== 'Super Admin'): ?>
+                                                    <?php if($role['name'] !== 'superadmin' && $role['name'] !== 'admin'): ?>
                                                     <button type="button" class="btn btn-danger delete-role" data-role-id="<?php echo $role['id']; ?>">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
@@ -257,19 +518,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <thead>
                                         <tr>
                                             <th>Feature/Module</th>
-                                            <th>Super Admin</th>
-                                            <th>HR Admin</th>
-                                            <th>Marketing Admin</th>
+                                            <?php 
+                                            $role_names = array_unique(array_column($roles, 'name'));
+                                            foreach($role_names as $roleName): 
+                                            ?>
+                                            <th><?php echo htmlspecialchars($roleName); ?></th>
+                                            <?php endforeach; ?>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <?php foreach($permissions as $feature => $rolePermissions): ?>
                                         <tr>
                                             <td class="text-capitalize"><?php echo str_replace('_', ' ', $feature); ?></td>
+                                            <?php foreach($role_names as $roleName): ?>
                                             <td>
                                                 <?php 
-                                                if(isset($rolePermissions['Super Admin']) && !empty($rolePermissions['Super Admin'])) {
-                                                    foreach($rolePermissions['Super Admin'] as $permission) {
+                                                if(isset($rolePermissions[$roleName]) && !empty($rolePermissions[$roleName])) {
+                                                    foreach($rolePermissions[$roleName] as $permission) {
                                                         echo '<span class="badge bg-primary me-1">' . ucfirst($permission) . '</span>';
                                                     }
                                                 } else {
@@ -277,28 +542,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                                 }
                                                 ?>
                                             </td>
-                                            <td>
-                                                <?php 
-                                                if(isset($rolePermissions['HR Admin']) && !empty($rolePermissions['HR Admin'])) {
-                                                    foreach($rolePermissions['HR Admin'] as $permission) {
-                                                        echo '<span class="badge bg-primary me-1">' . ucfirst($permission) . '</span>';
-                                                    }
-                                                } else {
-                                                    echo '<span class="badge bg-secondary">No Access</span>';
-                                                }
-                                                ?>
-                                            </td>
-                                            <td>
-                                                <?php 
-                                                if(isset($rolePermissions['Marketing Admin']) && !empty($rolePermissions['Marketing Admin'])) {
-                                                    foreach($rolePermissions['Marketing Admin'] as $permission) {
-                                                        echo '<span class="badge bg-primary me-1">' . ucfirst($permission) . '</span>';
-                                                    }
-                                                } else {
-                                                    echo '<span class="badge bg-secondary">No Access</span>';
-                                                }
-                                                ?>
-                                            </td>
+                                            <?php endforeach; ?>
                                         </tr>
                                         <?php endforeach; ?>
                                     </tbody>
@@ -433,9 +677,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <thead>
                                     <tr>
                                         <th>Feature/Module</th>
-                                        <th>Super Admin</th>
-                                        <th>HR Admin</th>
-                                        <th>Marketing Admin</th>
+                                        <?php foreach($role_names as $roleName): ?>
+                                        <th><?php echo htmlspecialchars($roleName); ?></th>
+                                        <?php endforeach; ?>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -443,83 +687,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <tr>
                                         <td class="text-capitalize"><?php echo str_replace('_', ' ', $feature); ?></td>
                                         
-                                        <!-- Super Admin Permissions -->
+                                        <?php foreach($role_names as $roleName): ?>
                                         <td>
                                             <div class="d-flex flex-wrap">
                                                 <div class="form-check me-2">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][Super Admin][]" value="view" 
-                                                        <?php echo (isset($permissions[$feature]['Super Admin']) && in_array('view', $permissions[$feature]['Super Admin'])) ? 'checked' : ''; ?>>
+                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][<?php echo $roleName; ?>][]" value="view" 
+                                                        <?php echo (isset($permissions[$feature][$roleName]) && in_array('view', $permissions[$feature][$roleName])) ? 'checked' : ''; ?>>
                                                     <label class="form-check-label">View</label>
                                                 </div>
                                                 <div class="form-check me-2">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][Super Admin][]" value="add" 
-                                                        <?php echo (isset($permissions[$feature]['Super Admin']) && in_array('add', $permissions[$feature]['Super Admin'])) ? 'checked' : ''; ?>>
+                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][<?php echo $roleName; ?>][]" value="add" 
+                                                        <?php echo (isset($permissions[$feature][$roleName]) && in_array('add', $permissions[$feature][$roleName])) ? 'checked' : ''; ?>>
                                                     <label class="form-check-label">Add</label>
                                                 </div>
                                                 <div class="form-check me-2">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][Super Admin][]" value="edit" 
-                                                        <?php echo (isset($permissions[$feature]['Super Admin']) && in_array('edit', $permissions[$feature]['Super Admin'])) ? 'checked' : ''; ?>>
+                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][<?php echo $roleName; ?>][]" value="edit" 
+                                                        <?php echo (isset($permissions[$feature][$roleName]) && in_array('edit', $permissions[$feature][$roleName])) ? 'checked' : ''; ?>>
                                                     <label class="form-check-label">Edit</label>
                                                 </div>
                                                 <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][Super Admin][]" value="delete" 
-                                                        <?php echo (isset($permissions[$feature]['Super Admin']) && in_array('delete', $permissions[$feature]['Super Admin'])) ? 'checked' : ''; ?>>
+                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][<?php echo $roleName; ?>][]" value="delete" 
+                                                        <?php echo (isset($permissions[$feature][$roleName]) && in_array('delete', $permissions[$feature][$roleName])) ? 'checked' : ''; ?>>
                                                     <label class="form-check-label">Delete</label>
                                                 </div>
                                             </div>
                                         </td>
-                                        
-                                        <!-- HR Admin Permissions -->
-                                        <td>
-                                            <div class="d-flex flex-wrap">
-                                                <div class="form-check me-2">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][HR Admin][]" value="view" 
-                                                        <?php echo (isset($permissions[$feature]['HR Admin']) && in_array('view', $permissions[$feature]['HR Admin'])) ? 'checked' : ''; ?>>
-                                                    <label class="form-check-label">View</label>
-                                                </div>
-                                                <div class="form-check me-2">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][HR Admin][]" value="add" 
-                                                        <?php echo (isset($permissions[$feature]['HR Admin']) && in_array('add', $permissions[$feature]['HR Admin'])) ? 'checked' : ''; ?>>
-                                                    <label class="form-check-label">Add</label>
-                                                </div>
-                                                <div class="form-check me-2">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][HR Admin][]" value="edit" 
-                                                        <?php echo (isset($permissions[$feature]['HR Admin']) && in_array('edit', $permissions[$feature]['HR Admin'])) ? 'checked' : ''; ?>>
-                                                    <label class="form-check-label">Edit</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][HR Admin][]" value="delete" 
-                                                        <?php echo (isset($permissions[$feature]['HR Admin']) && in_array('delete', $permissions[$feature]['HR Admin'])) ? 'checked' : ''; ?>>
-                                                    <label class="form-check-label">Delete</label>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        
-                                        <!-- Marketing Admin Permissions -->
-                                        <td>
-                                            <div class="d-flex flex-wrap">
-                                                <div class="form-check me-2">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][Marketing Admin][]" value="view" 
-                                                        <?php echo (isset($permissions[$feature]['Marketing Admin']) && in_array('view', $permissions[$feature]['Marketing Admin'])) ? 'checked' : ''; ?>>
-                                                    <label class="form-check-label">View</label>
-                                                </div>
-                                                <div class="form-check me-2">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][Marketing Admin][]" value="add" 
-                                                        <?php echo (isset($permissions[$feature]['Marketing Admin']) && in_array('add', $permissions[$feature]['Marketing Admin'])) ? 'checked' : ''; ?>>
-                                                    <label class="form-check-label">Add</label>
-                                                </div>
-                                                <div class="form-check me-2">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][Marketing Admin][]" value="edit" 
-                                                        <?php echo (isset($permissions[$feature]['Marketing Admin']) && in_array('edit', $permissions[$feature]['Marketing Admin'])) ? 'checked' : ''; ?>>
-                                                    <label class="form-check-label">Edit</label>
-                                                </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="checkbox" name="matrix[<?php echo $feature; ?>][Marketing Admin][]" value="delete" 
-                                                        <?php echo (isset($permissions[$feature]['Marketing Admin']) && in_array('delete', $permissions[$feature]['Marketing Admin'])) ? 'checked' : ''; ?>>
-                                                    <label class="form-check-label">Delete</label>
-                                                </div>
-                                            </div>
-                                        </td>
+                                        <?php endforeach; ?>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -558,7 +751,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             let permissionsHtml = '';
             
             // This would normally be an AJAX call to get the permissions
-            // For now, we'll use our mock data
+            // For now, we'll use our client-side data
             <?php echo "const permissions = " . json_encode($permissions) . ";"; ?>
             
             // Loop through the permissions and add rows for features this role has access to
@@ -596,19 +789,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Edit role button click handler
         $('.edit-role').click(function() {
             const roleId = $(this).data('role-id');
-            // This would normally be an AJAX call to get the role details
-            // Then populate a modal form
-            // For now, just show an alert
-            alert('Edit role ' + roleId + ' functionality would go here!');
+            // In a real implementation, we'd make an AJAX call to get the role details
+            // For now, just show a message
+            alert('Edit role ' + roleId + ' functionality would go here. This would be implemented with an AJAX call to fetch role details.');
         });
         
         // Delete role button click handler
         $('.delete-role').click(function() {
             const roleId = $(this).data('role-id');
             if(confirm('Are you sure you want to delete this role? This action cannot be undone.')) {
-                // This would normally be an AJAX call to delete the role
-                // For now, just show an alert
-                alert('Delete role ' + roleId + ' functionality would go here!');
+                // In a real implementation, we'd make an AJAX call to delete the role
+                // For now, just show a message
+                window.location.href = 'admin-roles.php?action=delete&role_id=' + roleId;
             }
         });
         
@@ -617,26 +809,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $('#editPermissionsModal').modal('show');
         });
         
-        // Select all permissions in a category
-        $('.select-all-permissions').click(function() {
-            const category = $(this).data('category');
-            const isChecked = $(this).prop('checked');
-            $(`.permission-checkbox[data-category="${category}"]`).prop('checked', isChecked);
-        });
-        
         // Handle parent permission logic (View must be checked if any other permission is checked)
-        $('.permission-checkbox').change(function() {
-            const category = $(this).data('category');
-            const permType = $(this).data('perm-type');
+        $('.permission-checkbox, .form-check-input').change(function() {
+            const feature = $(this).closest('.card').find('.card-header h6').text().trim().toLowerCase().replace(/ /g, '_');
+            const permType = $(this).val();
             
             // If any permission other than VIEW is checked, VIEW must also be checked
             if(permType !== 'view' && $(this).prop('checked')) {
-                $(`.permission-checkbox[data-category="${category}"][data-perm-type="view"]`).prop('checked', true);
+                $(`input[name="permissions[${feature}][]"][value="view"]`).prop('checked', true);
             }
             
             // If VIEW is unchecked, uncheck all other permissions
             if(permType === 'view' && !$(this).prop('checked')) {
-                $(`.permission-checkbox[data-category="${category}"]:not([data-perm-type="view"])`).prop('checked', false);
+                $(`input[name="permissions[${feature}][]"]:not([value="view"])`).prop('checked', false);
+            }
+        });
+        
+        // Similar logic for the matrix form
+        $('.form-check-input').change(function() {
+            const name = $(this).attr('name');
+            const value = $(this).val();
+            
+            if (name && name.includes('matrix')) {
+                // Extract the feature and role from the name attribute
+                const matches = name.match(/matrix\[(.*?)\]\[(.*?)\]/);
+                if (matches && matches.length >= 3) {
+                    const feature = matches[1];
+                    const role = matches[2];
+                    
+                    // If any permission other than VIEW is checked, VIEW must also be checked
+                    if(value !== 'view' && $(this).prop('checked')) {
+                        $(`input[name="matrix[${feature}][${role}][]"][value="view"]`).prop('checked', true);
+                    }
+                    
+                    // If VIEW is unchecked, uncheck all other permissions
+                    if(value === 'view' && !$(this).prop('checked')) {
+                        $(`input[name="matrix[${feature}][${role}][]"]:not([value="view"])`).prop('checked', false);
+                    }
+                }
             }
         });
     });
