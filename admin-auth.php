@@ -247,12 +247,14 @@ function get_admin_user() {
     if (is_admin_logged_in() && isset($_SESSION['admin_id'])) {
         $db_profile = get_admin_profile($_SESSION['admin_id']);
         if ($db_profile && is_array($db_profile)) {
-            // CRITICAL FIX: Prioritize session role over empty database role
-            // This ensures session role is not overwritten by empty database value
-            if (empty($db_profile['role']) && !empty($admin_info['role'])) {
-                $db_profile['role'] = $admin_info['role'];
+            // CRITICAL FIX: Reverse the merge order so session values take precedence
+            // This ensures database values don't overwrite valid session values
+            $admin_info = array_merge($db_profile, $admin_info);
+            
+            // Double-check that we have a valid role - use session role as fallback
+            if (empty($admin_info['role']) && isset($_SESSION['admin_role'])) {
+                $admin_info['role'] = $_SESSION['admin_role'];
             }
-            $admin_info = array_merge($admin_info, $db_profile);
         }
     }
     
