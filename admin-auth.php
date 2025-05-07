@@ -28,7 +28,6 @@ if (session_status() === PHP_SESSION_NONE) {
 
 /**
  * Check if user is logged in
- * FIXED to handle all valid session states (true/1/"1")
  * 
  * @return bool True if user is logged in, false otherwise
  */
@@ -54,7 +53,6 @@ function is_login_page() {
 
 /**
  * Check if user has required role
- * FIXED to handle superadmin/admin roles automatically
  * 
  * @param array $allowed_roles Array of roles allowed to access the page
  * @return bool True if user has required role, false otherwise
@@ -65,7 +63,8 @@ function has_admin_role($allowed_roles = []) {
         return is_admin_logged_in();
     }
     
-    // Super admin and admin always have access to everything
+    // CRITICAL FIX: Super admin and admin always have access to everything
+    // This ensures superadmin role always passes permission checks
     if (isset($_SESSION['admin_role']) && 
         (strtolower($_SESSION['admin_role']) === 'superadmin' || 
          strtolower($_SESSION['admin_role']) === 'admin')) {
@@ -78,7 +77,6 @@ function has_admin_role($allowed_roles = []) {
 
 /**
  * Require authentication - redirects to login page if not logged in
- * FIXED to prevent redirect loops and handle edge cases
  */
 function require_admin_auth() {
     // Skip redirect if already on login page
@@ -106,7 +104,6 @@ function require_admin_auth() {
 
 /**
  * Require specific role - redirects if not authorized
- * FIXED to handle role hierarchy and edge cases
  * 
  * @param array $allowed_roles Array of roles allowed to access the page
  */
@@ -135,7 +132,6 @@ function require_admin_role($allowed_roles = []) {
 
 /**
  * Login user and create session
- * NEW FUNCTION: Properly handles authentication and logging
  * 
  * @param string $username Username
  * @param string $password Password
@@ -173,7 +169,8 @@ function admin_login($username, $password) {
             return false;
         }
 
-        // FIXED: Check for empty role and set a default
+        // CRITICAL FIX: Check for empty role and set a default
+        // This prevents issues with empty roles in the database
         if (empty($user['role'])) {
             // If shanisbsg, set as superadmin
             if ($username === 'shanisbsg') {
@@ -214,7 +211,6 @@ function admin_login($username, $password) {
 
 /**
  * Logout current user
- * NEW FUNCTION: Properly handles session cleanup
  */
 function admin_logout() {
     // Unset all session variables
@@ -235,7 +231,6 @@ function admin_logout() {
 
 /**
  * Get current admin user info
- * IMPROVED: Better error handling and data fetching
  * 
  * @return array Admin user info or empty array if not logged in
  */
@@ -252,6 +247,11 @@ function get_admin_user() {
     if (is_admin_logged_in() && isset($_SESSION['admin_id'])) {
         $db_profile = get_admin_profile($_SESSION['admin_id']);
         if ($db_profile && is_array($db_profile)) {
+            // CRITICAL FIX: Prioritize session role over empty database role
+            // This ensures session role is not overwritten by empty database value
+            if (empty($db_profile['role']) && !empty($admin_info['role'])) {
+                $db_profile['role'] = $admin_info['role'];
+            }
             $admin_info = array_merge($admin_info, $db_profile);
         }
     }
@@ -261,7 +261,6 @@ function get_admin_user() {
 
 /**
  * Check admin permissions
- * IMPROVED: Better permission handling with hierarchy
  * 
  * @param string $permission Permission key to check
  * @return bool True if user has permission
@@ -293,7 +292,6 @@ function has_admin_permission($permission) {
 
 /**
  * Get admin profile from database
- * IMPROVED: Better error handling
  * 
  * @param int $admin_id Admin ID
  * @return array|false Admin data or false on error
@@ -316,7 +314,6 @@ function get_admin_profile($admin_id) {
 
 /**
  * Log admin actions
- * IMPROVED: Better logging with error handling
  * 
  * @param string $action Action type
  * @param string $target Target entity
@@ -350,7 +347,6 @@ function log_admin_action($action, $target, $details = '') {
 
 /**
  * Check if admin activity log table exists and create if not
- * NEW FUNCTION: Ensures logging tables exist
  */
 function ensure_admin_log_table() {
     try {
@@ -385,7 +381,6 @@ function ensure_admin_log_table() {
 
 /**
  * Check session timeout and validate session
- * IMPROVED: Better session security
  * 
  * @return bool True if session is valid
  */
@@ -416,7 +411,6 @@ function check_session_validity() {
 
 /**
  * Create a new admin user
- * NEW FUNCTION: Allows proper user creation
  * 
  * @param string $username Username
  * @param string $password Password
@@ -460,7 +454,6 @@ function create_admin_user($username, $password, $email, $role = 'admin') {
 
 /**
  * Update admin user password
- * NEW FUNCTION: Allows password updates
  * 
  * @param int $admin_id Admin ID
  * @param string $new_password New password
@@ -487,8 +480,8 @@ function update_admin_password($admin_id, $new_password) {
 }
 
 /**
- * Ensure the 'shanisbsg' admin user exists and has superadmin role
- * NEW FUNCTION: Crucial for fixing the identified issue
+ * CRITICAL FIX: Ensure the 'shanisbsg' admin user exists and has superadmin role
+ * This function guarantees the superadmin user exists with the correct role
  */
 function ensure_superadmin_exists() {
     try {
@@ -524,9 +517,9 @@ function ensure_superadmin_exists() {
     }
 }
 
-// Run initialization functions
+// Run initialization functions - These are executed when this file is included
 ensure_admin_log_table();
-ensure_superadmin_exists();
+ensure_superadmin_exists(); // CRITICAL FIX: This ensures superadmin user exists with proper role
 check_session_validity();
 
 // Set up global variables for templates
