@@ -1,13 +1,13 @@
 <?php
 /**
- * Admin Authentication System
+ * Unified Admin Authentication System
  * 
  * Handles user authentication, session management, permission control,
  * and security for the admin panel.
  */
 
-// Include database configuration
-require_once 'db_config.php';
+// Include centralized database connection
+require_once 'db.php';
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
@@ -46,7 +46,7 @@ function is_admin_logged_in() {
  */
 function is_login_page() {
     $current_script = basename($_SERVER['SCRIPT_NAME']);
-    $login_pages = ['admin-login.php', 'login.php', 'admin/login.php'];
+    $login_pages = ['admin-login.php', 'login.php', 'admin/login.php', 'forgot-password.php', 'reset-password.php'];
     
     return in_array($current_script, $login_pages);
 }
@@ -54,17 +54,21 @@ function is_login_page() {
 /**
  * Check if user has required role
  * 
- * @param array $allowed_roles Array of roles allowed to access the page
+ * @param array|string $allowed_roles Array or string of roles allowed to access the page
  * @return bool True if user has required role, false otherwise
  */
 function has_admin_role($allowed_roles = []) {
+    // Convert string to array if necessary
+    if (!is_array($allowed_roles)) {
+        $allowed_roles = [$allowed_roles];
+    }
+    
     // If no specific roles are required, just check if logged in
     if (empty($allowed_roles)) {
         return is_admin_logged_in();
     }
     
-    // CRITICAL FIX: Super admin and admin always have access to everything
-    // This ensures superadmin role always passes permission checks
+    // Superadmin and admin always have access to everything
     if (isset($_SESSION['admin_role']) && 
         (strtolower($_SESSION['admin_role']) === 'superadmin' || 
          strtolower($_SESSION['admin_role']) === 'admin')) {
@@ -84,28 +88,34 @@ function require_admin_auth() {
         return;
     }
 
+    // Check session validity
+    check_session_validity();
+
     // If not logged in, redirect to login
     if (!is_admin_logged_in()) {
         if (!headers_sent()) {
             // Store current URL for redirect after login
             $_SESSION['redirect_after_login'] = $_SERVER['REQUEST_URI'];
             
-            header("Location: admin-login.php");
+            header("Location: login.php");
             exit();
         } else {
             // If headers already sent, display error message
             echo '<div class="auth-error alert alert-danger">
-                Authentication required. Please <a href="admin-login.php">log in</a> to continue.
+                Authentication required. Please <a href="login.php">log in</a> to continue.
                 </div>';
             die();
         }
     }
+    
+    // Update last activity time
+    $_SESSION['last_activity'] = time();
 }
 
 /**
  * Require specific role - redirects if not authorized
  * 
- * @param array $allowed_roles Array of roles allowed to access the page
+ * @param array|string $allowed_roles Array or string of roles allowed to access the page
  */
 function require_admin_role($allowed_roles = []) {
     // Skip checks if on login page
@@ -116,8 +126,16 @@ function require_admin_role($allowed_roles = []) {
     // First check if logged in
     require_admin_auth();
     
+    // Convert string to array if necessary
+    if (!is_array($allowed_roles)) {
+        $allowed_roles = [$allowed_roles];
+    }
+    
     // Check role if specified
     if (!empty($allowed_roles) && !has_admin_role($allowed_roles)) {
+        // Log unauthorized access attempt
+        log_admin_action('access_denied', 'Attempted to access restricted page: ' . $_SERVER['REQUEST_URI']);
+        
         if (!headers_sent()) {
             header("Location: admin-dashboard.php?error=unauthorized");
             exit();
@@ -133,16 +151,25 @@ function require_admin_role($allowed_roles = []) {
 /**
  * Login user and create session
  * 
- * @param string $username Username
+ * @param string $username Username or email
  * @param string $password Password
+ * @param bool $remember Whether to remember the user
  * @return bool|array False if login fails, user data array if successful
  */
-function admin_login($username, $password) {
+function admin_login($username, $password, $remember = false) {
+    global $pdo;
+    
     try {
-        $db = get_db_connection();
+        // Check if username is an email
+        $is_email = filter_var($username, FILTER_VALIDATE_EMAIL);
         
-        // Get user from database
-        $stmt = $db->prepare("SELECT * FROM admins WHERE username = ?");
+        // Find user by username or email
+        if ($is_email) {
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND status = 'active'");
+        } else {
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND status = 'active'");
+        }
+        
         $stmt->execute([$username]);
         $user = $stmt->fetch();
         
@@ -151,7 +178,7 @@ function admin_login($username, $password) {
             // Update login attempts for existing users
             if ($user) {
                 $attempts = $user['login_attempts'] + 1;
-                $updateStmt = $db->prepare("UPDATE admins SET login_attempts = ?, last_attempt_time = NOW() WHERE id = ?");
+                $updateStmt = $pdo->prepare("UPDATE users SET login_attempts = ?, last_attempt_time = NOW() WHERE id = ?");
                 $updateStmt->execute([$attempts, $user['id']]);
                 
                 // Check for account lockout
@@ -164,23 +191,29 @@ function admin_login($username, $password) {
         }
         
         // Check if account is locked/inactive
-        if ($user['status'] != 0) {
+        if ($user['status'] !== 'active') {
             error_log("Login rejected: Account {$username} is inactive or locked");
             return false;
         }
 
-        // CRITICAL FIX: Check for empty role and set a default
-        // This prevents issues with empty roles in the database
+        // Check for too many failed attempts
+        if (isset($user['login_attempts']) && $user['login_attempts'] >= 5 && 
+            isset($user['last_attempt_time']) && strtotime($user['last_attempt_time']) > (time() - 900)) {
+            error_log("Login rejected: Account {$username} is temporarily locked due to too many failed attempts");
+            return false;
+        }
+
+        // Check for empty role and set a default
         if (empty($user['role'])) {
-            // If shanisbsg, set as superadmin
+            // If shanisbsg, set as admin
             if ($username === 'shanisbsg') {
-                $role = 'superadmin';
+                $role = 'admin';
             } else {
-                $role = 'admin'; // Default role
+                $role = 'user'; // Default role
             }
             
             // Update the role in database
-            $updateRoleStmt = $db->prepare("UPDATE admins SET role = ? WHERE id = ?");
+            $updateRoleStmt = $pdo->prepare("UPDATE users SET role = ? WHERE id = ?");
             $updateRoleStmt->execute([$role, $user['id']]);
             $user['role'] = $role;
         }
@@ -191,16 +224,30 @@ function admin_login($username, $password) {
         $_SESSION['admin_username'] = $user['username'];
         $_SESSION['admin_role'] = $user['role'];
         $_SESSION['admin_email'] = $user['email'];
+        $_SESSION['admin_name'] = $user['name'] ?? $user['username'];
         $_SESSION['ip_address'] = $_SERVER['REMOTE_ADDR'];
         $_SESSION['login_time'] = time();
         $_SESSION['last_activity'] = time();
         
+        // Handle remember me
+        if ($remember) {
+            $token = bin2hex(random_bytes(32));
+            $expiry = time() + (30 * 24 * 60 * 60); // 30 days
+            
+            // Save token in database
+            $tokenStmt = $pdo->prepare("UPDATE users SET remember_token = ?, token_expiry = ? WHERE id = ?");
+            $tokenStmt->execute([$token, date('Y-m-d H:i:s', $expiry), $user['id']]);
+            
+            // Set cookie
+            setcookie('remember_token', $token, $expiry, '/', '', isset($_SERVER['HTTPS']), true);
+        }
+        
         // Reset login attempts
-        $resetStmt = $db->prepare("UPDATE admins SET login_attempts = 0, last_login = NOW() WHERE id = ?");
+        $resetStmt = $pdo->prepare("UPDATE users SET login_attempts = 0, last_login = NOW() WHERE id = ?");
         $resetStmt->execute([$user['id']]);
         
         // Log successful login
-        error_log("Successful login: {$username} ({$user['role']})");
+        log_admin_action('login', 'User logged in successfully');
         
         return $user;
     } catch (PDOException $e) {
@@ -213,6 +260,25 @@ function admin_login($username, $password) {
  * Logout current user
  */
 function admin_logout() {
+    // Log the logout action if logged in
+    if (is_admin_logged_in()) {
+        log_admin_action('logout', 'User logged out');
+        
+        // Clear remember-me token if exists
+        if (isset($_COOKIE['remember_token']) && isset($_SESSION['admin_id'])) {
+            try {
+                global $pdo;
+                $stmt = $pdo->prepare("UPDATE users SET remember_token = NULL, token_expiry = NULL WHERE id = ?");
+                $stmt->execute([$_SESSION['admin_id']]);
+                
+                // Delete the cookie
+                setcookie('remember_token', '', time() - 3600, '/', '', isset($_SERVER['HTTPS']), true);
+            } catch (PDOException $e) {
+                error_log("Error clearing remember token: " . $e->getMessage());
+            }
+        }
+    }
+    
     // Unset all session variables
     $_SESSION = array();
     
@@ -235,26 +301,35 @@ function admin_logout() {
  * @return array Admin user info or empty array if not logged in
  */
 function get_admin_user() {
+    global $pdo;
+    
     // Default values
     $admin_info = [
         'username' => isset($_SESSION['admin_username']) ? $_SESSION['admin_username'] : 'Guest',
         'role' => isset($_SESSION['admin_role']) ? $_SESSION['admin_role'] : '',
         'id' => isset($_SESSION['admin_id']) ? $_SESSION['admin_id'] : 0,
-        'email' => isset($_SESSION['admin_email']) ? $_SESSION['admin_email'] : ''
+        'email' => isset($_SESSION['admin_email']) ? $_SESSION['admin_email'] : '',
+        'name' => isset($_SESSION['admin_name']) ? $_SESSION['admin_name'] : 'Guest'
     ];
     
     // Get additional info from database if logged in
     if (is_admin_logged_in() && isset($_SESSION['admin_id'])) {
-        $db_profile = get_admin_profile($_SESSION['admin_id']);
-        if ($db_profile && is_array($db_profile)) {
-            // CRITICAL FIX: Reverse the merge order so session values take precedence
-            // This ensures database values don't overwrite valid session values
-            $admin_info = array_merge($db_profile, $admin_info);
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+            $stmt->execute([$_SESSION['admin_id']]);
+            $db_profile = $stmt->fetch();
             
-            // Double-check that we have a valid role - use session role as fallback
-            if (empty($admin_info['role']) && isset($_SESSION['admin_role'])) {
-                $admin_info['role'] = $_SESSION['admin_role'];
+            if ($db_profile && is_array($db_profile)) {
+                // Merge data, but session values take precedence
+                $admin_info = array_merge($db_profile, $admin_info);
+                
+                // Double-check that we have a valid role - use session role as fallback
+                if (empty($admin_info['role']) && isset($_SESSION['admin_role'])) {
+                    $admin_info['role'] = $_SESSION['admin_role'];
+                }
             }
+        } catch (PDOException $e) {
+            error_log("Error fetching admin profile: " . $e->getMessage());
         }
     }
     
@@ -268,6 +343,8 @@ function get_admin_user() {
  * @return bool True if user has permission
  */
 function has_admin_permission($permission) {
+    global $pdo;
+    
     // Superadmin and admin always have all permissions
     if (isset($_SESSION['admin_role']) && 
         (strtolower($_SESSION['admin_role']) === 'superadmin' || 
@@ -278,9 +355,10 @@ function has_admin_permission($permission) {
     // For other roles, check specific permissions
     if (isset($_SESSION['admin_id']) && !empty($permission)) {
         try {
-            $db = get_db_connection();
-            $stmt = $db->prepare("SELECT COUNT(*) FROM permissions 
-                WHERE role = ? AND permission = ?");
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM role_permissions rp
+                JOIN permissions p ON rp.permission_id = p.id
+                JOIN roles r ON rp.role_id = r.id
+                WHERE r.name = ? AND p.name = ?");
             $stmt->execute([$_SESSION['admin_role'], $permission]);
             return $stmt->fetchColumn() > 0;
         } catch (PDOException $e) {
@@ -293,51 +371,31 @@ function has_admin_permission($permission) {
 }
 
 /**
- * Get admin profile from database
- * 
- * @param int $admin_id Admin ID
- * @return array|false Admin data or false on error
- */
-function get_admin_profile($admin_id) {
-    if (empty($admin_id)) {
-        return false;
-    }
-    
-    try {
-        $db = get_db_connection();
-        $stmt = $db->prepare("SELECT * FROM admins WHERE id = ?");
-        $stmt->execute([$admin_id]);
-        return $stmt->fetch();
-    } catch (PDOException $e) {
-        error_log("Error fetching admin profile: " . $e->getMessage());
-        return false;
-    }
-}
-
-/**
  * Log admin actions
  * 
- * @param string $action Action type
- * @param string $target Target entity
+ * @param string $action_type Action type
  * @param string $details Action details
+ * @param string $resource Optional resource type
+ * @param int $resource_id Optional resource ID
  * @return bool Success status
  */
-function log_admin_action($action, $target, $details = '') {
-    if (!is_admin_logged_in()) {
-        return false;
-    }
+function log_admin_action($action_type, $details = '', $resource = null, $resource_id = null) {
+    global $pdo;
     
     try {
-        $db = get_db_connection();
-        $stmt = $db->prepare("INSERT INTO admin_activity_log 
-            (admin_id, username, action, target, details, ip_address, timestamp) 
-            VALUES (?, ?, ?, ?, ?, ?, NOW())");
+        $stmt = $pdo->prepare("INSERT INTO admin_activity_log 
+            (user_id, username, action_type, resource, resource_id, details, ip_address) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)");
             
+        $user_id = $_SESSION['admin_id'] ?? null;
+        $username = $_SESSION['admin_username'] ?? null;
+        
         return $stmt->execute([
-            $_SESSION['admin_id'],
-            $_SESSION['admin_username'],
-            $action,
-            $target,
+            $user_id,
+            $username,
+            $action_type,
+            $resource,
+            $resource_id,
             $details,
             $_SERVER['REMOTE_ADDR']
         ]);
@@ -351,25 +409,26 @@ function log_admin_action($action, $target, $details = '') {
  * Check if admin activity log table exists and create if not
  */
 function ensure_admin_log_table() {
+    global $pdo;
+    
     try {
-        $db = get_db_connection();
-        
         // Check if table exists
-        $tableExists = $db->query("SHOW TABLES LIKE 'admin_activity_log'")->rowCount() > 0;
+        $tableExists = $pdo->query("SHOW TABLES LIKE 'admin_activity_log'")->rowCount() > 0;
         
         if (!$tableExists) {
             // Create activity log table
-            $db->exec("CREATE TABLE admin_activity_log (
+            $pdo->exec("CREATE TABLE admin_activity_log (
                 id INT AUTO_INCREMENT PRIMARY KEY,
-                admin_id INT NOT NULL,
-                username VARCHAR(100) NOT NULL,
-                action VARCHAR(50) NOT NULL,
-                target VARCHAR(50) NOT NULL,
+                user_id INT,
+                username VARCHAR(100),
+                action_type VARCHAR(50) NOT NULL,
+                resource VARCHAR(50),
+                resource_id INT,
                 details TEXT,
                 ip_address VARCHAR(45),
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                INDEX (admin_id),
-                INDEX (action),
+                INDEX (user_id),
+                INDEX (action_type),
                 INDEX (timestamp)
             )");
         }
@@ -384,18 +443,25 @@ function ensure_admin_log_table() {
 /**
  * Check session timeout and validate session
  * 
+ * @param int $timeout_minutes Session timeout in minutes (default: 30)
  * @return bool True if session is valid
  */
-function check_session_validity() {
+function check_session_validity($timeout_minutes = 30) {
     // Not applicable if not logged in
     if (!is_admin_logged_in()) {
         return true;
     }
     
-    // Check session timeout (30 minutes)
-    $timeout = 1800; // 30 minutes
+    // Check session timeout
+    $timeout = $timeout_minutes * 60; // Convert to seconds
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > $timeout)) {
         admin_logout();
+        
+        // Redirect to login page with timeout message
+        if (!headers_sent()) {
+            header('Location: login.php?timeout=1');
+            exit;
+        }
         return false;
     }
     
@@ -417,20 +483,21 @@ function check_session_validity() {
  * @param string $username Username
  * @param string $password Password
  * @param string $email Email
+ * @param string $name Full name
  * @param string $role Role (default: admin)
  * @return int|false User ID on success, false on failure
  */
-function create_admin_user($username, $password, $email, $role = 'admin') {
+function create_admin_user($username, $password, $email, $name, $role = 'admin') {
+    global $pdo;
+    
     // Validate inputs
     if (empty($username) || empty($password) || empty($email)) {
         return false;
     }
     
     try {
-        $db = get_db_connection();
-        
         // Check if username or email already exists
-        $checkStmt = $db->prepare("SELECT id FROM admins WHERE username = ? OR email = ?");
+        $checkStmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
         $checkStmt->execute([$username, $email]);
         
         if ($checkStmt->rowCount() > 0) {
@@ -441,13 +508,18 @@ function create_admin_user($username, $password, $email, $role = 'admin') {
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
         
         // Insert new user
-        $insertStmt = $db->prepare("INSERT INTO admins 
-            (username, password, email, role, created_at, status) 
-            VALUES (?, ?, ?, ?, NOW(), 0)");
+        $insertStmt = $pdo->prepare("INSERT INTO users 
+            (username, password, email, name, role, status, created_at) 
+            VALUES (?, ?, ?, ?, ?, 'active', NOW())");
             
-        $insertStmt->execute([$username, $hashed_password, $email, $role]);
+        $insertStmt->execute([$username, $hashed_password, $email, $name, $role]);
         
-        return $db->lastInsertId();
+        $user_id = $pdo->lastInsertId();
+        
+        // Log action
+        log_admin_action('user_created', 'Created new user: ' . $username, 'user', $user_id);
+        
+        return $user_id;
     } catch (PDOException $e) {
         error_log("Error creating admin user: " . $e->getMessage());
         return false;
@@ -457,24 +529,31 @@ function create_admin_user($username, $password, $email, $role = 'admin') {
 /**
  * Update admin user password
  * 
- * @param int $admin_id Admin ID
+ * @param int $user_id User ID
  * @param string $new_password New password
  * @return bool Success status
  */
-function update_admin_password($admin_id, $new_password) {
-    if (empty($admin_id) || empty($new_password)) {
+function update_admin_password($user_id, $new_password) {
+    global $pdo;
+    
+    if (empty($user_id) || empty($new_password)) {
         return false;
     }
     
     try {
-        $db = get_db_connection();
-        
         // Hash password
         $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
         
         // Update password
-        $stmt = $db->prepare("UPDATE admins SET password = ? WHERE id = ?");
-        return $stmt->execute([$hashed_password, $admin_id]);
+        $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
+        $result = $stmt->execute([$hashed_password, $user_id]);
+        
+        if ($result) {
+            // Log action
+            log_admin_action('password_updated', 'Password updated', 'user', $user_id);
+        }
+        
+        return $result;
     } catch (PDOException $e) {
         error_log("Error updating admin password: " . $e->getMessage());
         return false;
@@ -482,47 +561,103 @@ function update_admin_password($admin_id, $new_password) {
 }
 
 /**
- * CRITICAL FIX: Ensure the 'shanisbsg' admin user exists and has superadmin role
- * This function guarantees the superadmin user exists with the correct role
+ * Check for remember-me cookie and log user in if valid
+ * 
+ * @return bool True if auto-login succeeded
+ */
+function check_remember_me() {
+    if (is_admin_logged_in() || !isset($_COOKIE['remember_token'])) {
+        return false;
+    }
+    
+    global $pdo;
+    $token = $_COOKIE['remember_token'];
+    
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM users 
+            WHERE remember_token = ? AND token_expiry > NOW() AND status = 'active'");
+        $stmt->execute([$token]);
+        $user = $stmt->fetch();
+        
+        if ($user) {
+            // Set session variables
+            $_SESSION['admin_logged_in'] = true;
+            $_SESSION['admin_id'] = $user['id'];
+            $_SESSION['admin_username'] = $user['username'];
+            $_SESSION['admin_role'] = $user['role'];
+            $_SESSION['admin_email'] = $user['email'];
+            $_SESSION['admin_name'] = $user['name'] ?? $user['username'];
+            $_SESSION['ip_address'] = $_SERVER['REMOTE_ADDR'];
+            $_SESSION['login_time'] = time();
+            $_SESSION['last_activity'] = time();
+            
+            // Generate new remember token for security
+            $new_token = bin2hex(random_bytes(32));
+            $expiry = time() + (30 * 24 * 60 * 60); // 30 days
+            
+            // Update token in database
+            $stmt = $pdo->prepare("UPDATE users SET remember_token = ?, token_expiry = ? WHERE id = ?");
+            $stmt->execute([$new_token, date('Y-m-d H:i:s', $expiry), $user['id']]);
+            
+            // Set new cookie
+            setcookie('remember_token', $new_token, $expiry, '/', '', isset($_SERVER['HTTPS']), true);
+            
+            // Log action
+            log_admin_action('login_remember', 'Auto-login via remember-me cookie');
+            
+            return true;
+        }
+    } catch (PDOException $e) {
+        error_log("Remember Me Check Error: " . $e->getMessage());
+    }
+    
+    // Invalid or expired token, clear the cookie
+    setcookie('remember_token', '', time() - 3600, '/', '', isset($_SERVER['HTTPS']), true);
+    return false;
+}
+
+/**
+ * Ensure the default admin user exists
  */
 function ensure_superadmin_exists() {
+    global $pdo;
+    
     try {
-        $db = get_db_connection();
-        
         // Check if shanisbsg exists
-        $stmt = $db->prepare("SELECT id, role FROM admins WHERE username = 'shanisbsg'");
+        $stmt = $pdo->prepare("SELECT id, role FROM users WHERE username = 'shanisbsg'");
         $stmt->execute();
         $user = $stmt->fetch();
         
         if ($user) {
             // User exists, check if role is set
             if (empty($user['role'])) {
-                // Update role to superadmin
-                $updateStmt = $db->prepare("UPDATE admins SET role = 'superadmin' WHERE id = ?");
+                // Update role to admin
+                $updateStmt = $pdo->prepare("UPDATE users SET role = 'admin' WHERE id = ?");
                 $updateStmt->execute([$user['id']]);
-                error_log("Updated shanisbsg role to superadmin");
+                error_log("Updated shanisbsg role to admin");
             }
         } else {
             // User doesn't exist, create with default password (should be changed immediately)
-            $password = password_hash('a14c65f3', PASSWORD_DEFAULT);
-            $createStmt = $db->prepare("INSERT INTO admins 
-                (username, password, email, role, created_at, status) 
-                VALUES ('shanisbsg', ?, 'shanis@backsureglobalsupport.com', 'superadmin', NOW(), 0)");
+            $password = password_hash('password123', PASSWORD_DEFAULT);
+            $createStmt = $pdo->prepare("INSERT INTO users 
+                (username, password, email, name, role, status, created_at) 
+                VALUES ('shanisbsg', ?, 'shanis@backsureglobalsupport.com', 'Shanis BSG', 'admin', 'active', NOW())");
             $createStmt->execute([$password]);
-            error_log("Created shanisbsg superadmin user");
+            error_log("Created shanisbsg admin user");
         }
         
         return true;
     } catch (PDOException $e) {
-        error_log("Error ensuring superadmin: " . $e->getMessage());
+        error_log("Error ensuring admin exists: " . $e->getMessage());
         return false;
     }
 }
 
 // Run initialization functions - These are executed when this file is included
 ensure_admin_log_table();
-ensure_superadmin_exists(); // CRITICAL FIX: This ensures superadmin user exists with proper role
+ensure_superadmin_exists();
 check_session_validity();
+check_remember_me(); // Try auto-login with remember-me cookie
 
 // Set up global variables for templates
 $admin_user = get_admin_user();
