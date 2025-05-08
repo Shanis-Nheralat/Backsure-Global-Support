@@ -4,11 +4,11 @@
  * Provides consistent database access across all admin files
  */
 
-// Database credentials
+// Database credentials - UPDATED to fix authentication issue
 $db_host = 'localhost';
-$db_name = 'backsure_admin';  // From diagnostic report
-$db_user = 'shanis@backsureglobalsupport.com';
-$db_pass = 'lBzymn$l2h1$wpYoo9RV';
+$db_name = 'backsure_admin';
+$db_user = 'shanis'; // CHANGED: Removed '@backsureglobalsupport.com' that caused MySQL authentication error
+$db_pass = 'YourNewPassword'; // CHANGED: You'll need to set this to your new password
 $db_charset = 'utf8mb4';
 
 // Legacy variables for backward compatibility
@@ -110,3 +110,35 @@ function db_last_insert_id() {
     global $pdo;
     return $pdo->lastInsertId();
 }
+
+/**
+ * Function for backwards compatibility with db_config.php
+ * This will help transition code that used get_db_connection()
+ */
+function get_db_connection() {
+    global $pdo;
+    return $pdo;
+}
+
+/**
+ * Function for backwards compatibility with db_config.php
+ * This will help transition code that used get_mysqli_connection()
+ */
+function get_mysqli_connection() {
+    global $mysqli;
+    return $mysqli;
+}
+
+// Set additional compatibility variables used by db_config.php
+// This helps with transitioning away from db_config.php
+$db = $pdo;
+$dbhost = $db_host;
+$dbuser = $db_user;
+$dbpass = $db_pass;
+$dbname = $db_name;
+
+// Define constants for backwards compatibility
+if (!defined('DB_HOST')) define('DB_HOST', $db_host);
+if (!defined('DB_NAME')) define('DB_NAME', $db_name);
+if (!defined('DB_USER')) define('DB_USER', $db_user);
+if (!defined('DB_PASSWORD')) define('DB_PASSWORD', $db_pass);
