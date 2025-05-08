@@ -1,7 +1,7 @@
 <?php
 /**
- * Logout Process
- * Handles user logout and session destruction
+ * Unified Logout System for Backsure Global Support
+ * Handles user logout, session destruction, and token cleanup
  */
 
 // Start session if not already started
@@ -9,15 +9,17 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Include database configuration if needed for token deletion
-require_once 'config.php';
+// Include database connection
+require_once 'db.php';
+require_once 'admin-auth.php'; // Optional - if you want to use the log_admin_action function
 
 // Get user info before destroying session
-$userId = $_SESSION['user_id'] ?? null;
-$isClient = isset($_SESSION['is_client']) && $_SESSION['is_client'] === true;
+$userId = $_SESSION['admin_id'] ?? null;
+$username = $_SESSION['admin_username'] ?? null;
+$userRole = $_SESSION['admin_role'] ?? 'admin';
 
 // Determine where to redirect after logout
-$redirectUrl = $isClient ? 'client-login.html' : 'admin-login.html';
+$redirectUrl = 'login.php';
 
 // Check for CSRF protection
 if (isset($_GET['token'])) {
@@ -26,69 +28,41 @@ if (isset($_GET['token'])) {
         header("Location: $redirectUrl?error=invalid_token");
         exit;
     }
-} 
+}
 
 // If this is an AJAX request, we'll return JSON
 $isAjax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 
 // Clean up remember_me token if exists
-if (isset($_COOKIE['remember_me']) && $userId) {
+if (isset($_COOKIE['remember_token']) && $userId) {
     try {
-        // Parse the remember_me cookie
-        $parts = explode(':', $_COOKIE['remember_me']);
-        if (count($parts) === 2) {
-            $selector = $parts[0];
-            
-            // Connect to database
-            $pdo = new PDO(
-                'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-                DB_USER,
-                DB_PASSWORD,
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false
-                ]
-            );
-            
-            // Delete the token from database
-            $stmt = $pdo->prepare('DELETE FROM remember_tokens WHERE user_id = ? AND selector = ?');
-            $stmt->execute([$userId, $selector]);
-        }
+        // Update user record to clear the token
+        $stmt = $pdo->prepare('UPDATE users SET remember_token = NULL, token_expiry = NULL WHERE id = ?');
+        $stmt->execute([$userId]);
+        
+        // Delete the cookie
+        setcookie('remember_token', '', time() - 3600, '/', '', true, true);
     } catch (PDOException $e) {
         error_log('Logout error: ' . $e->getMessage());
     }
-    
-    // Delete the cookie
-    setcookie('remember_me', '', time() - 3600, '/', '', true, true);
 }
 
 // Log the logout event
 if ($userId) {
-    try {
-        // Connect to database if not already connected
-        if (!isset($pdo)) {
-            $pdo = new PDO(
-                'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-                DB_USER,
-                DB_PASSWORD,
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false
-                ]
-            );
+    // Method 1: Use admin-auth.php function if available
+    if (function_exists('log_admin_action')) {
+        log_admin_action('logout', 'User logged out');
+    } else {
+        // Method 2: Log directly to the database
+        try {
+            $ipAddress = $_SERVER['REMOTE_ADDR'];
+            $userAgent = $_SERVER['HTTP_USER_AGENT'];
+            
+            $stmt = $pdo->prepare('INSERT INTO admin_activity_log (user_id, username, action_type, details, ip_address) VALUES (?, ?, ?, ?, ?)');
+            $stmt->execute([$userId, $username, 'logout', 'User logged out', $ipAddress]);
+        } catch (PDOException $e) {
+            error_log('Logout log error: ' . $e->getMessage());
         }
-        
-        // Log the logout
-        $ipAddress = $_SERVER['REMOTE_ADDR'];
-        $userAgent = $_SERVER['HTTP_USER_AGENT'];
-        
-        $stmt = $pdo->prepare('INSERT INTO login_logs (user_id, ip_address, user_agent, action, success) VALUES (?, ?, ?, "logout", 1)');
-        $stmt->execute([$userId, $ipAddress, $userAgent]);
-        
-    } catch (PDOException $e) {
-        error_log('Logout log error: ' . $e->getMessage());
     }
 }
 
@@ -122,6 +96,6 @@ if ($isAjax) {
     ]);
 } else {
     // Redirect to login page
-    header("Location: $redirectUrl?message=logged_out");
+    header("Location: $redirectUrl?logout=1");
 }
 exit;
