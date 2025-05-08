@@ -7,8 +7,8 @@
 // Database credentials - UPDATED to fix authentication issue
 $db_host = 'localhost';
 $db_name = 'backsure_admin';
-$db_user = 'shanis'; // CHANGED: Removed '@backsureglobalsupport.com' that caused MySQL authentication error
-$db_pass = 'YourNewPassword'; // CHANGED: You'll need to set this to your new password
+$db_user = 'shanis';
+$db_pass = 'Password123!'; // Use the actual password you created with MySQL
 $db_charset = 'utf8mb4';
 
 // Legacy variables for backward compatibility
