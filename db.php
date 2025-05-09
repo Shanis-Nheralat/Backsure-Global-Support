@@ -7,8 +7,8 @@
 // Database credentials - UPDATED to fix authentication issue
 $db_host = 'localhost';
 $db_name = 'backsure_admin';
-$db_user = 'shanis';
-$db_pass = 'Hxrmf0XgHcL9VuQ9$2y$10$wKq3VZl7...!'; // Use the actual password you created with MySQL
+$db_user = 'backzvsg_site';
+$db_pass = 'AecufM0dRd9WK7r'; // Use the actual password you created with MySQL
 $db_charset = 'utf8mb4';
 
 // Legacy variables for backward compatibility
