@@ -357,19 +357,25 @@ function verifyCSRFToken($token) {
  * @return string The client IP address
  */
 function getClientIP() {
-    // Check for proxy server
-    $ip = $_SERVER['REMOTE_ADDR'];
+    // Default to remote address
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+
+    // Check common proxy headers
     if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        // In case of multiple IPs (e.g. client, proxy1, proxy2) take the first
+        $forwarded = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        $ip = trim($forwarded[0]);
     } elseif (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         $ip = $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_REAL_IP'])) {
+        $ip = $_SERVER['HTTP_X_REAL_IP'];
     }
-    
+
     // Validate IP format
     if (filter_var($ip, FILTER_VALIDATE_IP)) {
         return $ip;
     }
-    
+
     return '0.0.0.0';
 }
 
